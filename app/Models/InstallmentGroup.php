@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\InstallmentStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class InstallmentGroup extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'user_id', 'credit_card_id', 'bank_account_id', 'category_id',
+        'description', 'total_amount', 'installment_amount', 'total_installments',
+        'paid_installments', 'start_date', 'status',
+    ];
+
+    protected $casts = [
+        'status' => InstallmentStatus::class,
+        'total_amount' => 'decimal:2',
+        'installment_amount' => 'decimal:2',
+        'start_date' => 'date',
+    ];
+
+    protected $appends = ['progress', 'total_remaining'];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function creditCard(): BelongsTo
+    {
+        return $this->belongsTo(CreditCard::class);
+    }
+
+    public function bankAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function installments(): HasMany
+    {
+        return $this->hasMany(Installment::class);
+    }
+
+    public function getProgressAttribute(): float
+    {
+        if ($this->total_installments === 0) {
+            return 0;
+        }
+
+        return round(($this->paid_installments / $this->total_installments) * 100, 1);
+    }
+
+    public function getTotalRemainingAttribute(): float
+    {
+        $remaining = $this->total_installments - $this->paid_installments;
+
+        return $remaining * (float) $this->installment_amount;
+    }
+
+    public function cancelFutureInstallments(): void
+    {
+        $this->installments()
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
+
+        $this->update(['status' => InstallmentStatus::Cancelled]);
+    }
+}

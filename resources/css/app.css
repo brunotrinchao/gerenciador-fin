@@ -1,0 +1,248 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.tsx';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Acento Verde — igual em ambos os temas */
+    --color-accent: #22c55e;
+    --color-accent-hover: #16a34a;
+    --color-accent-subtle: rgba(34, 197, 94, 0.1);
+
+    /* Semânticos */
+    --color-danger: #ef4444;
+    --color-danger-hover: #dc2626;
+    --color-warning: #f59e0b;
+    --color-success: #22c55e;
+
+    /* Sidebar */
+    --sidebar-width: 240px;
+    --sidebar-width-collapsed: 64px;
+    --header-height: 56px;
+}
+
+/* ─── Dark Theme (padrão) ─────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+    --color-background: #0a0f0d;
+    --color-surface: #111916;
+    --color-surface-2: #1a2420;
+    --color-border: #1f2e29;
+    --color-muted: #6b7280;
+    --color-foreground: #f1f5f2;
+    --color-foreground-muted: #9ca3af;
+    --color-input-bg: #0d1412;
+}
+
+/* ─── Light Theme ─────────────────────────────────────────── */
+[data-theme="light"] {
+    --color-background: #f4f7f5;
+    --color-surface: #ffffff;
+    --color-surface-2: #edf2ef;
+    --color-border: #d0ddd7;
+    --color-muted: #6b7280;
+    --color-foreground: #0f1f18;
+    --color-foreground-muted: #4b5563;
+    --color-input-bg: #f9fafb;
+}
+
+/* Base */
+body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* ─── Transições de Modal ─────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.modal-overlay {
+  animation: fadeIn 160ms ease-out;
+}
+
+.modal-content {
+  animation: scaleIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-in {
+  animation: slideInRight 200ms ease-out;
+}
+
+/* ─── Light mode: adaptar classes Tailwind hardcoded ─────────
+   Páginas usam text-white/gray-400 com classes hardcoded.
+   No light mode sobrescrevemos para garantir contraste.
+─────────────────────────────────────────────────────────────── */
+[data-theme="light"] .text-white {
+  color: var(--color-foreground);
+}
+
+/* Inputs e selects no light mode */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  color: var(--color-foreground);
+  background-color: var(--color-input-bg);
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 0.7;
+}
+
+/* Scrollbar light */
+[data-theme="light"] ::-webkit-scrollbar {
+  width: 6px;
+}
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--color-surface-2);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+/* ─── Transições de Página ────────────────────────────────── */
+.page-transition {
+  animation: fadeIn 180ms ease-out;
+}
+
+/* ─── FullCalendar — Tema CSS Variables ──────────────────── */
+.fc-theme-custom {
+  --fc-border-color: var(--color-border);
+  --fc-button-bg-color: var(--color-surface-2);
+  --fc-button-border-color: var(--color-border);
+  --fc-button-hover-bg-color: var(--color-accent-subtle);
+  --fc-button-hover-border-color: var(--color-accent);
+  --fc-button-active-bg-color: var(--color-accent);
+  --fc-button-active-border-color: var(--color-accent);
+  --fc-button-text-color: var(--color-foreground);
+  --fc-today-bg-color: rgba(34, 197, 94, 0.06);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--color-surface-2);
+  --fc-list-event-hover-bg-color: var(--color-surface-2);
+}
+
+.fc-theme-custom .fc-col-header-cell-cushion,
+.fc-theme-custom .fc-daygrid-day-number {
+  color: var(--color-foreground);
+  text-decoration: none;
+}
+
+.fc-theme-custom .fc-daygrid-day-number {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.fc-theme-custom .fc-toolbar-title {
+  color: var(--color-foreground);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.fc-theme-custom .fc-button {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.5rem;
+  transition: all 150ms;
+}
+
+.fc-theme-custom .fc-button:focus {
+  box-shadow: none;
+}
+
+.fc-theme-custom .fc-daygrid-more-link {
+  color: var(--color-muted);
+  font-size: 0.65rem;
+}
+
+.fc-theme-custom td,
+.fc-theme-custom th {
+  border-color: var(--color-border) !important;
+}
+
+.fc-theme-custom .fc-scrollgrid {
+  border-color: var(--color-border) !important;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.fc-theme-custom .fc-event {
+  border-radius: 4px;
+  border-width: 1px;
+  cursor: pointer;
+}
+
+.fc-theme-custom .fc-event:hover {
+  filter: brightness(1.1);
+}
+
+/* ─── shadcn/ui — Variáveis mapeadas para nossa paleta ───────
+   Os componentes shadcn usam variáveis Tailwind como --primary,
+   --background, etc. Mapeamos para nossos tokens existentes.
+─────────────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --background:           220 13% 7%;
+  --foreground:           144 13% 95%;
+  --card:                 150 20% 9%;
+  --card-foreground:      144 13% 95%;
+  --popover:              150 20% 9%;
+  --popover-foreground:   144 13% 95%;
+  --primary:              142 70% 45%;
+  --primary-foreground:   0 0% 0%;
+  --secondary:            150 15% 15%;
+  --secondary-foreground: 144 13% 90%;
+  --muted:                150 10% 20%;
+  --muted-foreground:     150 5% 50%;
+  --accent:               150 15% 15%;
+  --accent-foreground:    144 13% 90%;
+  --destructive:          0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border:               150 20% 18%;
+  --input:                150 20% 10%;
+  --ring:                 142 70% 45%;
+  --radius:               0.5rem;
+}
+
+[data-theme="light"] {
+  --background:           150 10% 97%;
+  --foreground:           150 30% 10%;
+  --card:                 0 0% 100%;
+  --card-foreground:      150 30% 10%;
+  --popover:              0 0% 100%;
+  --popover-foreground:   150 30% 10%;
+  --primary:              142 70% 40%;
+  --primary-foreground:   0 0% 100%;
+  --secondary:            150 10% 93%;
+  --secondary-foreground: 150 20% 20%;
+  --muted:                150 10% 90%;
+  --muted-foreground:     150 5% 45%;
+  --accent:               150 10% 93%;
+  --accent-foreground:    150 20% 20%;
+  --destructive:          0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border:               150 15% 82%;
+  --input:                150 15% 93%;
+  --ring:                 142 70% 40%;
+}

@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\BankAccount;
+use App\Models\CreditCard;
+use App\Models\CreditCardStatement;
+use App\Models\Transaction;
+use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class InvoiceController extends Controller
+{
+    public function index(): Response
+    {
+        $userId = auth()->id();
+
+        $statements = CreditCardStatement::where('user_id', $userId)
+            ->with('creditCard')
+            ->orderBy('reference_month', 'desc')
+            ->paginate(24);
+
+        $creditCards  = CreditCard::byUser($userId)->active()->orderBy('name')->get();
+        $bankAccounts = BankAccount::byUser($userId)->active()->orderBy('name')->get();
+
+        return Inertia::render('Invoices/Index', [
+            'statements'   => $statements,
+            'creditCards'  => $creditCards,
+            'bankAccounts' => $bankAccounts,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'credit_card_id'  => ['required', 'exists:credit_cards,id'],
+            'reference_month' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],
+            'closing_date'    => ['nullable', 'date'],
+            'due_date'        => ['nullable', 'date'],
+            'total_amount'    => ['required', 'numeric', 'min:0'],
+        ]);
+
+        // Evitar duplicata de reference_month por cartão
+        $exists = CreditCardStatement::where('user_id', auth()->id())
+            ->where('credit_card_id', $data['credit_card_id'])
+            ->where('reference_month', $data['reference_month'])
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Já existe uma fatura para este cartão neste período.');
+        }
+
+        CreditCardStatement::create([
+            ...$data,
+            'user_id'     => auth()->id(),
+            'paid_amount' => 0,
+            'status'      => 'open',
+        ]);
+
+        return redirect()->route('invoices.index')
+            ->with('success', 'Fatura criada com sucesso!');
+    }
+
+    public function pay(CreditCardStatement $statement, Request $request): RedirectResponse
+    {
+        if ($statement->user_id !== auth()->id()) abort(403);
+
+        $bankAccountId = $request->input('bank_account_id');
+
+        [$year, $month] = explode('-', $statement->reference_month);
+
+        // Itera individualmente para acionar o TransactionObserver (recalculateBalance)
+        Transaction::where('user_id', auth()->id())
+            ->where('credit_card_id', $statement->credit_card_id)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->where('status', TransactionStatus::Pending)
+            ->get()
+            ->each(fn ($tx) => $tx->update(['status' => TransactionStatus::Paid->value]));
+
+        // Cria débito na conta bancária se informada
+        if ($bankAccountId) {
+            Transaction::create([
+                'user_id'         => auth()->id(),
+                'bank_account_id' => (int) $bankAccountId,
+                'category_id'     => null,
+                'description'     => 'Pagamento Fatura ' . ($statement->creditCard?->name ?? 'Cartão') . ' ' . $statement->reference_month,
+                'amount'          => $statement->total_amount,
+                'type'            => TransactionType::Expense,
+                'status'          => TransactionStatus::Paid,
+                'date'            => now()->toDateString(),
+            ]);
+        }
+
+        $statement->update([
+            'status'      => 'paid',
+            'paid_amount' => $statement->total_amount,
+        ]);
+
+        return redirect()->route('invoices.index')->with('success', 'Fatura paga com sucesso!');
+    }
+
+    public function destroy(CreditCardStatement $statement): RedirectResponse
+    {
+        if ($statement->user_id !== auth()->id()) abort(403);
+
+        $statement->delete();
+
+        return redirect()->route('invoices.index')
+            ->with('success', 'Fatura excluída com sucesso!');
+    }
+}

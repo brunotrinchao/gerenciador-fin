@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd \\\"/home/brunotrinchao/Gerenciador Financeiro - Code\\\" && php artisan migrate 2>&1\",\"description\":\"Rodar migrations com ordem corrigida\"}",
+  "error": "Exit code 1\n\n   INFO  Running migrations.  \n\n  2026_01_01_000005_create_installment_groups_table ............ 432.84ms DONE\n  2026_01_01_000006_create_transactions_table .................... 3.94ms FAIL\n\n   Illuminate\\Database\\QueryException \n\n  SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'transactions' already exists (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: gerenciador_financeiro_vibecode, SQL: create table `transactions` (`id` bigint unsigned not null auto_...",
+  "timestamp": "2026-03-31T22:54:48.056Z",
+  "retry_count": 1
+}

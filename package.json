@@ -1,0 +1,43 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "concurrently --names \"vite,queue\" --prefix-colors \"cyan,yellow\" \"vite\" \"php artisan queue:listen --timeout=120 --tries=1\""
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.2.2",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^6.0.1",
+        "axios": ">=1.11.0 <=1.14.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^3.0.0",
+        "tailwindcss": "^4.2.2",
+        "typescript": "^6.0.2",
+        "vite": "^8.0.0"
+    },
+    "dependencies": {
+        "@fullcalendar/core": "^6.1.20",
+        "@fullcalendar/daygrid": "^6.1.20",
+        "@fullcalendar/interaction": "^6.1.20",
+        "@fullcalendar/react": "^6.1.20",
+        "@hookform/resolvers": "^5.2.2",
+        "@inertiajs/react": "^3.0.1",
+        "@radix-ui/react-label": "^2.1.8",
+        "@radix-ui/react-select": "^2.2.6",
+        "@radix-ui/react-separator": "^1.1.8",
+        "@radix-ui/react-slot": "^1.2.4",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "date-fns": "^4.1.0",
+        "lucide-react": "^1.7.0",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
+        "react-hook-form": "^7.72.0",
+        "recharts": "^3.8.1",
+        "tailwind-merge": "^3.5.0",
+        "zod": "^4.3.6"
+    }
+}
