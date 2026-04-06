@@ -7,12 +7,25 @@
 
         <title inertia>{{ config('app.name', 'Gerenciador Financeiro') }}</title>
 
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#09090b" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
+
         {{-- Aplica o tema salvo antes do React montar (evita flash branco/escuro) --}}
         <script>
             (function() {
                 var t = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', t);
             })();
+
+            // Registra o Service Worker do PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
         </script>
 
         <link rel="preconnect" href="https://fonts.bunny.net" />

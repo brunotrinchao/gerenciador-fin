@@ -4,7 +4,6 @@ import {
     CalendarDays,
     ArrowLeftRight,
     Receipt,
-    Layers,
     CreditCard,
     Building2,
     TrendingUp,
@@ -51,7 +50,6 @@ const navSections: NavSection[] = [
         items: [
             { label: 'Transações',      href: '/transactions', icon: ArrowLeftRight },
             { label: 'Faturas',         href: '/invoices',     icon: Receipt },
-            { label: 'Parcelas',        href: '/installments', icon: Layers },
             { label: 'Importação',      href: '/imports',      icon: UploadCloud },
         ],
     },

@@ -13,6 +13,23 @@ class InstallmentGroup extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected static function booted()
+    {
+        static::deleting(function (InstallmentGroup $group) {
+            $group->installments()->each(function ($installment) {
+                $installment->delete();
+            });
+            
+            Transaction::where('installment_group_id', $group->id)
+                ->get()
+                ->each(function ($transaction) {
+                    $transaction->installment_group_id = null;
+                    $transaction->save();
+                    $transaction->delete();
+                });
+        });
+    }
+
     protected $fillable = [
         'user_id', 'credit_card_id', 'bank_account_id', 'category_id',
         'description', 'total_amount', 'installment_amount', 'total_installments',

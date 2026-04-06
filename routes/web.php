@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
     // Invoices (Faturas)
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::patch('/invoices/{statement}', [InvoiceController::class, 'update'])->name('invoices.update');
     Route::patch('/invoices/{statement}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
     Route::delete('/invoices/{statement}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
 });

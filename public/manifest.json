@@ -1,0 +1,25 @@
+{
+    "name": "Gerenciador Financeiro",
+    "short_name": "Financeiro",
+    "description": "Aplicativo de Controle Financeiro Pessoal",
+    "categories": ["finance"],
+    "start_url": "/",
+    "background_color": "#09090b",
+    "theme_color": "#09090b",
+    "display": "standalone",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        }
+    ]
+}

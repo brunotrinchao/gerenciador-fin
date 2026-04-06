@@ -53,10 +53,12 @@ interface Props {
 }
 
 interface NewCardForm {
+    [key: string]: any;
     name: string;
     brand: string;
     last_four_digits: string;
     credit_limit: string;
+    available_limit: string;
     closing_day: string;
     due_day: string;
     bank_account_id: string;
@@ -106,6 +108,7 @@ export default function ImportCreate({
         brand:            '',
         last_four_digits: invoiceDetails?.lastFour ?? '',
         credit_limit:     '',
+        available_limit:  '',
         closing_day:      '',
         due_day:          '',
         bank_account_id:  '',
@@ -138,6 +141,7 @@ export default function ImportCreate({
                 closing_day:      invoiceDetails.closingDay ? String(invoiceDetails.closingDay) : prev.closing_day,
                 due_day:          invoiceDetails.dueDay ? String(invoiceDetails.dueDay) : prev.due_day,
                 credit_limit:     invoiceDetails.creditLimit ? String(invoiceDetails.creditLimit) : prev.credit_limit,
+                available_limit:  invoiceDetails.creditLimit ? String(invoiceDetails.creditLimit) : prev.available_limit,
             }));
             setShowModal(true);
         }
@@ -611,6 +615,17 @@ export default function ImportCreate({
                                                 <CurrencyInput
                                                     value={newCard.credit_limit}
                                                     onChange={(v) => setNewCard(p => ({ ...p, credit_limit: v }))}
+                                                    className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-[#22c55e] transition-colors"
+                                                />
+                                            </div>
+
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs text-gray-400">
+                                                    Limite disponível (R$)
+                                                </label>
+                                                <CurrencyInput
+                                                    value={newCard.available_limit}
+                                                    onChange={(v) => setNewCard(p => ({ ...p, available_limit: v }))}
                                                     className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-[#22c55e] transition-colors"
                                                 />
                                             </div>

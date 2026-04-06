@@ -15,14 +15,21 @@ use Inertia\Response;
 
 class InvoiceController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $userId = auth()->id();
+        $month = $request->query('month');
 
-        $statements = CreditCardStatement::where('user_id', $userId)
-            ->with('creditCard')
-            ->orderBy('reference_month', 'desc')
-            ->paginate(24);
+        $query = CreditCardStatement::where('user_id', $userId)
+            ->with('creditCard');
+
+        if ($month) {
+            $query->where('reference_month', $month);
+        }
+
+        $statements = $query->orderBy('reference_month', 'desc')
+            ->paginate(24)
+            ->withQueryString();
 
         $creditCards  = CreditCard::byUser($userId)->active()->orderBy('name')->get();
         $bankAccounts = BankAccount::byUser($userId)->active()->orderBy('name')->get();
@@ -31,6 +38,7 @@ class InvoiceController extends Controller
             'statements'   => $statements,
             'creditCards'  => $creditCards,
             'bankAccounts' => $bankAccounts,
+            'filters'      => $request->only('month'),
         ]);
     }
 
@@ -63,6 +71,21 @@ class InvoiceController extends Controller
 
         return redirect()->route('invoices.index')
             ->with('success', 'Fatura criada com sucesso!');
+    }
+
+    public function update(Request $request, CreditCardStatement $statement): RedirectResponse
+    {
+        if ($statement->user_id !== auth()->id()) abort(403);
+
+        $data = $request->validate([
+            'closing_date' => ['nullable', 'date'],
+            'due_date'     => ['nullable', 'date'],
+            'total_amount' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $statement->update($data);
+
+        return redirect()->route('invoices.index')->with('success', 'Fatura atualizada com sucesso!');
     }
 
     public function pay(CreditCardStatement $statement, Request $request): RedirectResponse

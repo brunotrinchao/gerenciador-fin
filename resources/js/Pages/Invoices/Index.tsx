@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/types/models';
+import { PageHeader } from '@/Components/PageHeader';
 import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 
@@ -13,6 +14,7 @@ interface Props {
     statements: PaginatedData<CreditCardStatement>;
     creditCards: CreditCard[];
     bankAccounts: BankAccount[];
+    filters: { month?: string };
 }
 
 interface StatementFormData {
@@ -201,9 +203,10 @@ interface StatementDetailModalProps {
     onClose: () => void;
     onPay: (statement: CreditCardStatement) => void;
     onDelete: (statement: CreditCardStatement) => void;
+    onEdit: (statement: CreditCardStatement) => void;
 }
 
-function StatementDetailModal({ statement, onClose, onPay, onDelete }: StatementDetailModalProps) {
+function StatementDetailModal({ statement, onClose, onPay, onDelete, onEdit }: StatementDetailModalProps) {
     const pending = statement.total_amount - statement.paid_amount;
     const cardName = statement.credit_card?.name ?? 'Cartão';
 
@@ -282,6 +285,13 @@ function StatementDetailModal({ statement, onClose, onPay, onDelete }: Statement
                                 Pagar
                             </button>
                         )}
+                        <button
+                            type="button"
+                            onClick={() => onEdit(statement)}
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-semibold transition-colors"
+                        >
+                            Editar
+                        </button>
                         <button
                             type="button"
                             onClick={() => onDelete(statement)}
@@ -383,6 +393,118 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
                         )}
                     </div>
 
+                    {/* Datas */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm text-gray-400">Data de Fechamento</label>
+                            <input
+                                type="date"
+                                value={data.closing_date}
+                                onChange={(e) => setData('closing_date', e.target.value)}
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            />
+                            {errors.closing_date && (
+                                <p className="text-red-400 text-xs">{errors.closing_date}</p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm text-gray-400">Data de Vencimento</label>
+                            <input
+                                type="date"
+                                value={data.due_date}
+                                onChange={(e) => setData('due_date', e.target.value)}
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            />
+                            {errors.due_date && (
+                                <p className="text-red-400 text-xs">{errors.due_date}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Valor total */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm text-gray-400">
+                            Valor Total <span className="text-red-400">*</span>
+                        </label>
+                        <CurrencyInput
+                            value={data.total_amount}
+                            onChange={(v) => setData('total_amount', v)}
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                        />
+                        {errors.total_amount && (
+                            <p className="text-red-400 text-xs">{errors.total_amount}</p>
+                        )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3 pt-1">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="flex-1 px-4 py-2.5 rounded-lg bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {processing ? 'Salvando...' : 'Salvar'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────
+// EditStatementModal
+// ─────────────────────────────────────────────
+
+interface EditStatementModalProps {
+    statement: CreditCardStatement;
+    onClose: () => void;
+}
+
+function EditStatementModal({ statement, onClose }: EditStatementModalProps) {
+    const { data, setData, patch, processing, errors, reset } = useForm({
+        closing_date: statement.closing_date || '',
+        due_date: statement.due_date || '',
+        total_amount: String(statement.total_amount),
+    });
+
+    const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        patch(route('invoices.update', statement.id), {
+            onSuccess: () => {
+                reset();
+                onClose();
+            },
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                onClick={onClose}
+            />
+
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                    <h2 className="text-white font-semibold text-lg">Editar Fatura</h2>
+                    <button
+                        onClick={onClose}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
                     {/* Datas */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
@@ -601,13 +723,14 @@ function DeleteConfirmModal({ statement, onClose }: DeleteConfirmModalProps) {
 // Page
 // ─────────────────────────────────────────────
 
-export default function InvoicesIndex({ statements, creditCards, bankAccounts }: Props) {
+export default function InvoicesIndex({ statements, creditCards, bankAccounts, filters }: Props) {
     const { flash } = usePage().props;
 
     const [showFormModal, setShowFormModal] = useState(false);
     const [payingStatement, setPayingStatement] = useState<CreditCardStatement | null>(null);
     const [deletingStatement, setDeletingStatement] = useState<CreditCardStatement | null>(null);
     const [detailStatement, setDetailStatement] = useState<CreditCardStatement | null>(null);
+    const [editingStatement, setEditingStatement] = useState<CreditCardStatement | null>(null);
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
     const filteredStatements = selectedCardId
@@ -631,58 +754,55 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts }:
                     </div>
                 )}
 
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">Faturas</h1>
-                        <p className="text-gray-400 text-sm mt-1">
-                            {statements.total === 0
-                                ? 'Nenhuma fatura cadastrada'
-                                : `${statements.total} fatura${statements.total !== 1 ? 's' : ''} no total`}
-                        </p>
-                    </div>
-
-                    <button
-                        onClick={() => setShowFormModal(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors flex-shrink-0"
-                    >
-                        <Plus size={16} />
-                        Nova Fatura
-                    </button>
-                </div>
-
-                {/* Card filter tabs */}
-                {creditCards.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap">
+                {/* Header Components via PageHeader */}
+                <PageHeader
+                    title="Faturas"
+                    subtitle={
+                        statements.total === 0
+                            ? 'Nenhuma fatura cadastrada'
+                            : `${statements.total} fatura${statements.total !== 1 ? 's' : ''} no total`
+                    }
+                    actions={
                         <button
-                            onClick={() => setSelectedCardId(null)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                selectedCardId === null
-                                    ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/30'
-                                    : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-400 hover:text-white'
-                            }`}
+                            onClick={() => setShowFormModal(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors flex-shrink-0"
                         >
-                            Todos
+                            <Plus size={16} />
+                            Nova Fatura
                         </button>
-                        {creditCards.map((card) => (
-                            <button
-                                key={card.id}
-                                onClick={() => setSelectedCardId(card.id)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                    selectedCardId === card.id
-                                        ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/30'
-                                        : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-400 hover:text-white'
-                                }`}
-                            >
-                                <span
-                                    className="w-2 h-2 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: card.color }}
-                                />
-                                {card.name}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    }
+                    filters={
+                        <>
+                            {creditCards.length > 0 && (
+                                <select
+                                    value={selectedCardId || ''}
+                                    onChange={(e) => setSelectedCardId(e.target.value ? Number(e.target.value) : null)}
+                                    className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                >
+                                    <option value="">Todos os Cartões</option>
+                                    {creditCards.map((card) => (
+                                        <option key={card.id} value={card.id}>
+                                            {card.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                            <input
+                                type="month"
+                                value={filters?.month || ''}
+                                onChange={(e) => {
+                                    router.get(
+                                        route('invoices.index'), 
+                                        { month: e.target.value }, 
+                                        { preserveState: true }
+                                    );
+                                }}
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                placeholder="Filtrar por Mês"
+                            />
+                        </>
+                    }
+                />
 
                 {/* Grid */}
                 {filteredStatements.length === 0 ? (
@@ -737,6 +857,14 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts }:
                     onClose={() => setDetailStatement(null)}
                     onPay={(s) => { setDetailStatement(null); setPayingStatement(s); }}
                     onDelete={(s) => { setDetailStatement(null); setDeletingStatement(s); }}
+                    onEdit={(s) => { setDetailStatement(null); setEditingStatement(s); }}
+                />
+            )}
+
+            {editingStatement && (
+                <EditStatementModal
+                    statement={editingStatement}
+                    onClose={() => setEditingStatement(null)}
                 />
             )}
 

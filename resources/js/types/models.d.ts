@@ -86,8 +86,10 @@ export interface CreditCard {
     bank_account_id: number | null;
     name: string;
     brand: string | null;
+    last_four_digits: string | null;
     credit_limit: number;
     available_limit: number;
+    limit_adjustment: number;
     closing_day: number;
     due_day: number;
     color: string;

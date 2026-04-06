@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
+import { PageHeader, PageHeaderState } from '@/Components/PageHeader';
 import AppLayout from '@/Layouts/AppLayout';
 import {
     Transaction,
@@ -18,8 +19,6 @@ import {
     ArrowUpCircle,
     ArrowDownCircle,
     ArrowLeftRight,
-    TrendingUp,
-    TrendingDown,
     Wallet,
     Check,
     Pencil,
@@ -1588,48 +1587,113 @@ export default function TransactionsIndex({
                     </div>
                 )}
 
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">Transações</h1>
-                        <p className="text-gray-400 text-sm mt-1">
-                            {transactions.total === 0
-                                ? 'Nenhuma transação encontrada'
-                                : `${transactions.total} transação${transactions.total !== 1 ? 'ões' : ''} no mês`}
-                        </p>
-                    </div>
+                {/* Header Components via PageHeader */}
+                <PageHeader
+                    title="Transações"
+                    subtitle={
+                        transactions.total === 0
+                            ? 'Nenhuma transação encontrada'
+                            : `${transactions.total} transação${transactions.total !== 1 ? 'ões' : ''} no mês`
+                    }
+                    actions={
+                        <>
+                            <input
+                                ref={boletoInputRef}
+                                type="file"
+                                accept=".pdf"
+                                className="hidden"
+                                onChange={handleBoletoFile}
+                            />
+                            <button
+                                onClick={() => boletoInputRef.current?.click()}
+                                disabled={boletoLoading}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {boletoLoading ? (
+                                    <Loader2 size={16} className="animate-spin" />
+                                ) : (
+                                    <FileText size={16} />
+                                )}
+                                {boletoLoading ? 'Extraindo...' : 'Importar Boleto'}
+                            </button>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                        {/* Boleto import — hidden file input */}
-                        <input
-                            ref={boletoInputRef}
-                            type="file"
-                            accept=".pdf"
-                            className="hidden"
-                            onChange={handleBoletoFile}
-                        />
-                        <button
-                            onClick={() => boletoInputRef.current?.click()}
-                            disabled={boletoLoading}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            {boletoLoading ? (
-                                <Loader2 size={16} className="animate-spin" />
-                            ) : (
-                                <FileText size={16} />
-                            )}
-                            {boletoLoading ? 'Extraindo...' : 'Importar Boleto'}
-                        </button>
+                            <button
+                                onClick={openCreate}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors"
+                            >
+                                <Plus size={16} />
+                                Nova Transação
+                            </button>
+                        </>
+                    }
+                    states={
+                        <>
+                            <PageHeaderState
+                                title="Receitas"
+                                value={formatCurrency(summary.income)}
+                                colorClass="text-green-400"
+                            />
+                            <PageHeaderState
+                                title="Despesas"
+                                value={formatCurrency(summary.expense)}
+                                colorClass="text-red-400"
+                            />
+                            <PageHeaderState
+                                title="Saldo"
+                                value={formatCurrency(balance)}
+                                colorClass={balance >= 0 ? 'text-blue-400' : 'text-red-400'}
+                            />
+                        </>
+                    }
+                    filters={
+                        <>
+                            <input
+                                type="month"
+                                defaultValue={filters.month ?? currentMonth}
+                                onChange={(e) => applyFilter({ month: e.target.value })}
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            />
 
-                        <button
-                            onClick={openCreate}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors"
-                        >
-                            <Plus size={16} />
-                            Nova Transação
-                        </button>
-                    </div>
-                </div>
+                            <select
+                                defaultValue={filters.type ?? ''}
+                                onChange={(e) => applyFilter({ type: e.target.value })}
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            >
+                                <option value="">Todos os tipos</option>
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                                <option value="credit_card">Cartão</option>
+                                <option value="transfer">Transferência</option>
+                            </select>
+
+                            <select
+                                defaultValue={filters.status ?? ''}
+                                onChange={(e) => applyFilter({ status: e.target.value })}
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            >
+                                <option value="">Todos os status</option>
+                                <option value="pending">Pendente</option>
+                                <option value="paid">Pago</option>
+                                <option value="cancelled">Cancelado</option>
+                            </select>
+
+                            <input
+                                type="text"
+                                defaultValue={filters.search ?? ''}
+                                placeholder="Buscar descrição..."
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        applyFilter({
+                                            search: (e.target as HTMLInputElement).value,
+                                        });
+                                    }
+                                }}
+                                onBlur={(e) => applyFilter({ search: e.target.value })}
+                                className="flex-1 min-w-[160px] bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            />
+                        </>
+                    }
+                />
 
                 {/* Boleto error */}
                 {boletoError && (
@@ -1640,104 +1704,6 @@ export default function TransactionsIndex({
                         </button>
                     </div>
                 )}
-
-                {/* Summary cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Receitas */}
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                            <TrendingUp size={20} className="text-green-400" />
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-xs mb-0.5">Receitas</p>
-                            <p className="text-green-400 text-lg font-bold">
-                                {formatCurrency(summary.income)}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Despesas */}
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                            <TrendingDown size={20} className="text-red-400" />
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-xs mb-0.5">Despesas</p>
-                            <p className="text-red-400 text-lg font-bold">
-                                {formatCurrency(summary.expense)}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Saldo */}
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                            <Wallet size={20} className="text-blue-400" />
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-xs mb-0.5">Saldo</p>
-                            <p
-                                className={`text-lg font-bold ${
-                                    balance >= 0 ? 'text-blue-400' : 'text-red-400'
-                                }`}
-                            >
-                                {formatCurrency(balance)}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Filter bar */}
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-4 flex flex-wrap gap-3">
-                    {/* Mês */}
-                    <input
-                        type="month"
-                        defaultValue={filters.month ?? currentMonth}
-                        onChange={(e) => applyFilter({ month: e.target.value })}
-                        className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                    />
-
-                    {/* Tipo */}
-                    <select
-                        defaultValue={filters.type ?? ''}
-                        onChange={(e) => applyFilter({ type: e.target.value })}
-                        className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                    >
-                        <option value="">Todos os tipos</option>
-                        <option value="income">Receita</option>
-                        <option value="expense">Despesa</option>
-                        <option value="credit_card">Cartão</option>
-                        <option value="transfer">Transferência</option>
-                    </select>
-
-                    {/* Status */}
-                    <select
-                        defaultValue={filters.status ?? ''}
-                        onChange={(e) => applyFilter({ status: e.target.value })}
-                        className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                    >
-                        <option value="">Todos os status</option>
-                        <option value="pending">Pendente</option>
-                        <option value="paid">Pago</option>
-                        <option value="cancelled">Cancelado</option>
-                    </select>
-
-                    {/* Busca */}
-                    <input
-                        type="text"
-                        defaultValue={filters.search ?? ''}
-                        placeholder="Buscar descrição..."
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                applyFilter({
-                                    search: (e.target as HTMLInputElement).value,
-                                });
-                            }
-                        }}
-                        onBlur={(e) => applyFilter({ search: e.target.value })}
-                        className="flex-1 min-w-[160px] bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                    />
-                </div>
 
                 {/* Transaction list */}
                 <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">

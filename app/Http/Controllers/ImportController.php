@@ -230,13 +230,21 @@ class ImportController extends Controller
         // Criar novo cartão se necessário
         if ($request->filled('new_card')) {
             $cardData = $request->input('new_card');
+            $creditLimit = (float) $cardData['credit_limit'];
+            $availableLimit = isset($cardData['available_limit']) && $cardData['available_limit'] !== '' 
+                ? (float) $cardData['available_limit'] 
+                : $creditLimit;
+                
+            $limitAdjustment = $availableLimit - $creditLimit;
+
             $card = CreditCard::create([
                 'user_id'          => $userId,
                 'name'             => $cardData['name'],
                 'brand'            => $cardData['brand'] ?? null,
                 'last_four_digits' => $cardData['last_four_digits'] ?? null,
-                'credit_limit'     => $cardData['credit_limit'],
-                'available_limit'  => $cardData['credit_limit'],
+                'credit_limit'     => $creditLimit,
+                'available_limit'  => $availableLimit,
+                'limit_adjustment' => $limitAdjustment,
                 'closing_day'      => (int) $cardData['closing_day'],
                 'due_day'          => (int) $cardData['due_day'],
                 'bank_account_id'  => $cardData['bank_account_id'] ?: null,
@@ -256,12 +264,29 @@ class ImportController extends Controller
         $totalAmount = $items->sum('amount');
         $filePath    = session("import_file_path_{$userId}");
         $fileName    = session("import_filename_{$userId}", 'fatura');
+        $invoiceDetails = session("import_invoice_details_{$userId}", []);
+
+        // Obter os dias de vencimento e fechamento
+        $card = CreditCard::find($creditCardId);
+        $dueDay = $invoiceDetails['dueDay'] ?? $card?->due_day ?? clone now()->day;
+        $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? clone now()->day;
+
+        $dueDate = null;
+        $closingDate = null;
+        if ($dueDay) {
+            $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($dueDay)->format('Y-m-d');
+        }
+        if ($closingDay) {
+            $closingDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($closingDay)->format('Y-m-d');
+        }
 
         // Cria ou atualiza o statement (unique: credit_card_id + reference_month)
         $statement = CreditCardStatement::updateOrCreate(
             ['credit_card_id' => $creditCardId, 'reference_month' => $referenceMonth],
             [
                 'user_id'       => $userId,
+                'due_date'      => $dueDate,
+                'closing_date'  => $closingDate,
                 'total_amount'  => $totalAmount,
                 'paid_amount'   => 0,
                 'status'        => 'open',

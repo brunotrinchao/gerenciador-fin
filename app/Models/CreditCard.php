@@ -12,15 +12,31 @@ class CreditCard extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::deleting(function (CreditCard $card) {
+            $card->statements()->each(function ($statement) {
+                $statement->delete();
+            });
+            $card->installmentGroups()->each(function ($group) {
+                $group->delete();
+            });
+            $card->transactions()->each(function ($transaction) {
+                $transaction->delete();
+            });
+        });
+    }
+
     protected $fillable = [
         'user_id', 'bank_account_id', 'name', 'brand', 'last_four_digits',
-        'credit_limit', 'available_limit', 'closing_day', 'due_day',
+        'credit_limit', 'available_limit', 'limit_adjustment', 'closing_day', 'due_day',
         'color', 'is_active',
     ];
 
     protected $casts = [
         'credit_limit' => 'decimal:2',
         'available_limit' => 'decimal:2',
+        'limit_adjustment' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
@@ -65,7 +81,7 @@ class CreditCard extends Model
             ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Paid])
             ->sum('amount');
 
-        $this->update(['available_limit' => $this->credit_limit - $totalSpent]);
+        $this->updateOrCreate(['id' => $this->id], ['available_limit' => $this->credit_limit - $totalSpent + ($this->limit_adjustment ?? 0)]);
     }
 
     public function calculateDueDate(\DateTime $purchaseDate): \DateTime

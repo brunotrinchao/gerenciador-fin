@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
+import { PageHeader, PageHeaderState } from '@/Components/PageHeader';
 import {
     ComposedChart,
     Bar,
@@ -55,14 +56,14 @@ const fmtFull = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
 function exportCSV(projection: MonthProjection[]) {
-    const headers = ['Mês', 'Entradas', 'Despesas', 'Parcelas', 'Cartão', 'Resultado', 'Saldo'];
+    const headers = ['Mês', 'Entradas', 'Despesas', 'Parcelas', 'Cartão', 'Total Saídas', 'Saldo'];
     const rows = projection.map((m) => [
         m.month_key,
         m.income.toFixed(2),
         m.expense.toFixed(2),
         m.installments.toFixed(2),
         m.credit_card.toFixed(2),
-        m.net.toFixed(2),
+        (m.expense + m.installments + m.credit_card).toFixed(2),
         m.balance.toFixed(2),
     ]);
     const csv = [headers, ...rows].map((r) => r.join(';')).join('\n');
@@ -78,26 +79,6 @@ function exportCSV(projection: MonthProjection[]) {
 // ─────────────────────────────────────────────
 // Summary card
 // ─────────────────────────────────────────────
-
-function SummaryCard({
-    label,
-    value,
-    color = 'white',
-    sub,
-}: {
-    label: string;
-    value: number;
-    color?: string;
-    sub?: string;
-}) {
-    return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex flex-col gap-1">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
-            <p className={`text-2xl font-bold ${color}`}>{fmtFull(value)}</p>
-            {sub && <p className="text-xs text-gray-600 mt-0.5">{sub}</p>}
-        </div>
-    );
-}
 
 // ─────────────────────────────────────────────
 // Custom tooltip
@@ -166,68 +147,66 @@ export default function Projection({
             <Head title="Projeção Financeira" />
 
             <div className="w-full flex flex-col gap-6">
-                {/* Header com controles */}
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">Projeção Financeira</h1>
-                        <p className="text-gray-400 text-sm mt-1">
-                            Fluxo de caixa projetado para os próximos {months} meses
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {/* Seletor de meses */}
-                        <div className="flex items-center gap-2">
-                            <label className="text-gray-400 text-sm">Período:</label>
-                            <select
-                                value={months}
-                                onChange={(e) => router.get(route('projection.index'), { months: e.target.value }, { preserveState: false })}
-                                className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                <PageHeader
+                    title="Projeção Financeira"
+                    subtitle={`Fluxo de caixa projetado para os próximos ${months} meses`}
+                    actions={
+                        <>
+                            <button
+                                onClick={() => exportCSV(projection)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                             >
-                                <option value="3">3 meses</option>
-                                <option value="6">6 meses</option>
-                                <option value="12">12 meses</option>
-                                <option value="18">18 meses</option>
-                                <option value="24">24 meses</option>
-                            </select>
-                        </div>
-                        {/* Export CSV */}
-                        <button
-                            onClick={() => exportCSV(projection)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
-                        >
-                            <Download size={15} />
-                            CSV
-                        </button>
-                    </div>
-                </div>
-
-                {/* Summary cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                    <SummaryCard
-                        label="Saldo Atual"
-                        value={currentBalance}
-                        color="text-white"
-                        sub="contas ativas"
-                    />
-                    <SummaryCard
-                        label="Entradas Projetadas"
-                        value={totalProjectedIncome}
-                        color="text-[#22c55e]"
-                        sub="próximos 12 meses"
-                    />
-                    <SummaryCard
-                        label="Saídas Projetadas"
-                        value={totalProjectedExpense}
-                        color="text-red-400"
-                        sub="próximos 12 meses"
-                    />
-                    <SummaryCard
-                        label="Saldo em 12 meses"
-                        value={finalBalance}
-                        color={balanceTrend}
-                        sub={`${balanceDiff >= 0 ? '+' : ''}${fmtFull(balanceDiff)} vs hoje`}
-                    />
-                </div>
+                                <Download size={15} />
+                                CSV
+                            </button>
+                        </>
+                    }
+                    states={
+                        <>
+                            <PageHeaderState
+                                title="Saldo Atual"
+                                value={fmtFull(currentBalance)}
+                                colorClass="text-white"
+                                subtitle="contas ativas"
+                            />
+                            <PageHeaderState
+                                title="Entradas Projetadas"
+                                value={fmtFull(totalProjectedIncome)}
+                                colorClass="text-[#22c55e]"
+                                subtitle="próximos 12 meses"
+                            />
+                            <PageHeaderState
+                                title="Saídas Projetadas"
+                                value={fmtFull(totalProjectedExpense)}
+                                colorClass="text-red-400"
+                                subtitle="próximos 12 meses"
+                            />
+                            <PageHeaderState
+                                title="Saldo em 12 meses"
+                                value={fmtFull(finalBalance)}
+                                colorClass={balanceTrend}
+                                subtitle={`${balanceDiff >= 0 ? '+' : ''}${fmtFull(balanceDiff)} vs hoje`}
+                            />
+                        </>
+                    }
+                    filters={
+                        
+                            <div className="flex items-center gap-2">
+                                <label className="text-gray-400 text-sm">Período:</label>
+                                <select
+                                    value={months}
+                                    onChange={(e) => router.get(route('projection.index'), { months: e.target.value }, { preserveState: false })}
+                                    className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                >
+                                    <option value="3">3 meses</option>
+                                    <option value="6">6 meses</option>
+                                    <option value="12">12 meses</option>
+                                    <option value="18">18 meses</option>
+                                    <option value="24">24 meses</option>
+                                </select>
+                            </div>
+                    }
+                />
 
                 {/* Chart */}
                 <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
@@ -292,9 +271,21 @@ export default function Projection({
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-[var(--color-border)]">
-                                    {['Mês', 'Entradas', 'Despesas', 'Parcelas', 'Cartão', 'Resultado', 'Saldo'].map((h) => (
-                                        <th key={h} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
-                                            {h}
+                                    {[
+                                        { label: 'Mês', title: '' },
+                                        { label: 'Entradas', title: 'Receitas' },
+                                        { label: 'Despesas', title: 'Despesa que não é parcelado' },
+                                        { label: 'Parcelas', title: 'Despesas parceladas do mês/ano' },
+                                        { label: 'Cartão', title: 'Fatura do mês/ano' },
+                                        { label: 'Total Saídas', title: 'Somadas despesas + Parcelas + Cartão' },
+                                        { label: 'Saldo', title: 'Receita - (Total_saida) + total do saldo das contas' },
+                                    ].map((h) => (
+                                        <th 
+                                            key={h.label} 
+                                            title={h.title} 
+                                            className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap cursor-help"
+                                        >
+                                            {h.label}
                                         </th>
                                     ))}
                                 </tr>
@@ -317,8 +308,8 @@ export default function Projection({
                                         <td className="px-5 py-3 text-sm text-yellow-400 font-mono whitespace-nowrap">
                                             {row.credit_card > 0 ? fmtFull(row.credit_card) : '—'}
                                         </td>
-                                        <td className={`px-5 py-3 text-sm font-mono font-semibold whitespace-nowrap ${row.net >= 0 ? 'text-[#22c55e]' : 'text-red-400'}`}>
-                                            {row.net >= 0 ? '+' : ''}{fmtFull(row.net)}
+                                        <td className="px-5 py-3 text-sm text-red-400 font-mono font-semibold whitespace-nowrap">
+                                            {fmtFull(row.expense + row.installments + row.credit_card)}
                                         </td>
                                         <td className={`px-5 py-3 text-sm font-mono font-bold whitespace-nowrap ${row.balance >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
                                             {fmtFull(row.balance)}

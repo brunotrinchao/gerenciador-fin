@@ -97,6 +97,20 @@ export default function ImportReview({ items, creditCardId, fileName, categories
         });
     };
 
+    const toggleAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(
+                new Set(
+                    items
+                        .map((item, i) => (item.status_import !== 'duplicate_exact' ? i : -1))
+                        .filter((i) => i !== -1)
+                )
+            );
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
     const handleConfirm = () => {
         const selectedItems = items
             .filter((_, i) => selectedIds.has(i))
@@ -175,8 +189,18 @@ export default function ImportReview({ items, creditCardId, fileName, categories
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-[var(--color-border)]">
-                                    <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-12">
-                                        Incluir
+                                    <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-12 text-center">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={
+                                                    selectedIds.size > 0 && 
+                                                    selectedIds.size === items.filter(i => i.status_import !== 'duplicate_exact').length
+                                                }
+                                                onChange={(e) => toggleAll(e.target.checked)}
+                                                className="rounded border-gray-700 bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e] transition-colors"
+                                            />
+                                        </div>
                                     </th>
                                     <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                         Data

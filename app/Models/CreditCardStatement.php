@@ -11,6 +11,15 @@ class CreditCardStatement extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::deleting(function (CreditCardStatement $statement) {
+            $statement->transactions()->each(function ($transaction) {
+                $transaction->delete();
+            });
+        });
+    }
+
     protected $fillable = [
         'user_id', 'credit_card_id', 'reference_month', 'closing_date',
         'due_date', 'total_amount', 'paid_amount', 'status',
