@@ -3,6 +3,7 @@ import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { InstallmentGroup, Installment, BankAccount, CreditCard, Category, TransactionStatus } from '@/types/models';
 import { CurrencyInput } from '@/Components/CurrencyInput';
+import { DateInput } from '@/Components/DateInput';
 import { Plus, Layers, X, ChevronDown, ChevronUp, Check, AlertCircle, Trash2, UploadCloud } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -658,20 +659,13 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                     )}
 
                     {/* Data de início */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Data de Início <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                            type="date"
-                            value={data.start_date}
-                            onChange={(e) => setData('start_date', e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                        />
-                        {errors.start_date && (
-                            <p className="text-red-400 text-xs">{errors.start_date}</p>
-                        )}
-                    </div>
+                    <DateInput
+                        label="Data de Início"
+                        value={data.start_date}
+                        onChange={(v) => setData('start_date', v)}
+                        error={errors.start_date}
+                        required
+                    />
 
                     {/* Vincular a */}
                     <div className="flex flex-col gap-1.5">

@@ -3,6 +3,7 @@ import { Head, useForm, router, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/types/models';
 import { PageHeader } from '@/Components/PageHeader';
+import { DateInput } from '@/Components/DateInput';
 import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 
@@ -378,48 +379,29 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
                     </div>
 
                     {/* Mês de referência */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Mês de Referência <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                            type="month"
-                            value={data.reference_month}
-                            onChange={(e) => setData('reference_month', e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                        />
-                        {errors.reference_month && (
-                            <p className="text-red-400 text-xs">{errors.reference_month}</p>
-                        )}
-                    </div>
+                    <DateInput
+                        type="month"
+                        label="Mês de Referência"
+                        value={data.reference_month}
+                        onChange={(v) => setData('reference_month', v)}
+                        error={errors.reference_month}
+                        required
+                    />
 
                     {/* Datas */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Fechamento</label>
-                            <input
-                                type="date"
-                                value={data.closing_date}
-                                onChange={(e) => setData('closing_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.closing_date && (
-                                <p className="text-red-400 text-xs">{errors.closing_date}</p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Vencimento</label>
-                            <input
-                                type="date"
-                                value={data.due_date}
-                                onChange={(e) => setData('due_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.due_date && (
-                                <p className="text-red-400 text-xs">{errors.due_date}</p>
-                            )}
-                        </div>
+                        <DateInput
+                            label="Data de Fechamento"
+                            value={data.closing_date}
+                            onChange={(v) => setData('closing_date', v)}
+                            error={errors.closing_date}
+                        />
+                        <DateInput
+                            label="Data de Vencimento"
+                            value={data.due_date}
+                            onChange={(v) => setData('due_date', v)}
+                            error={errors.due_date}
+                        />
                     </div>
 
                     {/* Valor total */}
@@ -507,31 +489,18 @@ function EditStatementModal({ statement, onClose }: EditStatementModalProps) {
                 <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
                     {/* Datas */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Fechamento</label>
-                            <input
-                                type="date"
-                                value={data.closing_date}
-                                onChange={(e) => setData('closing_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.closing_date && (
-                                <p className="text-red-400 text-xs">{errors.closing_date}</p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Vencimento</label>
-                            <input
-                                type="date"
-                                value={data.due_date}
-                                onChange={(e) => setData('due_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.due_date && (
-                                <p className="text-red-400 text-xs">{errors.due_date}</p>
-                            )}
-                        </div>
+                        <DateInput
+                            label="Data de Fechamento"
+                            value={data.closing_date}
+                            onChange={(v) => setData('closing_date', v)}
+                            error={errors.closing_date}
+                        />
+                        <DateInput
+                            label="Data de Vencimento"
+                            value={data.due_date}
+                            onChange={(v) => setData('due_date', v)}
+                            error={errors.due_date}
+                        />
                     </div>
 
                     {/* Valor total */}
@@ -787,18 +756,17 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     ))}
                                 </select>
                             )}
-                            <input
+                            <DateInput
                                 type="month"
+                                label="Mês"
                                 value={filters?.month || ''}
-                                onChange={(e) => {
+                                onChange={(v) => {
                                     router.get(
-                                        route('invoices.index'), 
-                                        { month: e.target.value }, 
+                                        route('invoices.index'),
+                                        { month: v },
                                         { preserveState: true }
                                     );
                                 }}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                                placeholder="Filtrar por Mês"
                             />
                         </>
                     }
