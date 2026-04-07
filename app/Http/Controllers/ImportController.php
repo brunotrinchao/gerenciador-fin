@@ -497,13 +497,26 @@ class ImportController extends Controller
                 $isCurrent = $i === $current;
                 $status    = $isCurrent ? TransactionStatus::Paid : TransactionStatus::Pending;
 
-                // Find or create CreditCardStatement for this month
-                $monthKey     = $dueDate->format('Y-m');
-                $stmtForMonth = $isCurrent
-                    ? $statementId
-                    : CreditCardStatement::where('credit_card_id', $creditCardId)
-                        ->where('reference_month', $monthKey)
-                        ->value('id');
+                // Resolve statement para o mês desta parcela.
+                // Parcela futura: garante que a fatura do mês existe (cria se necessário).
+                $monthKey = $dueDate->format('Y-m');
+                if ($isCurrent) {
+                    $stmtForMonth = $statementId;
+                } else {
+                    // Todas as parcelas neste branch são futuras (loop começa em $current).
+                    $stmtForMonth = CreditCardStatement::firstOrCreate(
+                        [
+                            'credit_card_id'  => $creditCardId,
+                            'reference_month' => $monthKey,
+                        ],
+                        [
+                            'user_id'      => $userId,
+                            'status'       => 'open',
+                            'total_amount' => 0,
+                            'paid_amount'  => 0,
+                        ]
+                    )->id;
+                }
 
                 $transaction = Transaction::create([
                     'user_id'                  => $userId,
@@ -555,13 +568,31 @@ class ImportController extends Controller
             $isCurrent = $i === $current;
             $status    = $isPaid ? TransactionStatus::Paid : TransactionStatus::Pending;
 
-            // For future installments, find existing statement for that month if any
-            $monthKey     = $dueDate->format('Y-m');
-            $stmtForMonth = $isCurrent
-                ? $statementId
-                : CreditCardStatement::where('credit_card_id', $creditCardId)
+            // Resolve statement para o mês desta parcela:
+            // - Parcela atual   → fatura importada
+            // - Parcela futura  → firstOrCreate (cria fatura do mês se não existir)
+            // - Parcela passada → busca sem criar (fatura já deveria existir ou fica null)
+            $monthKey = $dueDate->format('Y-m');
+            if ($isCurrent) {
+                $stmtForMonth = $statementId;
+            } elseif ($i > $current) {
+                $stmtForMonth = CreditCardStatement::firstOrCreate(
+                    [
+                        'credit_card_id'  => $creditCardId,
+                        'reference_month' => $monthKey,
+                    ],
+                    [
+                        'user_id'      => $userId,
+                        'status'       => 'open',
+                        'total_amount' => 0,
+                        'paid_amount'  => 0,
+                    ]
+                )->id;
+            } else {
+                $stmtForMonth = CreditCardStatement::where('credit_card_id', $creditCardId)
                     ->where('reference_month', $monthKey)
                     ->value('id');
+            }
 
             $transaction = Transaction::create([
                 'user_id'                  => $userId,

@@ -65,9 +65,11 @@ class TransactionController extends Controller
             ->whereYear('date', $year)
             ->whereMonth('date', $mon);
 
+        // Transações credit_card NÃO são despesa de caixa — são dívidas pagas na fatura.
+        // Apenas type=expense reduz o saldo da conta bancária diretamente.
         $summary = [
             'income'  => (clone $allMonth)->where('type', TransactionType::Income->value)->sum('amount'),
-            'expense' => (clone $allMonth)->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])->sum('amount'),
+            'expense' => (clone $allMonth)->where('type', TransactionType::Expense->value)->sum('amount'),
         ];
 
         // Faturas do mês
