@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { CreditCard } from '@/types/models';
+import { formatCurrency } from '@/lib/utils';
+import { LimitBar } from '@/Components/CreditCards/LimitBar';
 import { Plus, CreditCard as CreditCardIcon, Pencil, Trash2, X } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 import { BrandSelector } from '@/Components/BrandSelector';
@@ -154,30 +156,7 @@ function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
             <div className="px-5 py-4 flex flex-col gap-3">
                 {/* Limite disponível + uso */}
                 <div>
-                    <div className="flex items-end justify-between mb-2">
-                        <div>
-                            <p className="text-gray-400 text-xs mb-0.5">Disponível</p>
-                            <p className="text-white font-bold text-xl">
-                                {formatCurrency(card.available_limit)}
-                            </p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-gray-500 text-xs mb-0.5">Limite</p>
-                            <p className="text-gray-300 font-medium text-sm">
-                                {formatCurrency(card.credit_limit)}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="w-full h-1.5 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
-                        <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                                width: `${usagePercent}%`,
-                                backgroundColor: usagePercent > 80 ? '#ef4444' : usagePercent > 50 ? '#f59e0b' : '#22c55e',
-                            }}
-                        />
-                    </div>
-                    <p className="text-gray-500 text-[10px] mt-1">{usagePercent.toFixed(0)}% utilizado</p>
+                    <LimitBar card={card} />
                 </div>
 
                 {/* Datas */}
