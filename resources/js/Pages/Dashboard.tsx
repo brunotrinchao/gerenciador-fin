@@ -8,6 +8,14 @@ import {
 import { SummaryCardSkeleton } from '@/Components/Dashboard/SummaryCardSkeleton';
 import { ChartSkeleton } from '@/Components/Dashboard/ChartSkeleton';
 import { Skeleton } from '@/Components/ui/skeleton';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetDescription,
+} from "@/Components/ui/sheet";
 
 interface DashboardStats {
     total_balance: number;
@@ -38,14 +46,41 @@ interface UpcomingPayment {
     status: string;
 }
 
+interface BankAccount {
+    id: number;
+    name: string;
+    bank_name: string;
+    current_balance: number;
+}
+
+interface CreditCard {
+    id: number;
+    name: string;
+}
+
+interface TransactionWithRelations extends UpcomingPayment {
+    credit_card?: CreditCard;
+}
+
 interface Props {
     stats: DashboardStats;
     upcomingPayments: UpcomingPayment[];
+    longUpcomingPayments: UpcomingPayment[];
     expensesByCategory: CategoryExpense[];
     cashFlow: CashFlowData[];
+    bankAccounts: BankAccount[];
+    detailedDebt: Record<string, TransactionWithRelations[]>;
 }
 
-export default function Dashboard({ stats, upcomingPayments, expensesByCategory, cashFlow }: Props) {
+export default function Dashboard({
+    stats,
+    upcomingPayments,
+    longUpcomingPayments,
+    expensesByCategory,
+    cashFlow,
+    bankAccounts,
+    detailedDebt
+}: Props) {
     return (
         <AppLayout title="Dashboard">
             <Head title="Dashboard" />
@@ -61,20 +96,106 @@ export default function Dashboard({ stats, upcomingPayments, expensesByCategory,
                     </div>
                 }>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                        <StatCard
-                            label="Saldo Total"
-                            value={stats?.total_balance}
-                            icon={Wallet}
-                            trend="Corrente em Bancos"
-                            positive={stats?.total_balance >= 0}
-                        />
-                        <StatCard
-                            label="Dívida Atual de Cartões"
-                            value={stats?.total_debt}
-                            icon={TrendingDown}
-                            trend="Faturas Abertas"
-                            positive={false}
-                        />
+                        {/* Saldo Total */}
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <StatCard
+                                    label="Saldo Total"
+                                    value={stats?.total_balance}
+                                    icon={Wallet}
+                                    trend="Corrente em Bancos"
+                                    positive={stats?.total_balance >= 0}
+                                    clickable
+                                />
+                            </SheetTrigger>
+                            <SheetContent>
+                                <SheetHeader className="mb-6">
+                                    <SheetTitle>Saldos por Conta</SheetTitle>
+                                    <SheetDescription>
+                                        Detalhamento do saldo disponível em cada conta bancária ativa.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="space-y-3">
+                                    {bankAccounts?.map((account) => (
+                                        <div
+                                            key={account.id}
+                                            className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]"
+                                        >
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-semibold text-[var(--color-foreground)]">
+                                                    {account.name}
+                                                </span>
+                                                <span className="text-xs text-[var(--color-muted)]">
+                                                    {account.bank_name}
+                                                </span>
+                                            </div>
+                                            <span className="text-sm font-bold text-[var(--color-foreground)]">
+                                                {formatCurrency(account.current_balance)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {(!bankAccounts || bankAccounts.length === 0) && (
+                                        <p className="text-center text-xs text-[var(--color-muted)] py-8">
+                                            Nenhuma conta encontrada.
+                                        </p>
+                                    )}
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+
+                        {/* Dívida Atual */}
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <StatCard
+                                    label="Dívida Atual de Cartões"
+                                    value={stats?.total_debt}
+                                    icon={TrendingDown}
+                                    trend="Faturas Abertas"
+                                    positive={false}
+                                    clickable
+                                />
+                            </SheetTrigger>
+                            <SheetContent className="sm:max-w-md">
+                                <SheetHeader className="mb-6">
+                                    <SheetTitle>Dívida por Cartão</SheetTitle>
+                                    <SheetDescription>
+                                        Transações de crédito pendentes agrupadas por cartão.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
+                                    {Object.entries(detailedDebt || {}).map(([cardId, transactions]) => {
+                                        const cardName = transactions[0]?.credit_card?.name || 'Cartão';
+                                        const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+
+                                        return (
+                                            <div key={cardId} className="space-y-3">
+                                                <div className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
+                                                    <h4 className="text-sm font-bold text-[var(--color-foreground)]">{cardName}</h4>
+                                                    <span className="text-sm font-bold text-[var(--color-danger)]">{formatCurrency(total)}</span>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    {transactions.map((t) => (
+                                                        <div key={t.id} className="flex justify-between items-center text-xs">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[var(--color-foreground)]">{t.description}</span>
+                                                                <span className="text-[var(--color-muted)]">{formatDate(t.date)}</span>
+                                                            </div>
+                                                            <span className="font-medium text-[var(--color-foreground)]">{formatCurrency(Number(t.amount))}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {(!detailedDebt || Object.keys(detailedDebt).length === 0) && (
+                                        <p className="text-center text-xs text-[var(--color-muted)] py-8">
+                                            Nenhuma dívida pendente encontrada.
+                                        </p>
+                                    )}
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+
                         <StatCard
                             label="Total Investido"
                             value={stats?.total_invested}
@@ -82,14 +203,68 @@ export default function Dashboard({ stats, upcomingPayments, expensesByCategory,
                             trend="Renda Fixa/Variável"
                             positive
                         />
-                        <StatCard
-                            label="Vencimentos (Próx. 7 dias)"
-                            value={stats?.upcoming_count}
-                            icon={Calendar}
-                            trend="Contas a Pagar"
-                            positive={null}
-                            isCount
-                        />
+
+                        {/* Vencimentos */}
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <StatCard
+                                    label="Vencimentos (Próx. 7 dias)"
+                                    value={stats?.upcoming_count}
+                                    icon={Calendar}
+                                    trend="Contas a Pagar"
+                                    positive={null}
+                                    isCount
+                                    clickable
+                                />
+                            </SheetTrigger>
+                            <SheetContent className="sm:max-w-md">
+                                <SheetHeader className="mb-6">
+                                    <SheetTitle>Próximos Vencimentos</SheetTitle>
+                                    <SheetDescription>
+                                        Lista estendida de pagamentos previstos para os próximos dias.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
+                                    <Deferred data="longUpcomingPayments" fallback={
+                                        <div className="space-y-2">
+                                            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
+                                        </div>
+                                    }>
+                                        {longUpcomingPayments?.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {longUpcomingPayments.map((payment) => (
+                                                    <li
+                                                        key={payment.id}
+                                                        className="flex items-center justify-between rounded-lg px-4 py-3 bg-[var(--color-surface-2)]"
+                                                    >
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-1.5">
+                                                                {payment.type === 'invoice' && <Receipt size={14} className="text-purple-400" />}
+                                                                {payment.type === 'installment' && <Layers size={14} className="text-orange-400" />}
+                                                                {payment.type === 'transaction' && <ArrowDownCircle size={14} className="text-red-400" />}
+                                                                <span className="text-sm font-medium text-[var(--color-foreground)]">
+                                                                    {payment.description}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-xs text-[var(--color-muted)]">
+                                                                {payment.category ?? 'Sem categoria'} · {formatDate(payment.date)}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-sm font-semibold text-[var(--color-danger)]">
+                                                            {formatCurrency(payment.amount)}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-center text-xs text-[var(--color-muted)] py-8">
+                                                Nenhum vencimento próximo.
+                                            </p>
+                                        )}
+                                    </Deferred>
+                                </div>
+                            </SheetContent>
+                        </Sheet>
                     </div>
                 </Deferred>
 
@@ -231,6 +406,7 @@ function formatCurrency(value: number) {
 }
 
 function formatDate(dateStr: string) {
+    if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-');
     return `${day}/${month}/${year}`;
 }
@@ -243,28 +419,35 @@ function EmptyState({ message }: { message: string }) {
     );
 }
 
-function StatCard({
-    label,
-    value,
-    icon: Icon,
-    trend,
-    positive,
-    isCount = false,
-}: {
+interface StatCardProps {
     label: string;
     value: number;
     icon: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>;
     trend: string;
     positive: boolean | null;
     isCount?: boolean;
-}) {
+    clickable?: boolean;
+}
+
+const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
+    label,
+    value,
+    icon: Icon,
+    trend,
+    positive,
+    isCount = false,
+    clickable = false,
+    ...props
+}, ref) => {
     return (
         <div
-            className="rounded-xl p-5"
+            ref={ref}
+            className={`rounded-xl p-5 transition-all duration-200 ${clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:border-[var(--color-accent)]' : ''}`}
             style={{
                 backgroundColor: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
             }}
+            {...props}
         >
             <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
@@ -295,4 +478,5 @@ function StatCard({
             </p>
         </div>
     );
-}
+});
+StatCard.displayName = "StatCard";
