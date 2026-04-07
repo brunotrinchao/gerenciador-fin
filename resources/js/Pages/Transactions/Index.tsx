@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 import { DateInput } from '@/Components/DateInput';
 import { PageHeader, PageHeaderState } from '@/Components/PageHeader';
@@ -85,11 +86,6 @@ interface TransactionFormData {
 
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 const isDebit = (type: TransactionType) =>
     ['expense', 'credit_card', 'transfer', 'investment_in'].includes(type);

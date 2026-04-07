@@ -1,5 +1,6 @@
 import React from 'react';
 import { Head, Deferred } from '@inertiajs/react';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import AppLayout from '@/Layouts/AppLayout';
 import { TrendingUp, TrendingDown, Wallet, Calendar, Receipt, Layers, ArrowDownCircle } from 'lucide-react';
 import {
@@ -449,16 +450,6 @@ export default function Dashboard({
             </div>
         </AppLayout>
     );
-}
-
-function formatCurrency(value: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-}
-
-function formatDate(dateStr: string) {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
 }
 
 function EmptyState({ message }: { message: string }) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Category } from '@/types/models';
+import { formatDate } from '@/lib/utils';
 
 // ─────────────────────────────────────────────
 // Types
@@ -34,11 +35,6 @@ interface Props {
 
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 // ─────────────────────────────────────────────
 // StatusBadge

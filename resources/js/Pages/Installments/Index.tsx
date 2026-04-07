@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { InstallmentGroup, Installment, BankAccount, CreditCard, Category, TransactionStatus } from '@/types/models';
+import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 import { DateInput } from '@/Components/DateInput';
 import { Plus, Layers, X, ChevronDown, ChevronUp, Check, AlertCircle, Trash2, UploadCloud } from 'lucide-react';
@@ -51,11 +52,6 @@ interface FormData {
 
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 // ─────────────────────────────────────────────
 // StatusBadge

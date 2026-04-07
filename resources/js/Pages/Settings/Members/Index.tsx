@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { UserPlus, Users, Mail, Trash2, X, Clock } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,9 +35,6 @@ interface Props {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 function Avatar({ name, avatar, size = 36 }: { name: string; avatar: string | null; size?: number }) {
     if (avatar) {

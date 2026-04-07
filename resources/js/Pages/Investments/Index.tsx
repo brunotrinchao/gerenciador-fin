@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Investment, BankAccount, InvestmentType } from '@/types/models';
+import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 import { DateInput } from '@/Components/DateInput';
 import {
@@ -59,11 +60,6 @@ interface RedeemFormData {
 
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 const investmentTypeLabels: Record<InvestmentType, string> = {
     renda_fixa: 'Renda Fixa',

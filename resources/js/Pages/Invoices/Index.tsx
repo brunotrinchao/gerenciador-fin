@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/types/models';
+import { formatDate } from '@/lib/utils';
 import { PageHeader } from '@/Components/PageHeader';
 import { DateInput } from '@/Components/DateInput';
 import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText } from 'lucide-react';
@@ -42,10 +43,6 @@ const formatMonth = (ym: string) => {
     return `${months[parseInt(month) - 1]} ${year}`;
 };
 
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 const isOverdue = (dueDateStr: string | null): boolean => {
     if (!dueDateStr) return false;
