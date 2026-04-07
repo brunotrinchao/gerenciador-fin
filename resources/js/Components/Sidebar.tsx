@@ -191,7 +191,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                     mobileOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
                 style={{
-                    backgroundColor: 'var(--color-surface)',
+                    backgroundColor: 'var(--md-color-surface-container-low)',
                     borderRight: '1px solid var(--color-border)',
                 }}
             >
@@ -203,7 +203,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                 className="hidden lg:flex flex-col flex-shrink-0 transition-all duration-200 ease-in-out"
                 style={{
                     width: collapsed ? '64px' : '240px',
-                    backgroundColor: 'var(--color-surface)',
+                    backgroundColor: 'var(--md-color-surface-container-low)',
                     borderRight: '1px solid var(--color-border)',
                 }}
             >
@@ -231,14 +231,15 @@ function NavLink({
     return (
         <Link
             href={item.href}
-            className="flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+            className="flex items-center gap-3 px-2 py-2 text-sm transition-colors"
             style={{
-                backgroundColor: active ? 'var(--color-accent-subtle)' : 'transparent',
-                color: active ? 'var(--color-accent)' : 'var(--color-muted)',
+                backgroundColor: active ? 'var(--md-color-secondary-container)' : 'transparent',
+                color: active ? 'var(--md-color-on-secondary-container)' : 'var(--color-muted)',
+                borderRadius: 'var(--md-shape-full)',
             }}
             title={collapsed ? item.label : undefined}
             onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)';
+                if (!active) e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--md-color-on-surface) 8%, transparent)';
             }}
             onMouseLeave={(e) => {
                 if (!active) e.currentTarget.style.backgroundColor = 'transparent';

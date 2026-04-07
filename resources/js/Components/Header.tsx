@@ -32,7 +32,6 @@ export default function Header({ title, onMenuToggle, user }: HeaderProps) {
             style={{
                 height: 'var(--header-height)',
                 backgroundColor: 'var(--color-surface)',
-                borderBottom: '1px solid var(--color-border)',
             }}
         >
             {/* Menu toggle (mobile) */}

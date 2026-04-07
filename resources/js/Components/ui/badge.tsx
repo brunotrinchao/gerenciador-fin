@@ -4,22 +4,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  // M3 Assist Chip base
+  "inline-flex items-center gap-1 rounded-[var(--md-shape-sm)] px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--md-color-primary)] focus:ring-offset-2",
   {
     variants: {
       variant: {
+        // M3 Suggestion Chip — surface-variant
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "border border-[var(--md-color-outline-variant)] bg-[var(--md-color-surface-container-high)] text-[var(--md-color-on-surface)]",
+        // M3 Filter Chip selecionado — secondary container
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-[var(--md-color-secondary-container)] text-[var(--md-color-on-secondary-container)] border-transparent",
+        // M3 Error Chip
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+          "bg-[var(--md-color-error-container)] text-[var(--md-color-on-error-container)] border-transparent",
+        // Outline
+        outline:
+          "border border-[var(--md-color-outline)] bg-transparent text-[var(--md-color-on-surface)]",
       },
     },
-    defaultVariants: {
-      variant: "default",
-    },
+    defaultVariants: { variant: "default" },
   }
 )
 

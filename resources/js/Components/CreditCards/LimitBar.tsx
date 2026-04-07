@@ -12,29 +12,29 @@ export function LimitBar({ card }: { card: CreditCard }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between text-xs text-gray-400">
+      <div className="flex justify-between text-xs text-[var(--md-color-on-surface-variant)]">
         <span>Uso do Limite</span>
         <span>{formatCurrency(totalLimit)}</span>
       </div>
       <div className="h-3 w-full bg-[var(--color-surface-2)] rounded-full overflow-hidden flex">
         <div 
-          className="h-full bg-red-500 transition-all" 
+          className="h-full bg-[var(--md-color-error)] transition-all"
           style={{ width: `${spentPct}%` }} 
           title={`Gasto Atual: ${formatCurrency(Number(card.current_spending))}`}
         />
         <div 
-          className="h-full bg-orange-400/50 transition-all" 
+          className="h-full bg-[var(--md-color-tertiary)]/50 transition-all"
           style={{ width: `${futurePct}%` }}
           title={`Parcelas Futuras: ${formatCurrency(Number(card.future_installments_total))}`}
         />
         <div 
-          className="h-full bg-blue-500/20 transition-all" 
+          className="h-full bg-[var(--md-color-secondary)]/20 transition-all"
           style={{ width: `${availablePct}%` }}
           title={`Disponível: ${formatCurrency(Number(card.available_limit))}`}
         />
       </div>
       {adjustment > 0 && (
-        <p className="text-[10px] text-blue-400">
+        <p className="text-[10px] text-[var(--md-color-secondary)]">
           + {formatCurrency(adjustment)} de limite extra aplicado
         </p>
       )}
