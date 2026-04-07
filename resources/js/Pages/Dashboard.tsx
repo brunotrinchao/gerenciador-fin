@@ -1,3 +1,4 @@
+import React from 'react';
 import { Head, Deferred } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { TrendingUp, TrendingDown, Wallet, Calendar, Receipt, Layers, ArrowDownCircle } from 'lucide-react';
