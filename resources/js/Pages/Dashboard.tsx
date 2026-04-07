@@ -47,20 +47,31 @@ interface UpcomingPayment {
     status: string;
 }
 
+type AccountType = 'checking' | 'savings' | 'investment' | 'cash' | 'other';
+
+const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
+    checking:   'Conta Corrente',
+    savings:    'Poupança',
+    investment: 'Investimento',
+    cash:       'Dinheiro',
+    other:      'Outros',
+};
+
 interface BankAccount {
     id: number;
     name: string;
-    bank_name: string;
+    bank_name: string | null;
+    account_type: AccountType;
     current_balance: number;
 }
 
-interface CreditCard {
+interface CardDebtSummary {
     id: number;
     name: string;
-}
-
-interface TransactionWithRelations extends UpcomingPayment {
-    credit_card?: CreditCard;
+    brand: string | null;
+    last_four_digits: string | null;
+    color: string;
+    pending_amount: number;
 }
 
 interface Props {
@@ -70,7 +81,7 @@ interface Props {
     expensesByCategory: CategoryExpense[];
     cashFlow: CashFlowData[];
     bankAccounts: BankAccount[];
-    detailedDebt: Record<string, TransactionWithRelations[]>;
+    detailedDebt: CardDebtSummary[];
 }
 
 export default function Dashboard({
@@ -116,21 +127,30 @@ export default function Dashboard({
                                         Detalhamento do saldo disponível em cada conta bancária ativa.
                                     </SheetDescription>
                                 </SheetHeader>
-                                <div className="space-y-3">
+                                <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-200px)] pr-1">
                                     {bankAccounts?.map((account) => (
                                         <div
                                             key={account.id}
                                             className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]"
                                         >
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-semibold text-[var(--color-foreground)]">
+                                            <div className="flex flex-col gap-0.5 min-w-0">
+                                                <span className="text-sm font-semibold text-[var(--color-foreground)] truncate">
                                                     {account.name}
                                                 </span>
-                                                <span className="text-xs text-[var(--color-muted)]">
-                                                    {account.bank_name}
-                                                </span>
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    {account.account_type && (
+                                                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-muted)]">
+                                                            {ACCOUNT_TYPE_LABELS[account.account_type] ?? account.account_type}
+                                                        </span>
+                                                    )}
+                                                    {account.bank_name && (
+                                                        <span className="text-xs text-[var(--color-muted)]">
+                                                            {account.bank_name}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <span className="text-sm font-bold text-[var(--color-foreground)]">
+                                            <span className={`text-sm font-bold ml-4 shrink-0 ${account.current_balance >= 0 ? 'text-[var(--color-accent)]' : 'text-[var(--color-danger)]'}`}>
                                                 {formatCurrency(account.current_balance)}
                                             </span>
                                         </div>
@@ -139,6 +159,14 @@ export default function Dashboard({
                                         <p className="text-center text-xs text-[var(--color-muted)] py-8">
                                             Nenhuma conta encontrada.
                                         </p>
+                                    )}
+                                    {bankAccounts?.length > 0 && (
+                                        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[var(--color-border)]">
+                                            <span className="text-xs font-semibold text-[var(--color-muted)]">Total</span>
+                                            <span className="text-sm font-bold text-[var(--color-foreground)]">
+                                                {formatCurrency(bankAccounts.reduce((s, a) => s + Number(a.current_balance), 0))}
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
                             </SheetContent>
@@ -160,38 +188,59 @@ export default function Dashboard({
                                 <SheetHeader className="mb-6">
                                     <SheetTitle>Dívida por Cartão</SheetTitle>
                                     <SheetDescription>
-                                        Transações de crédito pendentes agrupadas por cartão.
+                                        Faturas abertas por cartão de crédito.
                                     </SheetDescription>
                                 </SheetHeader>
-                                <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
-                                    {Object.entries(detailedDebt || {}).map(([cardId, transactions]) => {
-                                        const cardName = transactions[0]?.credit_card?.name || 'Cartão';
-                                        const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
-
-                                        return (
-                                            <div key={cardId} className="space-y-3">
-                                                <div className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
-                                                    <h4 className="text-sm font-bold text-[var(--color-foreground)]">{cardName}</h4>
-                                                    <span className="text-sm font-bold text-[var(--color-danger)]">{formatCurrency(total)}</span>
+                                <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-200px)] pr-1">
+                                    {(detailedDebt || []).map((card) => (
+                                        <div
+                                            key={card.id}
+                                            className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]"
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div
+                                                    className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
+                                                    style={{ backgroundColor: card.color ?? 'var(--color-border)' }}
+                                                >
+                                                    <span className="text-[10px] font-bold text-white leading-none">
+                                                        {card.name.charAt(0).toUpperCase()}
+                                                    </span>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    {transactions.map((t) => (
-                                                        <div key={t.id} className="flex justify-between items-center text-xs">
-                                                            <div className="flex flex-col">
-                                                                <span className="text-[var(--color-foreground)]">{t.description}</span>
-                                                                <span className="text-[var(--color-muted)]">{formatDate(t.date)}</span>
-                                                            </div>
-                                                            <span className="font-medium text-[var(--color-foreground)]">{formatCurrency(Number(t.amount))}</span>
-                                                        </div>
-                                                    ))}
+                                                <div className="flex flex-col gap-0.5 min-w-0">
+                                                    <span className="text-sm font-semibold text-[var(--color-foreground)] truncate">
+                                                        {card.name}
+                                                    </span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {card.last_four_digits && (
+                                                            <span className="text-xs text-[var(--color-muted)]">
+                                                                •••• {card.last_four_digits}
+                                                            </span>
+                                                        )}
+                                                        {card.brand && (
+                                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-muted)]">
+                                                                {card.brand}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                    {(!detailedDebt || Object.keys(detailedDebt).length === 0) && (
+                                            <span className="text-sm font-bold text-[var(--color-danger)] ml-4 shrink-0">
+                                                {formatCurrency(card.pending_amount)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {(!detailedDebt || detailedDebt.length === 0) && (
                                         <p className="text-center text-xs text-[var(--color-muted)] py-8">
-                                            Nenhuma dívida pendente encontrada.
+                                            Nenhuma fatura pendente encontrada.
                                         </p>
+                                    )}
+                                    {detailedDebt?.length > 0 && (
+                                        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[var(--color-border)]">
+                                            <span className="text-xs font-semibold text-[var(--color-muted)]">Total em aberto</span>
+                                            <span className="text-sm font-bold text-[var(--color-danger)]">
+                                                {formatCurrency(detailedDebt.reduce((s, c) => s + c.pending_amount, 0))}
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
                             </SheetContent>

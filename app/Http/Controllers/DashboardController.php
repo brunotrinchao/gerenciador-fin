@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\TransactionType;
 use App\Enums\TransactionStatus;
 use App\Models\BankAccount;
+use App\Models\CreditCard;
 use App\Models\CreditCardStatement;
 use App\Models\Installment;
 use App\Models\Investment;
@@ -156,13 +157,28 @@ class DashboardController extends Controller
         // Add bank accounts detail
         $bankAccounts = BankAccount::byUser($userId)->active()->get();
 
-        // Add detailed debt (pending credit card transactions)
-        $detailedDebt = Transaction::byUser($userId)
-            ->where('type', TransactionType::CreditCard->value)
-            ->where('status', TransactionStatus::Pending->value)
-            ->with(['creditCard', 'category'])
+        // Dívida por cartão: um resumo por cartão (nome, últimos 4 dígitos, bandeira, total pendente)
+        $detailedDebt = CreditCard::where('user_id', $userId)
+            ->where('is_active', true)
             ->get()
-            ->groupBy('credit_card_id');
+            ->map(function (CreditCard $card) use ($userId) {
+                $pendingAmount = Transaction::byUser($userId)
+                    ->where('type', TransactionType::CreditCard->value)
+                    ->where('status', TransactionStatus::Pending->value)
+                    ->where('credit_card_id', $card->id)
+                    ->sum('amount');
+
+                return [
+                    'id'               => $card->id,
+                    'name'             => $card->name,
+                    'brand'            => $card->brand,
+                    'last_four_digits' => $card->last_four_digits,
+                    'color'            => $card->color,
+                    'pending_amount'   => round((float) $pendingAmount, 2),
+                ];
+            })
+            ->filter(fn (array $item) => $item['pending_amount'] > 0)
+            ->values();
 
         return Inertia::render('Dashboard', [
             'stats' => Inertia::defer(fn() => [
