@@ -40,6 +40,27 @@ class CreditCard extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['current_spending', 'future_installments_total'];
+
+    public function getCurrentSpendingAttribute(): float
+    {
+        // Spending in the current billing cycle (simplified as current month transactions)
+        return (float) $this->transactions()
+            ->whereYear('date', now()->year)
+            ->whereMonth('date', now()->month)
+            ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Paid])
+            ->sum('amount');
+    }
+
+    public function getFutureInstallmentsTotalAttribute(): float
+    {
+        // Installments due after current month
+        return (float) \App\Models\Installment::whereHas('group', fn($q) => $q->where('credit_card_id', $this->id))
+            ->where('due_date', '>', now()->endOfMonth())
+            ->where('status', TransactionStatus::Pending->value)
+            ->sum('amount');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -77,11 +98,12 @@ class CreditCard extends Model
 
     public function recalculateLimit(): void
     {
-        $totalSpent = Transaction::where('credit_card_id', $this->id)
+        $totalSpent = $this->transactions()
             ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Paid])
             ->sum('amount');
+        $this->update(["available_limit" => $this->credit_limit - $totalSpent + ($this->limit_adjustment ?? 0)]);
 
-        $this->updateOrCreate(['id' => $this->id], ['available_limit' => $this->credit_limit - $totalSpent + ($this->limit_adjustment ?? 0)]);
+
     }
 
     public function calculateDueDate(\DateTime $purchaseDate): \DateTime

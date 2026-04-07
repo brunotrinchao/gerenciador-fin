@@ -90,6 +90,8 @@ export interface CreditCard {
     credit_limit: number;
     available_limit: number;
     limit_adjustment: number;
+    current_spending: number;
+    future_installments_total: number;
     closing_day: number;
     due_day: number;
     color: string;

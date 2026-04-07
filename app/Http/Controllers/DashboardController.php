@@ -104,6 +104,7 @@ class DashboardController extends Controller
             });
 
         $upcomingPayments = $upcoming->sortBy('date')->take(10)->values();
+        $longUpcomingPayments = $upcoming->sortBy('date')->take(15)->values();
 
         // ── Gastos por categoria (mês atual) ──────────────────
         $expensesByCategory = Transaction::byUser($userId)
@@ -152,6 +153,17 @@ class DashboardController extends Controller
             ]);
         }
 
+        // Add bank accounts detail
+        $bankAccounts = BankAccount::byUser($userId)->active()->get();
+
+        // Add detailed debt (pending credit card transactions)
+        $detailedDebt = Transaction::byUser($userId)
+            ->where('type', TransactionType::CreditCard->value)
+            ->where('status', TransactionStatus::Pending->value)
+            ->with(['creditCard', 'category'])
+            ->get()
+            ->groupBy('credit_card_id');
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_balance'   => round((float)$totalBalance, 2),
@@ -159,9 +171,12 @@ class DashboardController extends Controller
                 'total_invested'  => round((float)$totalInvested, 2),
                 'upcoming_count'  => $upcomingPayments->count(),
             ],
-            'upcomingPayments'   => $upcomingPayments,
-            'expensesByCategory' => $expensesByCategory,
-            'cashFlow'           => $cashFlow,
+            'upcomingPayments'     => $upcomingPayments,
+            'longUpcomingPayments' => $longUpcomingPayments,
+            'expensesByCategory'   => $expensesByCategory,
+            'cashFlow'             => $cashFlow,
+            'bankAccounts'         => $bankAccounts,
+            'detailedDebt'         => $detailedDebt,
         ]);
     }
 }
