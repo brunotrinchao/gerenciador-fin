@@ -5,6 +5,8 @@ import { Plus, Upload, ArrowLeftRight } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 import Header from '@/Components/Header';
 import BottomNav from '@/Components/BottomNav';
+import { AnimatePresence } from 'framer-motion';
+import { PageTransition } from '@/Components/PageTransition';
 import type { AppPageProps } from '@/types/global';
 
 interface AppLayoutProps {
@@ -16,7 +18,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [fabOpen, setFabOpen] = useState(false);
-    const { auth } = usePage<AppPageProps>().props;
+    const { props, url } = usePage<AppPageProps>();
+    const { auth } = props;
 
     useEffect(() => {
         const off = router.on('navigate', () => setMobileOpen(false));
@@ -40,7 +43,11 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                 />
 
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 lg:pb-6">
-                    {children}
+                    <AnimatePresence mode="wait">
+                        <PageTransition key={url}>
+                            {children}
+                        </PageTransition>
+                    </AnimatePresence>
                 </main>
 
                 <BottomNav />
