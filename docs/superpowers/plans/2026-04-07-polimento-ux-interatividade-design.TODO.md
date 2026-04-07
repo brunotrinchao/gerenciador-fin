@@ -1,7 +1,7 @@
 # TODO: Polimento Visual & UX Interativa
 
 - [x] Task 1: Dependencies & Base Components
-- [ ] Task 2: Backend Data for Stacked Termômetro & Drawers
+- [x] Task 2: Backend Data for Stacked Termômetro & Drawers
 - [ ] Task 3: Skeleton Screens implementation
 - [ ] Task 4: Credit Card "Stacked Termômetro"
 - [ ] Task 5: Contextual Drawers in Dashboard

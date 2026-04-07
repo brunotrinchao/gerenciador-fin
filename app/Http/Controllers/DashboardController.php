@@ -165,16 +165,16 @@ class DashboardController extends Controller
             ->groupBy('credit_card_id');
 
         return Inertia::render('Dashboard', [
-            'stats' => [
+            'stats' => Inertia::defer(fn() => [
                 'total_balance'   => round((float)$totalBalance, 2),
                 'total_debt'      => round((float)$totalDebt, 2),
                 'total_invested'  => round((float)$totalInvested, 2),
                 'upcoming_count'  => $upcomingPayments->count(),
-            ],
-            'upcomingPayments'     => $upcomingPayments,
-            'longUpcomingPayments' => $longUpcomingPayments,
-            'expensesByCategory'   => $expensesByCategory,
-            'cashFlow'             => $cashFlow,
+            ]),
+            'upcomingPayments'     => Inertia::defer(fn() => $upcomingPayments),
+            'longUpcomingPayments' => Inertia::defer(fn() => $longUpcomingPayments),
+            'expensesByCategory'   => Inertia::defer(fn() => $expensesByCategory),
+            'cashFlow'             => Inertia::defer(fn() => $cashFlow),
             'bankAccounts'         => $bankAccounts,
             'detailedDebt'         => $detailedDebt,
         ]);
