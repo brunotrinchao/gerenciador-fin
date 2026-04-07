@@ -221,6 +221,40 @@ body {
   animation: slideInRight 200ms ease-out;
 }
 
+/* ─── Light mode: contraste adaptativo ───────────────────
+   Textos hardcoded que funcionam em dark mas falham em light.
+─────────────────────────────────────────────────────────── */
+[data-theme="light"] .text-white {
+    color: var(--md-color-on-surface) !important;
+}
+[data-theme="light"] .text-white\/60 {
+    color: color-mix(in srgb, var(--md-color-on-surface) 60%, transparent) !important;
+    opacity: 1 !important;
+}
+[data-theme="light"] .text-gray-300,
+[data-theme="light"] .text-gray-400 {
+    color: var(--md-color-on-surface-variant) !important;
+}
+[data-theme="light"] .text-gray-500,
+[data-theme="light"] .text-gray-600 {
+    color: var(--md-color-on-surface-variant) !important;
+}
+[data-theme="light"] .text-red-400 {
+    color: var(--md-color-error) !important;
+}
+[data-theme="light"] .text-green-400 {
+    color: var(--md-color-primary) !important;
+}
+[data-theme="light"] .text-orange-400 {
+    color: var(--md-color-tertiary) !important;
+}
+[data-theme="light"] .text-purple-400 {
+    color: var(--md-color-secondary) !important;
+}
+[data-theme="light"] .text-blue-400 {
+    color: var(--md-color-secondary) !important;
+}
+
 /* Inputs e selects no light mode */
 [data-theme="light"] input,
 [data-theme="light"] select,
