@@ -5,7 +5,7 @@ import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/t
 import { formatDate } from '@/lib/utils';
 import { PageHeader } from '@/Components/PageHeader';
 import { DateInput } from '@/Components/DateInput';
-import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 
 // ─────────────────────────────────────────────
@@ -703,6 +703,14 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
         ? statements.data.filter((s) => s.credit_card_id === selectedCardId)
         : statements.data;
 
+    const navigateMonth = (direction: -1 | 1) => {
+        const [year, month] = (filters.month || new Date().toISOString().slice(0, 7))
+            .split('-').map(Number);
+        const date = new Date(year, month - 1 + direction, 1);
+        const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        router.get(route('invoices.index'), { month: newMonth }, { preserveState: true });
+    };
+
     return (
         <AppLayout title="Faturas">
             <Head title="Faturas" />
@@ -753,18 +761,25 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     ))}
                                 </select>
                             )}
-                            <DateInput
-                                type="month"
-                                label="Mês"
-                                value={filters?.month || ''}
-                                onChange={(v) => {
-                                    router.get(
-                                        route('invoices.index'),
-                                        { month: v },
-                                        { preserveState: true }
-                                    );
-                                }}
-                            />
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => navigateMonth(-1)}
+                                    className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                    aria-label="Mês anterior"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="min-w-[130px] text-center text-sm font-medium text-[var(--color-foreground)]">
+                                    {formatMonth(filters.month || new Date().toISOString().slice(0, 7))}
+                                </span>
+                                <button
+                                    onClick={() => navigateMonth(1)}
+                                    className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                    aria-label="Próximo mês"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
                         </>
                     }
                 />
