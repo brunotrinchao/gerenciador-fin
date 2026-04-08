@@ -178,6 +178,16 @@ class ImportController extends Controller
         $closingDay  = $invoiceData?->card?->closingDay;
         $dueDay      = $invoiceData?->card?->dueDay;
 
+        // Data de vencimento completa (Y-m-d) extraída diretamente do PDF, preservando o mês real.
+        // Não pode ser reconstruída depois apenas com dueDay pois o mês de referência das transações
+        // pode ser diferente do mês do vencimento (ex: fatura fev com vencimento em mar).
+        $dueDateFull = null;
+        if ($invoiceData?->invoice?->dueDateInvoice) {
+            try {
+                $dueDateFull = \Carbon\Carbon::parse($invoiceData->invoice->dueDateInvoice)->format('Y-m-d');
+            } catch (\Exception) {}
+        }
+
         // 3. Tenta identificar cartão pelo lastFour
         $matchedCard = null;
         if ($lastFour) {
@@ -205,6 +215,7 @@ class ImportController extends Controller
                 'brand'       => $brand,
                 'closingDay'  => $closingDay,
                 'dueDay'      => $dueDay,
+                'dueDate'     => $dueDateFull,  // data completa — tem prioridade em process()
                 'creditLimit' => $creditLimit,
             ],
         ]);
@@ -267,15 +278,20 @@ class ImportController extends Controller
         $invoiceDetails = session("import_invoice_details_{$userId}", []);
 
         // Obter os dias de vencimento e fechamento
-        $card = CreditCard::find($creditCardId);
-        $dueDay = $invoiceDetails['dueDay'] ?? $card?->due_day ?? clone now()->day;
-        $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? clone now()->day;
+        $card       = CreditCard::find($creditCardId);
+        $dueDay     = $invoiceDetails['dueDay']     ?? $card?->due_day     ?? null;
+        $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? null;
 
+        // dueDate: usa a data completa do PDF se disponível (preserva o mês real do vencimento).
+        // Fallback: reconstrói a partir do dueDay + referenceMonth (pode errar o mês).
         $dueDate = null;
-        $closingDate = null;
-        if ($dueDay) {
+        if (!empty($invoiceDetails['dueDate'])) {
+            $dueDate = $invoiceDetails['dueDate'];
+        } elseif ($dueDay) {
             $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($dueDay)->format('Y-m-d');
         }
+
+        $closingDate = null;
         if ($closingDay) {
             $closingDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($closingDay)->format('Y-m-d');
         }
