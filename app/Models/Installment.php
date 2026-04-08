@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TransactionStatus;
+use App\Jobs\DeleteCalendarEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,9 +12,22 @@ class Installment extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::updated(function (Installment $installment) {
+            // Remove evento do Calendar quando a parcela sai do status pendente
+            if ($installment->wasChanged('status') && $installment->status !== TransactionStatus::Pending) {
+                if (! empty($installment->google_event_id)) {
+                    DeleteCalendarEvent::dispatch($installment->google_event_id, $installment->group->user_id);
+                    $installment->withoutEvents(fn () => $installment->update(['google_event_id' => null]));
+                }
+            }
+        });
+    }
+
     protected $fillable = [
         'installment_group_id', 'transaction_id', 'number',
-        'amount', 'due_date', 'status', 'paid_at',
+        'amount', 'due_date', 'status', 'paid_at', 'google_event_id',
     ];
 
     protected $casts = [

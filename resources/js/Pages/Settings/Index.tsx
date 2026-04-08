@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
-import { AlertTriangle, CheckCircle, Loader2, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Loader2, Trash2, X } from 'lucide-react';
 
 // ─── ClearDataModal ───────────────────────────────────────────────────────────
 
@@ -167,8 +167,19 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function SettingsIndex() {
+interface Props {
+    googleCalendar: {
+        enabled: boolean;
+        email: string;
+    };
+}
+
+export default function SettingsIndex({ googleCalendar }: Props) {
     const [showClearModal, setShowClearModal] = useState(false);
+
+    const handleDisconnectCalendar = () => {
+        router.delete(route('google.calendar.disconnect'));
+    };
 
     return (
         <AppLayout title="Configurações">
@@ -177,6 +188,71 @@ export default function SettingsIndex() {
                 <div>
                     <h1 className="text-2xl font-bold text-white">Configurações Gerais</h1>
                     <p className="text-gray-400 text-sm mt-1">Gerencie as opções gerais do sistema</p>
+                </div>
+
+                {/* Google Calendar */}
+                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                    <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center gap-2">
+                        <Calendar size={16} className="text-blue-400" />
+                        <h2 className="text-white font-semibold text-sm">Google Calendar</h2>
+                    </div>
+                    <div className="px-5 py-5 flex flex-col gap-4">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex flex-col gap-1">
+                                <p className="text-white font-medium text-sm">Sincronizar lançamentos pendentes</p>
+                                <p className="text-gray-500 text-xs leading-relaxed">
+                                    Seus lançamentos pendentes aparecem automaticamente na Google Agenda.
+                                    Ao pagar ou excluir, o evento é removido.
+                                </p>
+                            </div>
+                            <div className="flex-shrink-0">
+                                {googleCalendar.enabled ? (
+                                    <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+                                        Conectado
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                                        <span className="w-2 h-2 rounded-full bg-gray-500 inline-block" />
+                                        Desconectado
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {googleCalendar.enabled && (
+                            <div className="bg-[var(--color-surface-2)] rounded-xl px-4 py-3 text-xs text-gray-400 leading-relaxed flex flex-col gap-1">
+                                <p className="text-white text-xs font-medium mb-1">O que é sincronizado:</p>
+                                <div className="grid grid-cols-2 gap-1">
+                                    <span>✓ Transações pendentes</span>
+                                    <span>✓ Parcelas</span>
+                                    <span>✓ Faturas de cartão</span>
+                                    <span>✓ Boletos importados</span>
+                                </div>
+                                <p className="text-gray-500 mt-2">
+                                    Conta conectada: <span className="text-gray-300">{googleCalendar.email}</span>
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end">
+                            {googleCalendar.enabled ? (
+                                <button
+                                    onClick={handleDisconnectCalendar}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium transition-colors"
+                                >
+                                    <X size={14} /> Desconectar
+                                </button>
+                            ) : (
+                                <a
+                                    href={route('google.calendar.connect')}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-sm font-medium transition-colors"
+                                >
+                                    <Calendar size={14} /> Conectar Google Calendar
+                                </a>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Zona de Perigo */}

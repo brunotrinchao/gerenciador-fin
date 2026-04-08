@@ -12,7 +12,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'avatar', 'admin_id', 'role_id'])]
+/**
+ * @property int         $id
+ * @property string      $name
+ * @property string      $email
+ * @property string|null $avatar
+ * @property int|null    $admin_id
+ * @property int|null    $role_id
+ * @property string|null $google_calendar_token
+ * @property bool        $google_calendar_enabled
+ */
+#[Fillable(['name', 'email', 'password', 'avatar', 'admin_id', 'role_id', 'google_calendar_token', 'google_calendar_enabled'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,9 +37,16 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'       => 'datetime',
+            'password'                => 'hashed',
+            'google_calendar_token'   => 'encrypted',
+            'google_calendar_enabled' => 'boolean',
         ];
+    }
+
+    public function hasCalendarConnected(): bool
+    {
+        return $this->google_calendar_enabled && ! empty($this->google_calendar_token);
     }
 
     public function bankAccounts(): HasMany

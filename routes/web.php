@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CreditCardController;
@@ -69,7 +70,14 @@ Route::middleware('auth')->group(function () {
 
     // Configurações e RBAC (Apenas Admin)
     Route::middleware([EnsureIsAdmin::class])->prefix('settings')->group(function () {
-        Route::get('/', fn () => \Inertia\Inertia::render('Settings/Index'))->name('settings.index');
+        Route::get('/', function () {
+            return \Inertia\Inertia::render('Settings/Index', [
+                'googleCalendar' => [
+                    'enabled' => (bool) auth()->user()->google_calendar_enabled,
+                    'email'   => auth()->user()->email,
+                ],
+            ]);
+        })->name('settings.index');
 
         Route::get('/roles', [RoleController::class, 'index'])->name('settings.roles.index');
         Route::post('/roles', [RoleController::class, 'store'])->name('settings.roles.store');
@@ -109,4 +117,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/invoices/{statement}', [InvoiceController::class, 'update'])->name('invoices.update');
     Route::patch('/invoices/{statement}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
     Route::delete('/invoices/{statement}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+
+    // Google Calendar OAuth
+    Route::get('/auth/google/calendar', [GoogleCalendarController::class, 'connect'])->name('google.calendar.connect');
+    Route::get('/auth/google/calendar/callback', [GoogleCalendarController::class, 'callback'])->name('google.calendar.callback');
+    Route::delete('/settings/google-calendar', [GoogleCalendarController::class, 'disconnect'])->name('google.calendar.disconnect');
 });

@@ -24,7 +24,7 @@ class CreditCardStatement extends Model
         'user_id', 'credit_card_id', 'reference_month', 'closing_date',
         'due_date', 'total_amount', 'paid_amount', 'status',
         'file_path', 'file_name', 'import_status', 'imported_at',
-        'raw_items', 'parsed_items',
+        'raw_items', 'parsed_items', 'google_event_id',
     ];
 
     protected $casts = [

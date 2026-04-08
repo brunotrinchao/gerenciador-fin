@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\CreateCalendarEvent;
 use App\Models\BankAccount;
 use App\Models\CreditCard;
 use App\Models\CreditCardStatement;
@@ -58,12 +59,17 @@ class InvoiceController extends Controller
             return back()->with('error', 'Já existe uma fatura para este cartão neste período.');
         }
 
-        CreditCardStatement::create([
+        $statement = CreditCardStatement::create([
             ...$data,
             'user_id'     => auth()->id(),
             'paid_amount' => 0,
             'status'      => 'open',
         ]);
+
+        // Cria evento no Calendar se a fatura tem vencimento
+        if (auth()->user()->google_calendar_enabled && ! empty($statement->due_date)) {
+            CreateCalendarEvent::dispatch(CreditCardStatement::class, $statement->id, auth()->id());
+        }
 
         return redirect()->route('invoices.index')
             ->with('success', 'Fatura criada com sucesso!');

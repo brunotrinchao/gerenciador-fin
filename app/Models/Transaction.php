@@ -32,6 +32,7 @@ class Transaction extends Model
         'recurrence_rule', 'recurrence_end_date', 'recurrence_occurrences',
         'is_imported', 'import_hash',
         'payment_code', 'beneficiary_name', 'beneficiary_document',
+        'google_event_id',
     ];
 
     protected $casts = [

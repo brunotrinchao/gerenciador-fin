@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Enums\InstallmentStatus;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
+use App\Jobs\CreateCalendarEvent;
 use App\Models\CreditCard;
 use App\Models\Installment;
 use App\Models\InstallmentGroup;
 use App\Models\Transaction;
+use App\Models\User;
 use Carbon\Carbon;
 
 class InstallmentService
@@ -22,6 +24,8 @@ class InstallmentService
         $installmentAmount = round($totalAmount / $n, 2);
         // Diferença de arredondamento vai na última parcela
         $lastAmount        = round($totalAmount - ($installmentAmount * ($n - 1)), 2);
+
+        $user  = User::find($data['user_id']);
 
         $group = InstallmentGroup::create([
             'user_id'            => $data['user_id'],
@@ -70,7 +74,7 @@ class InstallmentService
                 'date'                 => $dueDate->format('Y-m-d'),
             ]);
 
-            Installment::create([
+            $installment = Installment::create([
                 'installment_group_id' => $group->id,
                 'transaction_id'       => $transaction->id,
                 'number'               => $i,
@@ -78,6 +82,11 @@ class InstallmentService
                 'due_date'             => $dueDate->format('Y-m-d'),
                 'status'               => TransactionStatus::Pending,
             ]);
+
+            // Cria evento no Google Calendar para cada parcela pendente
+            if ($user?->google_calendar_enabled) {
+                CreateCalendarEvent::dispatch(Installment::class, $installment->id, $data['user_id']);
+            }
         }
 
         return $group;

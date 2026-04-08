@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePage, Link } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
-import { Plus, Upload, ArrowLeftRight } from 'lucide-react';
+import { AlertCircle, CheckCircle, Plus, Upload, ArrowLeftRight } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 import Header from '@/Components/Header';
 import BottomNav from '@/Components/BottomNav';
@@ -18,13 +18,28 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [fabOpen, setFabOpen] = useState(false);
+    const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const { props, url } = usePage<AppPageProps>();
-    const { auth } = props;
+    const { auth, flash } = props;
 
     useEffect(() => {
         const off = router.on('navigate', () => setMobileOpen(false));
         return () => off();
     }, []);
+
+    // Exibe flash messages vindas do backend
+    useEffect(() => {
+        if (flash?.success) {
+            setNotification({ type: 'success', message: flash.success });
+            const t = setTimeout(() => setNotification(null), 5000);
+            return () => clearTimeout(t);
+        }
+        if (flash?.error) {
+            setNotification({ type: 'error', message: flash.error });
+            const t = setTimeout(() => setNotification(null), 6000);
+            return () => clearTimeout(t);
+        }
+    }, [flash?.success, flash?.error]);
 
     return (
         <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
@@ -113,6 +128,24 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                     />
                 )}
             </div>
+
+            {/* Flash notification toast */}
+            {notification && (
+                <div
+                    className={`fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border text-sm font-medium max-w-sm animate-fade-in cursor-pointer ${
+                        notification.type === 'success'
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                            : 'bg-red-500/10 border-red-500/30 text-red-300'
+                    }`}
+                    onClick={() => setNotification(null)}
+                >
+                    {notification.type === 'success'
+                        ? <CheckCircle size={16} className="flex-shrink-0" />
+                        : <AlertCircle size={16} className="flex-shrink-0" />
+                    }
+                    <span>{notification.message}</span>
+                </div>
+            )}
         </div>
     );
 }

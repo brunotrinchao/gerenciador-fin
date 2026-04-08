@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\InstallmentStatus;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
+use App\Jobs\CreateCalendarEvent;
 use App\Jobs\ProcessStatementImport;
 use App\Models\BankAccount;
 use App\Models\Category;
@@ -331,6 +332,11 @@ class ImportController extends Controller
             "import_matched_card_{$userId}",
             "import_due_date_{$userId}",
         ]);
+
+        // Cria evento no Calendar para a fatura importada (se tiver vencimento)
+        if (Auth::user()->google_calendar_enabled && $dueDate) {
+            CreateCalendarEvent::dispatch(CreditCardStatement::class, $statement->id, $userId);
+        }
 
         // Processa o Job de forma síncrona (sem necessidade de queue worker)
         ProcessStatementImport::dispatchSync($statement->id);

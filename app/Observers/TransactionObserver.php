@@ -2,6 +2,9 @@
 
 namespace App\Observers;
 
+use App\Enums\TransactionStatus;
+use App\Jobs\CreateCalendarEvent;
+use App\Jobs\DeleteCalendarEvent;
 use App\Models\Transaction;
 
 class TransactionObserver
@@ -11,9 +14,18 @@ class TransactionObserver
         if ($transaction->bank_account_id) {
             $transaction->bankAccount->recalculateBalance();
         }
-        
+
         if ($transaction->credit_card_id) {
             $this->recalculateCardLimit($transaction->credit_card_id);
+        }
+
+        // Cria evento no Calendar para transações pendentes (exceto parcelas, que têm evento próprio)
+        if (
+            $transaction->status === TransactionStatus::Pending
+            && is_null($transaction->installment_group_id)
+            && $transaction->user->google_calendar_enabled
+        ) {
+            CreateCalendarEvent::dispatch(Transaction::class, $transaction->id, $transaction->user_id);
         }
     }
 
@@ -37,6 +49,14 @@ class TransactionObserver
                 $this->recalculateCardLimit($transaction->getOriginal('credit_card_id'));
             }
         }
+
+        // Remove evento do Calendar quando a transação sai do status pendente
+        if ($transaction->wasChanged('status') && $transaction->status !== TransactionStatus::Pending) {
+            if (! empty($transaction->google_event_id)) {
+                DeleteCalendarEvent::dispatch($transaction->google_event_id, $transaction->user_id);
+                $transaction->withoutEvents(fn () => $transaction->update(['google_event_id' => null]));
+            }
+        }
     }
 
     public function deleted(Transaction $transaction): void
@@ -47,6 +67,11 @@ class TransactionObserver
 
         if ($transaction->credit_card_id) {
             $this->recalculateCardLimit($transaction->credit_card_id);
+        }
+
+        // Remove evento do Calendar ao deletar
+        if (! empty($transaction->google_event_id)) {
+            DeleteCalendarEvent::dispatch($transaction->google_event_id, $transaction->user_id);
         }
     }
 
