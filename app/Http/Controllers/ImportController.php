@@ -449,6 +449,8 @@ class ImportController extends Controller
     /**
      * Cria InstallmentGroup + N Transactions + N Installments a partir de uma parcela importada.
      * Se o grupo já existir (mesmo cartão + descrição + total), apenas cria as parcelas faltantes.
+     * Faturas futuras são criadas via resolveOrCreateFutureStatement com due_date/closing_date
+     * calculados a partir do cartão, e seu total_amount é incrementado ao final.
      * Retorna true se criou ou atualizou, false se já existia completamente (dedup).
      */
     private function createInstallmentGroup(array $tx, int $userId, int $creditCardId, ?int $statementId = null): bool
@@ -472,6 +474,9 @@ class ImportController extends Controller
 
         $totalAmount = round($amount * $n, 2);
 
+        // Carrega o cartão para obter due_day e closing_day (usados nas faturas futuras)
+        $card = CreditCard::find($creditCardId);
+
         // Check if group already exists (same card + base description + total amount)
         $group = InstallmentGroup::where('user_id', $userId)
             ->where('credit_card_id', $creditCardId)
@@ -487,7 +492,9 @@ class ImportController extends Controller
                 ->flip();
 
             // Only create installments that don't exist yet, starting from current
-            $createdAny = false;
+            $createdAny  = false;
+            $stmtAmounts = []; // [stmtId => totalAmount] para atualizar faturas futuras
+
             for ($i = $current; $i <= $n; $i++) {
                 if ($existingNumbers->has($i)) {
                     continue;
@@ -497,25 +504,14 @@ class ImportController extends Controller
                 $isCurrent = $i === $current;
                 $status    = $isCurrent ? TransactionStatus::Paid : TransactionStatus::Pending;
 
-                // Resolve statement para o mês desta parcela.
-                // Parcela futura: garante que a fatura do mês existe (cria se necessário).
                 $monthKey = $dueDate->format('Y-m');
                 if ($isCurrent) {
                     $stmtForMonth = $statementId;
                 } else {
-                    // Todas as parcelas neste branch são futuras (loop começa em $current).
-                    $stmtForMonth = CreditCardStatement::firstOrCreate(
-                        [
-                            'credit_card_id'  => $creditCardId,
-                            'reference_month' => $monthKey,
-                        ],
-                        [
-                            'user_id'      => $userId,
-                            'status'       => 'open',
-                            'total_amount' => 0,
-                            'paid_amount'  => 0,
-                        ]
-                    )->id;
+                    // Parcelas futuras: garante que a fatura do mês existe com datas corretas
+                    $stmtForMonth = $this->resolveOrCreateFutureStatement(
+                        $creditCardId, $userId, $monthKey, $card
+                    );
                 }
 
                 $transaction = Transaction::create([
@@ -542,7 +538,17 @@ class ImportController extends Controller
                     'status'               => $status,
                 ]);
 
+                // Acumula o valor para incrementar total_amount da fatura futura
+                if (! $isCurrent && $stmtForMonth) {
+                    $stmtAmounts[$stmtForMonth] = ($stmtAmounts[$stmtForMonth] ?? 0) + $amount;
+                }
+
                 $createdAny = true;
+            }
+
+            // Atualiza total_amount das faturas futuras criadas/encontradas
+            foreach ($stmtAmounts as $stmtId => $amt) {
+                CreditCardStatement::where('id', $stmtId)->increment('total_amount', round($amt, 2));
             }
 
             return $createdAny;
@@ -562,6 +568,8 @@ class ImportController extends Controller
             'status'             => InstallmentStatus::Active,
         ]);
 
+        $stmtAmounts = []; // [stmtId => totalAmount] para atualizar faturas futuras
+
         for ($i = 1; $i <= $n; $i++) {
             $dueDate   = (clone $firstDue)->modify('+' . ($i - 1) . ' months');
             $isPaid    = $i <= $current;
@@ -570,24 +578,15 @@ class ImportController extends Controller
 
             // Resolve statement para o mês desta parcela:
             // - Parcela atual   → fatura importada
-            // - Parcela futura  → firstOrCreate (cria fatura do mês se não existir)
+            // - Parcela futura  → cria fatura do mês com datas corretas (se não existir)
             // - Parcela passada → busca sem criar (fatura já deveria existir ou fica null)
             $monthKey = $dueDate->format('Y-m');
             if ($isCurrent) {
                 $stmtForMonth = $statementId;
             } elseif ($i > $current) {
-                $stmtForMonth = CreditCardStatement::firstOrCreate(
-                    [
-                        'credit_card_id'  => $creditCardId,
-                        'reference_month' => $monthKey,
-                    ],
-                    [
-                        'user_id'      => $userId,
-                        'status'       => 'open',
-                        'total_amount' => 0,
-                        'paid_amount'  => 0,
-                    ]
-                )->id;
+                $stmtForMonth = $this->resolveOrCreateFutureStatement(
+                    $creditCardId, $userId, $monthKey, $card
+                );
             } else {
                 $stmtForMonth = CreditCardStatement::where('credit_card_id', $creditCardId)
                     ->where('reference_month', $monthKey)
@@ -617,9 +616,50 @@ class ImportController extends Controller
                 'due_date'             => $dueDate->format('Y-m-d'),
                 'status'               => $status,
             ]);
+
+            // Acumula o valor para incrementar total_amount da fatura futura
+            if ($i > $current && $stmtForMonth) {
+                $stmtAmounts[$stmtForMonth] = ($stmtAmounts[$stmtForMonth] ?? 0) + $amount;
+            }
+        }
+
+        // Atualiza total_amount das faturas futuras criadas/encontradas
+        foreach ($stmtAmounts as $stmtId => $amt) {
+            CreditCardStatement::where('id', $stmtId)->increment('total_amount', round($amt, 2));
         }
 
         return true;
+    }
+
+    /**
+     * Garante que existe uma CreditCardStatement para o mês informado.
+     * Se não existir, cria com due_date e closing_date calculados a partir
+     * do due_day e closing_day do cartão.
+     */
+    private function resolveOrCreateFutureStatement(
+        int $creditCardId,
+        int $userId,
+        string $monthKey,
+        ?CreditCard $card
+    ): int {
+        $dueDay     = $card?->due_day;
+        $closingDay = $card?->closing_day;
+
+        return CreditCardStatement::firstOrCreate(
+            ['credit_card_id' => $creditCardId, 'reference_month' => $monthKey],
+            [
+                'user_id'      => $userId,
+                'status'       => 'open',
+                'total_amount' => 0,
+                'paid_amount'  => 0,
+                'due_date'     => $dueDay
+                    ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->setDay($dueDay)->format('Y-m-d')
+                    : null,
+                'closing_date' => $closingDay
+                    ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->setDay($closingDay)->format('Y-m-d')
+                    : null,
+            ]
+        )->id;
     }
 
     /**
