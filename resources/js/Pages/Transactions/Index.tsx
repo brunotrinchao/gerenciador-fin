@@ -57,6 +57,7 @@ interface Props {
     summary: {
         income: number;
         expense: number;
+        credit_card: number;
     };
     currentMonth: string;
 }
@@ -1454,7 +1455,7 @@ export default function TransactionsIndex({
     const [scopeModal, setScopeModal] = useState<{ transaction: Transaction; action: 'edit' | 'delete' } | null>(null);
     const [pendingEditScope, setPendingEditScope] = useState<string>('');
 
-    const balance = summary.income - summary.expense;
+    const balance = summary.income - summary.expense - summary.credit_card;
 
     const applyFilter = (newFilters: Record<string, string>) => {
         router.get(
@@ -1628,6 +1629,11 @@ export default function TransactionsIndex({
                                 title="Despesas"
                                 value={formatCurrency(summary.expense)}
                                 colorClass="text-red-400"
+                            />
+                            <PageHeaderState
+                                title="Faturas"
+                                value={formatCurrency(summary.credit_card)}
+                                colorClass="text-purple-400"
                             />
                             <PageHeaderState
                                 title="Saldo"
