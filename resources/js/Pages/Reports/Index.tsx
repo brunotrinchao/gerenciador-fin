@@ -122,7 +122,7 @@ export default function ReportsIndex({
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                                     <XAxis dataKey="month" tick={{ fill: '#9ca3af', fontSize: 12 }} />
                                     <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
-                                    <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12 }} />
+                                    <Tooltip formatter={(v) => fmt(v as number)} contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12 }} />
                                     <Legend />
                                     <Bar dataKey="income" name="Entradas" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                     <Bar dataKey="expense" name="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} />
@@ -178,14 +178,14 @@ export default function ReportsIndex({
                                             cx="50%"
                                             cy="50%"
                                             outerRadius={100}
-                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                            label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                                             labelLine={false}
                                         >
                                             {expensesByCategory.map((entry, i) => (
                                                 <Cell key={i} fill={entry.color} />
                                             ))}
                                         </Pie>
-                                        <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12 }} />
+                                        <Tooltip formatter={(v) => fmt(v as number)} contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12 }} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -248,12 +248,12 @@ export default function ReportsIndex({
                                             cx="50%"
                                             cy="50%"
                                             outerRadius={90}
-                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                            label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                                         >
                                             <Cell fill="#3b82f6" />
                                             <Cell fill="#f97316" />
                                         </Pie>
-                                        <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12 }} />
+                                        <Tooltip formatter={(v) => fmt(v as number)} contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12 }} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>

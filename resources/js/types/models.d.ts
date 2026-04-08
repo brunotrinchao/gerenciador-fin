@@ -131,6 +131,7 @@ export interface Transaction {
     bank_account?: BankAccount;
     credit_card?: CreditCard;
     installment_group?: InstallmentGroup;
+    parent_transaction?: Transaction;
 }
 
 export interface InstallmentGroup {

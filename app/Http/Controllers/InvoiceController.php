@@ -97,12 +97,15 @@ class InvoiceController extends Controller
             ->where('credit_card_id', $statement->credit_card_id)
             ->whereYear('date', $year)
             ->whereMonth('date', $month)
-            ->where('status', TransactionStatus::Pending)
+            ->where('status', TransactionStatus::Pending->value)
             ->get()
             ->each(fn ($tx) => $tx->update(['status' => TransactionStatus::Paid->value]));
 
         // Cria débito na conta bancária se informada
         if ($bankAccountId) {
+            // Valida que a conta pertence ao usuário autenticado
+            BankAccount::byUser(auth()->id())->findOrFail($bankAccountId);
+
             Transaction::create([
                 'user_id'         => auth()->id(),
                 'bank_account_id' => (int) $bankAccountId,

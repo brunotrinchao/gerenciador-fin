@@ -61,7 +61,7 @@ export function BankSelector({
     onChange,
     placeholder = 'Selecione o banco...',
     className = '',
-    required,
+    required: _required,
 }: BankSelectorProps) {
     const [open, setOpen]       = useState(false);
     const [search, setSearch]   = useState('');

@@ -118,8 +118,8 @@ class TransactionController extends Controller
 
         // Transferência: cria 2 transações (saída como expense, entrada como income)
         if ($type === TransactionType::Transfer) {
-            $fromAccount = BankAccount::findOrFail($data['bank_account_id']);
-            $toAccount   = BankAccount::findOrFail($data['transfer_to_account_id']);
+            $fromAccount = BankAccount::where('user_id', $userId)->findOrFail($data['bank_account_id']);
+            $toAccount   = BankAccount::where('user_id', $userId)->findOrFail($data['transfer_to_account_id']);
 
             // Saída da conta origem
             Transaction::create([
@@ -228,6 +228,8 @@ class TransactionController extends Controller
         // Se a transação não tem conta bancária e foi fornecida uma, associar agora
         $bankAccountId = $request->input('bank_account_id');
         if ($bankAccountId && !$transaction->bank_account_id) {
+            // Valida que a conta pertence ao usuário antes de associar
+            BankAccount::where('user_id', $transaction->user_id)->findOrFail($bankAccountId);
             $updateData['bank_account_id'] = (int) $bankAccountId;
         }
 

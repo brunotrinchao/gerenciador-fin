@@ -237,7 +237,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                         <label className="text-sm text-[var(--md-color-on-surface-variant)]">Banco</label>
                         <BankSelector
                             value={data.bank_name}
-                            onChange={(value, bank) => {
+                            onChange={(value, _bank) => {
                                 setData('bank_name', value);
                             }}
                         />
@@ -439,7 +439,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
     const [typeFilter, setTypeFilter] = useState<AccountType | 'all'>('all');
 
     const activeAccounts = accounts.filter((a) => a.is_active);
-    const totalBalance = activeAccounts.reduce((sum, a) => sum + parseFloat(a.current_balance), 0);
+    const totalBalance = activeAccounts.reduce((sum, a) => sum + (Number(a.current_balance) || 0), 0);
     const totalOverdraftAvailable = activeAccounts
         .filter(a => a.current_balance < 0 && a.overdraft_limit > 0)
         .reduce((sum, a) => sum + Math.max(0, a.overdraft_limit + a.current_balance), 0);

@@ -105,8 +105,6 @@ export default function ImportWaiting({ statementId }: Props) {
                             {STAGES.map((stage, i) => {
                                 const isDone    = i < stageIndex;
                                 const isActive  = i === stageIndex;
-                                const isPending = i > stageIndex;
-
                                 return (
                                     <div key={i} className="flex items-center gap-3">
                                         {isDone ? (

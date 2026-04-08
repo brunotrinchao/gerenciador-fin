@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { CreditCard } from '@/types/models';
-import { formatCurrency } from '@/lib/utils';
 import { LimitBar } from '@/Components/CreditCards/LimitBar';
 import { Plus, CreditCard as CreditCardIcon, Pencil, Trash2, X } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
@@ -33,14 +32,6 @@ interface FormData {
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-const brandLabels: Record<string, string> = {
-    visa: 'Visa',
-    mastercard: 'Mastercard',
-    elo: 'Elo',
-    amex: 'American Express',
-    hipercard: 'Hipercard',
-    outro: 'Outro',
-};
 
 const PRESET_COLORS = [
     '#6366f1', '#8b5cf6', '#ec4899', '#ef4444',
@@ -103,11 +94,6 @@ interface CreditCardCardProps {
 }
 
 function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
-    const usedAmount = card.credit_limit - card.available_limit;
-    const usagePercent = card.credit_limit > 0
-        ? Math.min((usedAmount / card.credit_limit) * 100, 100)
-        : 0;
-
     return (
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col">
             {/* Cartão visual — proporção 1.586:1 */}

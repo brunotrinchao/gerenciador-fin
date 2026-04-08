@@ -270,6 +270,8 @@ class ImportController extends Controller
         } else {
             $request->validate(['credit_card_id' => 'required|exists:credit_cards,id']);
             $creditCardId = (int) $request->input('credit_card_id');
+            // Valida que o cartão pertence ao usuário autenticado
+            CreditCard::byUser($userId)->findOrFail($creditCardId);
         }
 
         // Infere o mês de referência a partir das datas dos itens
@@ -281,8 +283,8 @@ class ImportController extends Controller
         $fileName    = session("import_filename_{$userId}", 'fatura');
         $invoiceDetails = session("import_invoice_details_{$userId}", []);
 
-        // Obter os dias de vencimento e fechamento
-        $card       = CreditCard::find($creditCardId);
+        // Obter os dias de vencimento e fechamento (byUser garante ownership)
+        $card       = CreditCard::byUser($userId)->find($creditCardId);
         $dueDay     = $invoiceDetails['dueDay']     ?? $card?->due_day     ?? null;
         $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? null;
 

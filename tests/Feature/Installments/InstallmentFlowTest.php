@@ -49,7 +49,6 @@ class InstallmentFlowTest extends TestCase
             'total_installments' => 12,
             'start_date'         => '2026-01-10',
         ]);
-dd($group);
         $this->assertInstanceOf(InstallmentGroup::class, $group);
         $this->assertEquals(12, $group->total_installments);
         $this->assertEquals('1200.00', $group->total_amount);
