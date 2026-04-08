@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\DeleteCalendarEvent;
 use App\Models\BankAccount;
 use App\Models\CreditCard;
 use App\Models\CreditCardStatement;
+use App\Models\Installment;
 use App\Models\InstallmentGroup;
 use App\Models\Investment;
 use App\Models\Transaction;
@@ -18,7 +20,27 @@ class ClearDataController extends Controller
     public function destroy(Request $request): JsonResponse
     {
         $userId = Auth::id();
+        $user   = Auth::user();
         $steps  = [];
+
+        // Remove eventos do Google Calendar antes de apagar os dados
+        // (forceDelete em massa não dispara observers, então é preciso fazer aqui)
+        if ($user->google_calendar_enabled) {
+            Transaction::where('user_id', $userId)
+                ->whereNotNull('google_event_id')
+                ->each(fn (Transaction $t) => DeleteCalendarEvent::dispatch($t->google_event_id, $userId));
+
+            $groupIds = InstallmentGroup::where('user_id', $userId)->pluck('id');
+            Installment::whereIn('installment_group_id', $groupIds)
+                ->whereNotNull('google_event_id')
+                ->each(fn (Installment $i) => DeleteCalendarEvent::dispatch($i->google_event_id, $userId));
+
+            CreditCardStatement::where('user_id', $userId)
+                ->whereNotNull('google_event_id')
+                ->each(fn (CreditCardStatement $s) => DeleteCalendarEvent::dispatch($s->google_event_id, $userId));
+
+            $steps[] = 'Eventos do Google Calendar marcados para remoção';
+        }
 
         // Etapa 1: Transações e parcelamentos
         Transaction::where('user_id', $userId)->forceDelete();

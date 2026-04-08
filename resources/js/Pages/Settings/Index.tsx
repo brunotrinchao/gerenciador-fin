@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
-import { AlertTriangle, Calendar, CheckCircle, Loader2, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Calendar, CalendarX, CheckCircle, Loader2, Trash2, X } from 'lucide-react';
 
 // ─── ClearDataModal ───────────────────────────────────────────────────────────
 
@@ -165,6 +165,105 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
     );
 }
 
+// ─── DisconnectCalendarModal ──────────────────────────────────────────────────
+
+function DisconnectCalendarModal({ onClose }: { onClose: () => void }) {
+    const [loading, setLoading] = useState(false);
+
+    const handleDisconnect = (removeEvents: boolean) => {
+        setLoading(true);
+        router.delete(route('google.calendar.disconnect'), {
+            data: { remove_events: removeEvents },
+            onFinish: () => {
+                setLoading(false);
+                onClose();
+            },
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={loading ? undefined : onClose} />
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
+                            <CalendarX size={16} className="text-red-400" />
+                        </div>
+                        <h2 className="text-white font-semibold text-base">Desconectar Google Calendar</h2>
+                    </div>
+                    {!loading && (
+                        <button
+                            onClick={onClose}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        >
+                            <X size={18} />
+                        </button>
+                    )}
+                </div>
+
+                <div className="px-6 py-5 flex flex-col gap-4">
+                    <p className="text-gray-400 text-sm">Como deseja desconectar?</p>
+
+                    {/* Opção 1: Apenas desconectar */}
+                    <button
+                        type="button"
+                        onClick={() => handleDisconnect(false)}
+                        disabled={loading}
+                        className="w-full text-left flex items-start gap-4 px-4 py-4 rounded-xl border border-[var(--color-border)] hover:border-gray-500 hover:bg-[var(--color-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X size={14} className="text-yellow-400" />
+                        </div>
+                        <div>
+                            <p className="text-white text-sm font-medium">Apenas Desconectar</p>
+                            <p className="text-gray-500 text-xs mt-0.5 leading-relaxed">
+                                Remove a conexão mas mantém os eventos já criados na sua Google Agenda.
+                            </p>
+                        </div>
+                    </button>
+
+                    {/* Opção 2: Desconectar e remover eventos */}
+                    <button
+                        type="button"
+                        onClick={() => handleDisconnect(true)}
+                        disabled={loading}
+                        className="w-full text-left flex items-start gap-4 px-4 py-4 rounded-xl border border-red-500/20 hover:border-red-500/40 hover:bg-red-500/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <CalendarX size={14} className="text-red-400" />
+                        </div>
+                        <div>
+                            <p className="text-red-400 text-sm font-medium">Desconectar e Remover Eventos</p>
+                            <p className="text-gray-500 text-xs mt-0.5 leading-relaxed">
+                                Remove a conexão e apaga todos os eventos do Gerenciador Financeiro da sua Google Agenda.
+                            </p>
+                        </div>
+                    </button>
+
+                    {loading && (
+                        <div className="flex items-center justify-center gap-2 py-2 text-gray-400 text-sm">
+                            <Loader2 size={16} className="animate-spin" />
+                            Processando...
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={loading}
+                        className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-40"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -176,10 +275,7 @@ interface Props {
 
 export default function SettingsIndex({ googleCalendar }: Props) {
     const [showClearModal, setShowClearModal] = useState(false);
-
-    const handleDisconnectCalendar = () => {
-        router.delete(route('google.calendar.disconnect'));
-    };
+    const [showDisconnectModal, setShowDisconnectModal] = useState(false);
 
     return (
         <AppLayout title="Configurações">
@@ -238,7 +334,7 @@ export default function SettingsIndex({ googleCalendar }: Props) {
                         <div className="flex justify-end">
                             {googleCalendar.enabled ? (
                                 <button
-                                    onClick={handleDisconnectCalendar}
+                                    onClick={() => setShowDisconnectModal(true)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium transition-colors"
                                 >
                                     <X size={14} /> Desconectar
@@ -280,6 +376,7 @@ export default function SettingsIndex({ googleCalendar }: Props) {
             </div>
 
             {showClearModal && <ClearDataModal onClose={() => setShowClearModal(false)} />}
+            {showDisconnectModal && <DisconnectCalendarModal onClose={() => setShowDisconnectModal(false)} />}
         </AppLayout>
     );
 }
