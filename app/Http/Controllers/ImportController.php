@@ -287,13 +287,13 @@ class ImportController extends Controller
         $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? null;
 
         // dueDate: usa a data completa do PDF (chave separada que sobrevive ao index()).
-        // Fallback: reconstrói a partir do dueDay + referenceMonth (pode errar o mês).
+        // Fallback: referenceMonth + 1 mês + dueDay (padrão BR: fatura de fev vence em mar).
         $dueDateFromPdf = session("import_due_date_{$userId}");
         $dueDate = null;
         if ($dueDateFromPdf) {
             $dueDate = $dueDateFromPdf;
         } elseif ($dueDay) {
-            $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($dueDay)->format('Y-m-d');
+            $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->addMonth()->setDay($dueDay)->format('Y-m-d');
         }
 
         $closingDate = null;
@@ -667,6 +667,9 @@ class ImportController extends Controller
         $dueDay     = $card?->due_day;
         $closingDay = $card?->closing_day;
 
+        // Padrão BR: fatura de referência YYYY-MM vence no mês seguinte.
+        // Ex: fatura Março (2026-03) vence em Abril → 2026-04-25.
+        // closing_date fica dentro do próprio monthKey (fecha em março, vence em abril).
         return CreditCardStatement::firstOrCreate(
             ['credit_card_id' => $creditCardId, 'reference_month' => $monthKey],
             [
@@ -675,7 +678,7 @@ class ImportController extends Controller
                 'total_amount' => 0,
                 'paid_amount'  => 0,
                 'due_date'     => $dueDay
-                    ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->setDay($dueDay)->format('Y-m-d')
+                    ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->addMonth()->setDay($dueDay)->format('Y-m-d')
                     : null,
                 'closing_date' => $closingDay
                     ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->setDay($closingDay)->format('Y-m-d')
