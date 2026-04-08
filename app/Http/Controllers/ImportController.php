@@ -179,8 +179,9 @@ class ImportController extends Controller
         $dueDay      = $invoiceData?->card?->dueDay;
 
         // Data de vencimento completa (Y-m-d) extraída diretamente do PDF, preservando o mês real.
-        // Não pode ser reconstruída depois apenas com dueDay pois o mês de referência das transações
-        // pode ser diferente do mês do vencimento (ex: fatura fev com vencimento em mar).
+        // Armazenada em chave SEPARADA da session para sobreviver ao forget() de index().
+        // Não pode ser reconstruída depois apenas com dueDay pois o mês de referência das
+        // transações pode diferir do mês do vencimento (ex: fatura fev com vencimento em mar).
         $dueDateFull = null;
         if ($invoiceData?->invoice?->dueDateInvoice) {
             try {
@@ -200,11 +201,15 @@ class ImportController extends Controller
         $storedPath = $file->store("imports/{$userId}", 'local');
 
         // 5. Persiste na session — processamento pesado (dedup + IA) ocorre no Job
+        //
+        // ATENÇÃO: import_invoice_details é deletado por index() ao renderizar a confirmação.
+        // Por isso, dueDate fica em chave própria (import_due_date) que sobrevive até process().
         session([
             "import_preview_{$userId}"         => $items->toArray(),
             "import_filename_{$userId}"        => $file->getClientOriginalName(),
             "import_file_path_{$userId}"       => $storedPath,
             "import_matched_card_{$userId}"    => $matchedCard?->id,
+            "import_due_date_{$userId}"        => $dueDateFull,  // ← chave separada, não apagada por index()
             "import_invoice_details_{$userId}" => [
                 'bank'        => $bank,
                 'lastFour'    => $lastFour,
@@ -215,7 +220,6 @@ class ImportController extends Controller
                 'brand'       => $brand,
                 'closingDay'  => $closingDay,
                 'dueDay'      => $dueDay,
-                'dueDate'     => $dueDateFull,  // data completa — tem prioridade em process()
                 'creditLimit' => $creditLimit,
             ],
         ]);
@@ -282,11 +286,12 @@ class ImportController extends Controller
         $dueDay     = $invoiceDetails['dueDay']     ?? $card?->due_day     ?? null;
         $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? null;
 
-        // dueDate: usa a data completa do PDF se disponível (preserva o mês real do vencimento).
+        // dueDate: usa a data completa do PDF (chave separada que sobrevive ao index()).
         // Fallback: reconstrói a partir do dueDay + referenceMonth (pode errar o mês).
+        $dueDateFromPdf = session("import_due_date_{$userId}");
         $dueDate = null;
-        if (!empty($invoiceDetails['dueDate'])) {
-            $dueDate = $invoiceDetails['dueDate'];
+        if ($dueDateFromPdf) {
+            $dueDate = $dueDateFromPdf;
         } elseif ($dueDay) {
             $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($dueDay)->format('Y-m-d');
         }
@@ -322,6 +327,7 @@ class ImportController extends Controller
             "import_file_path_{$userId}",
             "import_invoice_details_{$userId}",
             "import_matched_card_{$userId}",
+            "import_due_date_{$userId}",
         ]);
 
         // Processa o Job de forma síncrona (sem necessidade de queue worker)
