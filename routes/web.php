@@ -18,6 +18,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProjectionController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\BoletoController;
+use App\Http\Controllers\CalendarSyncController;
 use App\Http\Controllers\ReportController;
 use App\Http\Middleware\EnsureIsAdmin;
 use Illuminate\Support\Facades\Route;
@@ -123,6 +124,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/invoices/{statement}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
     Route::post('/invoices/{statement}/calendar-sync', [InvoiceController::class, 'syncCalendar'])->name('invoices.calendar-sync');
     Route::patch('/invoices/{statement}/undo-payment', [InvoiceController::class, 'undoPayment'])->name('invoices.undo-payment');
+
+    // Calendar bulk sync
+    Route::post('/calendar/sync-pending', [CalendarSyncController::class, 'syncAll'])->name('calendar.sync-all');
 
     // Google Calendar OAuth
     Route::get('/auth/google/calendar', [GoogleCalendarController::class, 'connect'])->name('google.calendar.connect');

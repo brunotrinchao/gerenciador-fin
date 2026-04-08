@@ -5,7 +5,7 @@ import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/t
 import { formatDate } from '@/lib/utils';
 import { PageHeader } from '@/Components/PageHeader';
 import { DateInput } from '@/Components/DateInput';
-import { CalendarPlus, Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 
 // ─────────────────────────────────────────────
@@ -17,7 +17,6 @@ interface Props {
     creditCards: CreditCard[];
     bankAccounts: BankAccount[];
     filters: { month?: string };
-    googleCalendarEnabled: boolean;
 }
 
 interface StatementFormData {
@@ -85,10 +84,9 @@ interface StatementCardProps {
     onDelete: (statement: CreditCardStatement) => void;
     onPay: (statement: CreditCardStatement) => void;
     onDetail: (statement: CreditCardStatement) => void;
-    googleCalendarEnabled: boolean;
 }
 
-function StatementCard({ statement, onDelete, onPay, onDetail, googleCalendarEnabled }: StatementCardProps) {
+function StatementCard({ statement, onDelete, onPay, onDetail }: StatementCardProps) {
     const paidPercent =
         statement.total_amount > 0
             ? Math.min((statement.paid_amount / statement.total_amount) * 100, 100)
@@ -179,19 +177,6 @@ function StatementCard({ statement, onDelete, onPay, onDetail, googleCalendarEna
                         >
                             <CheckCircle size={12} />
                             Pagar
-                        </button>
-                    )}
-
-                    {googleCalendarEnabled && !statement.google_event_id && statement.due_date && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                router.post(route('invoices.calendar-sync', statement.id));
-                            }}
-                            className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors text-xs font-medium"
-                            title="Sincronizar com Google Calendar"
-                        >
-                            <CalendarPlus size={12} />
                         </button>
                     )}
 
@@ -717,7 +702,7 @@ function DeleteConfirmModal({ statement, onClose }: DeleteConfirmModalProps) {
 // Page
 // ─────────────────────────────────────────────
 
-export default function InvoicesIndex({ statements, creditCards, bankAccounts, filters, googleCalendarEnabled }: Props) {
+export default function InvoicesIndex({ statements, creditCards, bankAccounts, filters }: Props) {
     const { flash } = usePage().props;
 
     const [showFormModal, setShowFormModal] = useState(false);
@@ -845,7 +830,6 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                 onDelete={setDeletingStatement}
                                 onPay={setPayingStatement}
                                 onDetail={setDetailStatement}
-                                googleCalendarEnabled={googleCalendarEnabled}
                             />
                         ))}
                     </div>

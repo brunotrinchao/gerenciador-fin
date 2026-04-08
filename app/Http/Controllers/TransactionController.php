@@ -87,6 +87,56 @@ class TransactionController extends Controller
             $q->whereNull('user_id')->orWhere('user_id', $userId);
         })->orderBy('name')->get();
 
+        // Itens pendentes sem evento no Calendar (para sincronização em lote)
+        $pendingSyncItems = [];
+        if (auth()->user()->google_calendar_enabled) {
+            $pendingTx = Transaction::byUser($userId)
+                ->where('status', TransactionStatus::Pending)
+                ->whereNull('google_event_id')
+                ->whereNull('installment_group_id')
+                ->whereNotIn('type', ['credit_card', 'transfer'])
+                ->get(['id', 'description', 'amount', 'date', 'type'])
+                ->map(fn ($t) => [
+                    'type'        => 'transaction',
+                    'id'          => $t->id,
+                    'description' => $t->description,
+                    'amount'      => (float) $t->amount,
+                    'date'        => $t->date->format('Y-m-d'),
+                ]);
+
+            $pendingInst = Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId)->whereNull('credit_card_id'))
+                ->where('status', TransactionStatus::Pending)
+                ->whereNull('google_event_id')
+                ->with('group:id,description,total_installments')
+                ->get(['id', 'installment_group_id', 'number', 'amount', 'due_date'])
+                ->map(fn ($i) => [
+                    'type'        => 'installment',
+                    'id'          => $i->id,
+                    'description' => ($i->group->description ?? 'Parcela') . ' (' . $i->number . '/' . ($i->group->total_installments ?? '?') . ')',
+                    'amount'      => (float) $i->amount,
+                    'date'        => $i->due_date->format('Y-m-d'),
+                ]);
+
+            $pendingStmt = CreditCardStatement::where('user_id', $userId)
+                ->where('status', '!=', 'paid')
+                ->whereNull('google_event_id')
+                ->whereNotNull('due_date')
+                ->with('creditCard:id,name')
+                ->get(['id', 'credit_card_id', 'reference_month', 'total_amount', 'due_date'])
+                ->map(fn ($s) => [
+                    'type'        => 'statement',
+                    'id'          => $s->id,
+                    'description' => 'Fatura ' . ($s->creditCard?->name ?? 'Cartão') . ' ' . $s->reference_month,
+                    'amount'      => (float) $s->total_amount,
+                    'date'        => $s->due_date->format('Y-m-d'),
+                ]);
+
+            $pendingSyncItems = $pendingTx->concat($pendingInst)->concat($pendingStmt)
+                ->sortBy('date')
+                ->values()
+                ->all();
+        }
+
         return Inertia::render('Transactions/Index', [
             'transactions'          => $transactions,
             'installments'          => $installments,
@@ -98,6 +148,7 @@ class TransactionController extends Controller
             'summary'               => $summary,
             'currentMonth'          => $month,
             'googleCalendarEnabled' => (bool) auth()->user()->google_calendar_enabled,
+            'pendingSyncItems'      => $pendingSyncItems,
         ]);
     }
 

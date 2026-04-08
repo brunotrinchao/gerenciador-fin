@@ -42,6 +42,14 @@ import {
 // Types
 // ─────────────────────────────────────────────
 
+interface PendingSyncItem {
+    type: 'transaction' | 'installment' | 'statement';
+    id: number;
+    description: string;
+    amount: number;
+    date: string;
+}
+
 interface Props {
     transactions: PaginatedData<Transaction>;
     statements: CreditCardStatement[];
@@ -62,6 +70,7 @@ interface Props {
     };
     currentMonth: string;
     googleCalendarEnabled: boolean;
+    pendingSyncItems: PendingSyncItem[];
 }
 
 interface TransactionFormData {
@@ -111,10 +120,9 @@ interface TransactionRowProps {
     transaction: Transaction;
     onEdit: (t: Transaction) => void;
     onDelete: (t: Transaction) => void;
-    googleCalendarEnabled: boolean;
 }
 
-function TransactionRow({ transaction, onEdit, onDelete, googleCalendarEnabled }: TransactionRowProps) {
+function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) {
     const debit = isDebit(transaction.type);
 
     const TypeIcon = () => {
@@ -218,18 +226,6 @@ function TransactionRow({ transaction, onEdit, onDelete, googleCalendarEnabled }
 
             {/* Actions */}
             <div className="flex items-center gap-1 flex-shrink-0">
-                {googleCalendarEnabled && !transaction.google_event_id && transaction.status === 'pending' && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            router.post(route('transactions.calendar-sync', transaction.id));
-                        }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
-                        title="Sincronizar com Google Calendar"
-                    >
-                        <CalendarPlus size={15} />
-                    </button>
-                )}
                 {transaction.status === 'pending' && (
                     <button
                         onClick={handlePay}
@@ -1479,6 +1475,126 @@ function Pagination({ pagination, filters }: PaginationProps) {
 }
 
 // ─────────────────────────────────────────────
+// CalendarSyncModal
+// ─────────────────────────────────────────────
+
+interface CalendarSyncModalProps {
+    items: PendingSyncItem[];
+    onClose: () => void;
+}
+
+function CalendarSyncModal({ items, onClose }: CalendarSyncModalProps) {
+    const fmtCurrency = (v: number) =>
+        new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+    // Agrupa por YYYY-MM
+    const grouped = items.reduce<Record<string, PendingSyncItem[]>>((acc, item) => {
+        const key = item.date.substring(0, 7);
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+    }, {});
+
+    const monthLabel = (ym: string) => {
+        const [year, month] = ym.split('-');
+        return new Date(Number(year), Number(month) - 1, 1)
+            .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    };
+
+    const typeIcon = (type: PendingSyncItem['type']) => {
+        if (type === 'installment') return <Layers size={14} className="text-blue-400" />;
+        if (type === 'statement')   return <CreditCardIcon size={14} className="text-purple-400" />;
+        return <Receipt size={14} className="text-gray-400" />;
+    };
+
+    const typeLabel = (type: PendingSyncItem['type']) => {
+        if (type === 'installment') return 'Parcela';
+        if (type === 'statement')   return 'Fatura';
+        return 'Transação';
+    };
+
+    const handleSync = () => {
+        router.post(route('calendar.sync-all'), {}, { onSuccess: () => onClose() });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative z-10 w-full max-w-md mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl flex flex-col max-h-[80vh]">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                        <CalendarPlus size={20} className="text-blue-400" />
+                        <div>
+                            <p className="text-white font-semibold">Sincronizar com Google Calendar</p>
+                            <p className="text-gray-500 text-xs mt-0.5">
+                                {items.length} {items.length === 1 ? 'item pendente' : 'itens pendentes'} sem evento na agenda
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Lista agrupada por mês */}
+                <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+                    {Object.entries(grouped)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([ym, groupItems]) => (
+                            <div key={ym}>
+                                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-2 capitalize">
+                                    {monthLabel(ym)}
+                                </p>
+                                <div className="flex flex-col gap-1">
+                                    {groupItems.map((item) => (
+                                        <div
+                                            key={`${item.type}-${item.id}`}
+                                            className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--color-surface-2)]"
+                                        >
+                                            <div className="flex-shrink-0">{typeIcon(item.type)}</div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-white text-sm truncate">{item.description}</p>
+                                                <p className="text-gray-500 text-xs">{typeLabel(item.type)}</p>
+                                            </div>
+                                            <span className="text-gray-300 text-sm font-medium flex-shrink-0">
+                                                {fmtCurrency(item.amount)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                </div>
+
+                {/* Footer */}
+                <div className="flex gap-3 px-6 py-4 border-t border-[var(--color-border)]">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                    >
+                        Fechar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSync}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                    >
+                        <CalendarPlus size={15} />
+                        Sincronizar Tudo ({items.length})
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────
 // Page
 // ─────────────────────────────────────────────
 
@@ -1493,6 +1609,7 @@ export default function TransactionsIndex({
     summary,
     currentMonth,
     googleCalendarEnabled,
+    pendingSyncItems,
 }: Props) {
     const { props } = usePage();
     const flash = (props as Record<string, unknown>).flash as
@@ -1509,6 +1626,7 @@ export default function TransactionsIndex({
     const boletoInputRef = useRef<HTMLInputElement>(null);
     const [scopeModal, setScopeModal] = useState<{ transaction: Transaction; action: 'edit' | 'delete' } | null>(null);
     const [pendingEditScope, setPendingEditScope] = useState<string>('');
+    const [showCalendarSyncModal, setShowCalendarSyncModal] = useState(false);
 
     const balance = summary.income - summary.expense - summary.credit_card;
 
@@ -1651,6 +1769,20 @@ export default function TransactionsIndex({
                                 className="hidden"
                                 onChange={handleBoletoFile}
                             />
+
+                            {googleCalendarEnabled && pendingSyncItems.length > 0 && (
+                                <button
+                                    onClick={() => setShowCalendarSyncModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-blue-500/30 text-blue-400 hover:text-blue-300 hover:border-blue-400/50 hover:bg-blue-500/10 text-sm font-medium transition-colors"
+                                    title={`${pendingSyncItems.length} itens sem evento na agenda`}
+                                >
+                                    <CalendarPlus size={16} />
+                                    Sincronizar Agenda
+                                    <span className="ml-0.5 text-xs bg-blue-500/20 text-blue-300 rounded-full px-1.5 py-0.5 font-semibold">
+                                        {pendingSyncItems.length}
+                                    </span>
+                                </button>
+                            )}
                             <button
                                 onClick={() => boletoInputRef.current?.click()}
                                 disabled={boletoLoading}
@@ -1820,7 +1952,6 @@ export default function TransactionsIndex({
                                     transaction={t}
                                     onEdit={openEdit}
                                     onDelete={handleDeleteClick}
-                                    googleCalendarEnabled={googleCalendarEnabled}
                                 />
                             ))}
 
@@ -1864,6 +1995,13 @@ export default function TransactionsIndex({
                 <DetailModal
                     item={detailItem}
                     onClose={() => setDetailItem(null)}
+                />
+            )}
+
+            {showCalendarSyncModal && (
+                <CalendarSyncModal
+                    items={pendingSyncItems}
+                    onClose={() => setShowCalendarSyncModal(false)}
                 />
             )}
         </AppLayout>
