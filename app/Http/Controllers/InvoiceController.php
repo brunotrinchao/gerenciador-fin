@@ -18,16 +18,12 @@ class InvoiceController extends Controller
     public function index(Request $request): Response
     {
         $userId = auth()->id();
-        $month = $request->query('month');
+        $month  = $request->query('month', now()->format('Y-m'));
 
-        $query = CreditCardStatement::where('user_id', $userId)
-            ->with('creditCard');
-
-        if ($month) {
-            $query->where('reference_month', $month);
-        }
-
-        $statements = $query->orderBy('reference_month', 'desc')
+        $statements = CreditCardStatement::where('user_id', $userId)
+            ->with('creditCard')
+            ->where('reference_month', $month)
+            ->orderBy('reference_month', 'desc')
             ->paginate(24)
             ->withQueryString();
 
@@ -38,7 +34,7 @@ class InvoiceController extends Controller
             'statements'   => $statements,
             'creditCards'  => $creditCards,
             'bankAccounts' => $bankAccounts,
-            'filters'      => $request->only('month'),
+            'filters'      => ['month' => $month],
         ]);
     }
 
