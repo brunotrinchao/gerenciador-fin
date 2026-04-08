@@ -2,12 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\CreateCalendarEvent;
 use App\Models\Installment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class InstallmentController extends Controller
 {
+    public function syncCalendar(Installment $installment): RedirectResponse
+    {
+        if ($installment->group->user_id !== auth()->id()) abort(403);
+
+        if (! auth()->user()->google_calendar_enabled) {
+            return back()->with('error', 'Google Calendar não conectado.');
+        }
+
+        if (! empty($installment->google_event_id)) {
+            return back()->with('error', 'Esta parcela já possui evento na agenda.');
+        }
+
+        CreateCalendarEvent::dispatch(Installment::class, $installment->id, auth()->id());
+
+        return back()->with('success', 'Parcela enviada para sincronização com o Google Calendar!');
+    }
+
     public function markAsPaid(Installment $installment, Request $request): RedirectResponse
     {
         if ($installment->group->user_id !== auth()->id()) {

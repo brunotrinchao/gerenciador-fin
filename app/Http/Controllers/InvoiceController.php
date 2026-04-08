@@ -32,10 +32,11 @@ class InvoiceController extends Controller
         $bankAccounts = BankAccount::byUser($userId)->active()->orderBy('name')->get();
 
         return Inertia::render('Invoices/Index', [
-            'statements'   => $statements,
-            'creditCards'  => $creditCards,
-            'bankAccounts' => $bankAccounts,
-            'filters'      => ['month' => $month],
+            'statements'            => $statements,
+            'creditCards'           => $creditCards,
+            'bankAccounts'          => $bankAccounts,
+            'filters'               => ['month' => $month],
+            'googleCalendarEnabled' => (bool) auth()->user()->google_calendar_enabled,
         ]);
     }
 
@@ -130,6 +131,27 @@ class InvoiceController extends Controller
         ]);
 
         return redirect()->route('invoices.index')->with('success', 'Fatura paga com sucesso!');
+    }
+
+    public function syncCalendar(CreditCardStatement $statement): RedirectResponse
+    {
+        if ($statement->user_id !== auth()->id()) abort(403);
+
+        if (! auth()->user()->google_calendar_enabled) {
+            return back()->with('error', 'Google Calendar não conectado.');
+        }
+
+        if (! empty($statement->google_event_id)) {
+            return back()->with('error', 'Esta fatura já possui evento na agenda.');
+        }
+
+        if (empty($statement->due_date)) {
+            return back()->with('error', 'A fatura não possui data de vencimento para criar o evento.');
+        }
+
+        CreateCalendarEvent::dispatch(CreditCardStatement::class, $statement->id, auth()->id());
+
+        return back()->with('success', 'Fatura enviada para sincronização com o Google Calendar!');
     }
 
     public function destroy(CreditCardStatement $statement): RedirectResponse

@@ -6,6 +6,7 @@ use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
+use App\Jobs\CreateCalendarEvent;
 use App\Models\BankAccount;
 use App\Models\Category;
 use App\Models\CreditCard;
@@ -87,15 +88,16 @@ class TransactionController extends Controller
         })->orderBy('name')->get();
 
         return Inertia::render('Transactions/Index', [
-            'transactions' => $transactions,
-            'installments' => $installments,
-            'statements'   => $statements,
-            'accounts'     => $accounts,
-            'creditCards'  => $creditCards,
-            'categories'   => $categories,
-            'filters'      => $request->only(['month', 'type', 'status', 'search']),
-            'summary'      => $summary,
-            'currentMonth' => $month,
+            'transactions'          => $transactions,
+            'installments'          => $installments,
+            'statements'            => $statements,
+            'accounts'              => $accounts,
+            'creditCards'           => $creditCards,
+            'categories'            => $categories,
+            'filters'               => $request->only(['month', 'type', 'status', 'search']),
+            'summary'               => $summary,
+            'currentMonth'          => $month,
+            'googleCalendarEnabled' => (bool) auth()->user()->google_calendar_enabled,
         ]);
     }
 
@@ -236,5 +238,22 @@ class TransactionController extends Controller
         $transaction->update($updateData);
 
         return redirect()->back()->with('success', 'Transação marcada como paga!');
+    }
+
+    public function syncCalendar(Transaction $transaction): RedirectResponse
+    {
+        if ($transaction->user_id !== Auth::id()) abort(403);
+
+        if (! auth()->user()->google_calendar_enabled) {
+            return back()->with('error', 'Google Calendar não conectado.');
+        }
+
+        if (! empty($transaction->google_event_id)) {
+            return back()->with('error', 'Esta transação já possui evento na agenda.');
+        }
+
+        CreateCalendarEvent::dispatch(Transaction::class, $transaction->id, Auth::id());
+
+        return back()->with('success', 'Transação enviada para sincronização com o Google Calendar!');
     }
 }

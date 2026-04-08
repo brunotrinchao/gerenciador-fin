@@ -123,6 +123,7 @@ export interface Transaction {
     recurrence_occurrences?: number | null;
     is_imported: boolean;
     import_hash: string | null;
+    google_event_id: string | null;
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
@@ -169,6 +170,7 @@ export interface Installment {
     due_date: string;
     status: TransactionStatus;
     paid_at: string | null;
+    google_event_id: string | null;
     created_at: string;
     updated_at: string;
     // accessors
@@ -194,6 +196,7 @@ export interface CreditCardStatement {
     imported_at: string | null;
     raw_items: Record<string, unknown>[] | null;
     parsed_items: Record<string, unknown>[] | null;
+    google_event_id: string | null;
     created_at: string;
     updated_at: string;
     // relations

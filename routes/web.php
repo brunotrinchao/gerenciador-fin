@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
     Route::patch('/transactions/{transaction}/pay', [TransactionController::class, 'markAsPaid'])->name('transactions.pay');
+    Route::post('/transactions/{transaction}/calendar-sync', [TransactionController::class, 'syncCalendar'])->name('transactions.calendar-sync');
     Route::get('/credit-cards', [CreditCardController::class, 'index'])->name('credit-cards.index');
     Route::post('/credit-cards', [CreditCardController::class, 'store'])->name('credit-cards.store');
     Route::patch('/credit-cards/{creditCard}', [CreditCardController::class, 'update'])->name('credit-cards.update');
@@ -52,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/installments', [InstallmentGroupController::class, 'store'])->name('installments.store');
     Route::delete('/installments/{installmentGroup}', [InstallmentGroupController::class, 'destroy'])->name('installments.destroy');
     Route::patch('/installments/{installment}/pay', [InstallmentController::class, 'markAsPaid'])->name('installments.pay');
+    Route::post('/installments/{installment}/calendar-sync', [InstallmentController::class, 'syncCalendar'])->name('installments.calendar-sync');
     Route::get('/bank-accounts', [BankAccountController::class, 'index'])->name('bank-accounts.index');
     Route::post('/bank-accounts', [BankAccountController::class, 'store'])->name('bank-accounts.store');
     Route::patch('/bank-accounts/{bankAccount}', [BankAccountController::class, 'update'])->name('bank-accounts.update');
@@ -117,6 +119,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/invoices/{statement}', [InvoiceController::class, 'update'])->name('invoices.update');
     Route::patch('/invoices/{statement}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
     Route::delete('/invoices/{statement}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+    Route::post('/invoices/{statement}/calendar-sync', [InvoiceController::class, 'syncCalendar'])->name('invoices.calendar-sync');
 
     // Google Calendar OAuth
     Route::get('/auth/google/calendar', [GoogleCalendarController::class, 'connect'])->name('google.calendar.connect');

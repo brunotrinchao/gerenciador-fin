@@ -72,12 +72,13 @@ class InstallmentGroupController extends Controller
             ]);
 
         return Inertia::render('Installments/Index', [
-            'groups'               => $groups,
-            'accounts'             => $accounts,
-            'creditCards'          => $creditCards,
-            'categories'           => $categories,
-            'importedInstallments' => $importedInstallments,
-            'filters'              => $request->only(['type', 'credit_card_id', 'sort']),
+            'groups'                => $groups,
+            'accounts'              => $accounts,
+            'creditCards'           => $creditCards,
+            'categories'            => $categories,
+            'importedInstallments'  => $importedInstallments,
+            'filters'               => $request->only(['type', 'credit_card_id', 'sort']),
+            'googleCalendarEnabled' => (bool) auth()->user()->google_calendar_enabled,
         ]);
     }
 

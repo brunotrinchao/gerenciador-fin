@@ -32,6 +32,7 @@ import {
     Loader2,
     Receipt,
     ExternalLink,
+    CalendarPlus,
     CreditCard as CreditCardIcon,
     Layers,
     RefreshCw,
@@ -60,6 +61,7 @@ interface Props {
         credit_card: number;
     };
     currentMonth: string;
+    googleCalendarEnabled: boolean;
 }
 
 interface TransactionFormData {
@@ -109,9 +111,10 @@ interface TransactionRowProps {
     transaction: Transaction;
     onEdit: (t: Transaction) => void;
     onDelete: (t: Transaction) => void;
+    googleCalendarEnabled: boolean;
 }
 
-function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) {
+function TransactionRow({ transaction, onEdit, onDelete, googleCalendarEnabled }: TransactionRowProps) {
     const debit = isDebit(transaction.type);
 
     const TypeIcon = () => {
@@ -215,6 +218,18 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
 
             {/* Actions */}
             <div className="flex items-center gap-1 flex-shrink-0">
+                {googleCalendarEnabled && !transaction.google_event_id && transaction.status === 'pending' && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.post(route('transactions.calendar-sync', transaction.id));
+                        }}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+                        title="Sincronizar com Google Calendar"
+                    >
+                        <CalendarPlus size={15} />
+                    </button>
+                )}
                 {transaction.status === 'pending' && (
                     <button
                         onClick={handlePay}
@@ -1438,6 +1453,7 @@ export default function TransactionsIndex({
     filters,
     summary,
     currentMonth,
+    googleCalendarEnabled,
 }: Props) {
     const { props } = usePage();
     const flash = (props as Record<string, unknown>).flash as
@@ -1765,6 +1781,7 @@ export default function TransactionsIndex({
                                     transaction={t}
                                     onEdit={openEdit}
                                     onDelete={handleDeleteClick}
+                                    googleCalendarEnabled={googleCalendarEnabled}
                                 />
                             ))}
 
