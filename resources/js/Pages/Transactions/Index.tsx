@@ -571,6 +571,19 @@ function DetailModal({ item, onClose }: DetailModalProps) {
                                 Marcar como Pago
                             </button>
                         )}
+                        {t.status === 'paid' && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    router.patch(route('transactions.undo-payment', t.id), {}, {
+                                        onSuccess: () => onClose(),
+                                    });
+                                }}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-sm font-medium transition-colors"
+                            >
+                                Desfazer Pagamento
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -668,6 +681,19 @@ function DetailModal({ item, onClose }: DetailModalProps) {
                                 className="flex-1 px-4 py-2.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 text-sm font-semibold transition-colors"
                             >
                                 Marcar como Pago
+                            </button>
+                        )}
+                        {isPaid && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    router.patch(route('installments.undo-payment', { installment: inst.id }), {}, {
+                                        onSuccess: () => onClose(),
+                                    });
+                                }}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-sm font-medium transition-colors"
+                            >
+                                Desfazer Pagamento
                             </button>
                         )}
                     </div>
@@ -773,6 +799,19 @@ function DetailModal({ item, onClose }: DetailModalProps) {
                             className="flex-1 px-4 py-2.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 text-sm font-semibold transition-colors"
                         >
                             Marcar como Paga
+                        </button>
+                    )}
+                    {s.status === 'paid' && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                router.patch(route('invoices.undo-payment', { statement: s.id }), {}, {
+                                    onSuccess: () => onClose(),
+                                });
+                            }}
+                            className="flex-1 px-4 py-2.5 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-sm font-medium transition-colors"
+                        >
+                            Desfazer Pagamento
                         </button>
                     )}
                 </div>

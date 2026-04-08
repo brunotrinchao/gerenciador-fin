@@ -240,6 +240,24 @@ class TransactionController extends Controller
         return redirect()->back()->with('success', 'Transação marcada como paga!');
     }
 
+    public function undoPayment(Transaction $transaction): RedirectResponse
+    {
+        if ($transaction->user_id !== Auth::id()) abort(403);
+
+        if ($transaction->status !== TransactionStatus::Paid) {
+            return back()->with('error', 'Esta transação não está paga.');
+        }
+
+        $transaction->update(['status' => TransactionStatus::Pending]);
+
+        // Cria evento no Calendar se conectado e sem evento
+        if (auth()->user()->google_calendar_enabled && empty($transaction->google_event_id)) {
+            CreateCalendarEvent::dispatch(Transaction::class, $transaction->id, Auth::id());
+        }
+
+        return back()->with('success', 'Pagamento desfeito! Transação voltou para pendente.');
+    }
+
     public function syncCalendar(Transaction $transaction): RedirectResponse
     {
         if ($transaction->user_id !== Auth::id()) abort(403);

@@ -298,6 +298,19 @@ function StatementDetailModal({ statement, onClose, onPay, onDelete, onEdit }: S
                                 Pagar
                             </button>
                         )}
+                        {statement.status === 'paid' && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    router.patch(route('invoices.undo-payment', statement.id), {}, {
+                                        onSuccess: () => onClose(),
+                                    });
+                                }}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-sm font-medium transition-colors"
+                            >
+                                Desfazer Pagamento
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={() => onEdit(statement)}

@@ -9,6 +9,34 @@ use Illuminate\Http\Request;
 
 class InstallmentController extends Controller
 {
+    public function undoPayment(Installment $installment): RedirectResponse
+    {
+        if ($installment->group->user_id !== auth()->id()) abort(403);
+
+        if ($installment->status !== \App\Enums\TransactionStatus::Paid) {
+            return back()->with('error', 'Esta parcela não está paga.');
+        }
+
+        $installment->update([
+            'status' => \App\Enums\TransactionStatus::Pending,
+            'paid_at' => null,
+        ]);
+
+        $installment->group->decrement('paid_installments');
+
+        // Desfaz o pagamento da transação vinculada
+        if ($installment->transaction) {
+            $installment->transaction->update(['status' => \App\Enums\TransactionStatus::Pending]);
+        }
+
+        // Cria evento no Calendar se conectado e sem evento
+        if (auth()->user()->google_calendar_enabled && empty($installment->google_event_id)) {
+            CreateCalendarEvent::dispatch(Installment::class, $installment->id, auth()->id());
+        }
+
+        return back()->with('success', 'Pagamento da parcela desfeito! Parcela voltou para pendente.');
+    }
+
     public function syncCalendar(Installment $installment): RedirectResponse
     {
         if ($installment->group->user_id !== auth()->id()) abort(403);

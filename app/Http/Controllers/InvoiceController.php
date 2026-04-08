@@ -133,6 +133,27 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.index')->with('success', 'Fatura paga com sucesso!');
     }
 
+    public function undoPayment(CreditCardStatement $statement): RedirectResponse
+    {
+        if ($statement->user_id !== auth()->id()) abort(403);
+
+        if ($statement->status !== 'paid') {
+            return back()->with('error', 'Esta fatura não está paga.');
+        }
+
+        $statement->update([
+            'status'      => 'open',
+            'paid_amount' => 0,
+        ]);
+
+        // Cria evento no Calendar se conectado e sem evento
+        if (auth()->user()->google_calendar_enabled && empty($statement->google_event_id) && $statement->due_date) {
+            CreateCalendarEvent::dispatch(CreditCardStatement::class, $statement->id, auth()->id());
+        }
+
+        return back()->with('success', 'Pagamento da fatura desfeito! Fatura voltou para aberta.');
+    }
+
     public function syncCalendar(CreditCardStatement $statement): RedirectResponse
     {
         if ($statement->user_id !== auth()->id()) abort(403);
