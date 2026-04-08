@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,13 +61,13 @@ class BankAccount extends Model
     public function recalculateBalance(): void
     {
         $income = $this->transactions()
-            ->whereIn('type', ['income', 'investment_out'])
-            ->where('status', 'paid')
+            ->whereIn('type', [TransactionType::Income->value, TransactionType::InvestmentOut->value])
+            ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
         $expense = $this->transactions()
-            ->whereIn('type', ['expense', 'investment_in'])
-            ->where('status', 'paid')
+            ->whereIn('type', [TransactionType::Expense->value, TransactionType::InvestmentIn->value])
+            ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
         $this->update([

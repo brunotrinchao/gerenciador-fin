@@ -9,6 +9,8 @@ const appName = import.meta.env.VITE_APP_NAME || 'Gerenciador Financeiro';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Cast necessário: resolvePageComponent retorna Promise<module> mas Inertia espera Promise<Component>
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.tsx`,

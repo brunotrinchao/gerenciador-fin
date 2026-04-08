@@ -178,6 +178,17 @@ class ImportController extends Controller
         $closingDay  = $invoiceData?->card?->closingDay;
         $dueDay      = $invoiceData?->card?->dueDay;
 
+        // Data de vencimento completa (Y-m-d) extraída diretamente do PDF, preservando o mês real.
+        // Armazenada em chave SEPARADA da session para sobreviver ao forget() de index().
+        // Não pode ser reconstruída depois apenas com dueDay pois o mês de referência das
+        // transações pode diferir do mês do vencimento (ex: fatura fev com vencimento em mar).
+        $dueDateFull = null;
+        if ($invoiceData?->invoice?->dueDateInvoice) {
+            try {
+                $dueDateFull = \Carbon\Carbon::parse($invoiceData->invoice->dueDateInvoice)->format('Y-m-d');
+            } catch (\Exception) {}
+        }
+
         // 3. Tenta identificar cartão pelo lastFour
         $matchedCard = null;
         if ($lastFour) {
@@ -190,11 +201,15 @@ class ImportController extends Controller
         $storedPath = $file->store("imports/{$userId}", 'local');
 
         // 5. Persiste na session — processamento pesado (dedup + IA) ocorre no Job
+        //
+        // ATENÇÃO: import_invoice_details é deletado por index() ao renderizar a confirmação.
+        // Por isso, dueDate fica em chave própria (import_due_date) que sobrevive até process().
         session([
             "import_preview_{$userId}"         => $items->toArray(),
             "import_filename_{$userId}"        => $file->getClientOriginalName(),
             "import_file_path_{$userId}"       => $storedPath,
             "import_matched_card_{$userId}"    => $matchedCard?->id,
+            "import_due_date_{$userId}"        => $dueDateFull,  // ← chave separada, não apagada por index()
             "import_invoice_details_{$userId}" => [
                 'bank'        => $bank,
                 'lastFour'    => $lastFour,
@@ -255,6 +270,8 @@ class ImportController extends Controller
         } else {
             $request->validate(['credit_card_id' => 'required|exists:credit_cards,id']);
             $creditCardId = (int) $request->input('credit_card_id');
+            // Valida que o cartão pertence ao usuário autenticado
+            CreditCard::byUser($userId)->findOrFail($creditCardId);
         }
 
         // Infere o mês de referência a partir das datas dos itens
@@ -266,16 +283,22 @@ class ImportController extends Controller
         $fileName    = session("import_filename_{$userId}", 'fatura');
         $invoiceDetails = session("import_invoice_details_{$userId}", []);
 
-        // Obter os dias de vencimento e fechamento
-        $card = CreditCard::find($creditCardId);
-        $dueDay = $invoiceDetails['dueDay'] ?? $card?->due_day ?? clone now()->day;
-        $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? clone now()->day;
+        // Obter os dias de vencimento e fechamento (byUser garante ownership)
+        $card       = CreditCard::byUser($userId)->find($creditCardId);
+        $dueDay     = $invoiceDetails['dueDay']     ?? $card?->due_day     ?? null;
+        $closingDay = $invoiceDetails['closingDay'] ?? $card?->closing_day ?? null;
 
+        // dueDate: usa a data completa do PDF (chave separada que sobrevive ao index()).
+        // Fallback: referenceMonth + 1 mês + dueDay (padrão BR: fatura de fev vence em mar).
+        $dueDateFromPdf = session("import_due_date_{$userId}");
         $dueDate = null;
-        $closingDate = null;
-        if ($dueDay) {
-            $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($dueDay)->format('Y-m-d');
+        if ($dueDateFromPdf) {
+            $dueDate = $dueDateFromPdf;
+        } elseif ($dueDay) {
+            $dueDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->addMonth()->setDay($dueDay)->format('Y-m-d');
         }
+
+        $closingDate = null;
         if ($closingDay) {
             $closingDate = \Carbon\Carbon::createFromFormat('Y-m', $referenceMonth)->setDay($closingDay)->format('Y-m-d');
         }
@@ -306,6 +329,7 @@ class ImportController extends Controller
             "import_file_path_{$userId}",
             "import_invoice_details_{$userId}",
             "import_matched_card_{$userId}",
+            "import_due_date_{$userId}",
         ]);
 
         // Processa o Job de forma síncrona (sem necessidade de queue worker)
@@ -449,6 +473,8 @@ class ImportController extends Controller
     /**
      * Cria InstallmentGroup + N Transactions + N Installments a partir de uma parcela importada.
      * Se o grupo já existir (mesmo cartão + descrição + total), apenas cria as parcelas faltantes.
+     * Faturas futuras são criadas via resolveOrCreateFutureStatement com due_date/closing_date
+     * calculados a partir do cartão, e seu total_amount é incrementado ao final.
      * Retorna true se criou ou atualizou, false se já existia completamente (dedup).
      */
     private function createInstallmentGroup(array $tx, int $userId, int $creditCardId, ?int $statementId = null): bool
@@ -472,6 +498,9 @@ class ImportController extends Controller
 
         $totalAmount = round($amount * $n, 2);
 
+        // Carrega o cartão para obter due_day e closing_day (usados nas faturas futuras)
+        $card = CreditCard::find($creditCardId);
+
         // Check if group already exists (same card + base description + total amount)
         $group = InstallmentGroup::where('user_id', $userId)
             ->where('credit_card_id', $creditCardId)
@@ -487,7 +516,9 @@ class ImportController extends Controller
                 ->flip();
 
             // Only create installments that don't exist yet, starting from current
-            $createdAny = false;
+            $createdAny  = false;
+            $stmtAmounts = []; // [stmtId => totalAmount] para atualizar faturas futuras
+
             for ($i = $current; $i <= $n; $i++) {
                 if ($existingNumbers->has($i)) {
                     continue;
@@ -497,13 +528,15 @@ class ImportController extends Controller
                 $isCurrent = $i === $current;
                 $status    = $isCurrent ? TransactionStatus::Paid : TransactionStatus::Pending;
 
-                // Find or create CreditCardStatement for this month
-                $monthKey     = $dueDate->format('Y-m');
-                $stmtForMonth = $isCurrent
-                    ? $statementId
-                    : CreditCardStatement::where('credit_card_id', $creditCardId)
-                        ->where('reference_month', $monthKey)
-                        ->value('id');
+                $monthKey = $dueDate->format('Y-m');
+                if ($isCurrent) {
+                    $stmtForMonth = $statementId;
+                } else {
+                    // Parcelas futuras: garante que a fatura do mês existe com datas corretas
+                    $stmtForMonth = $this->resolveOrCreateFutureStatement(
+                        $creditCardId, $userId, $monthKey, $card
+                    );
+                }
 
                 $transaction = Transaction::create([
                     'user_id'                  => $userId,
@@ -529,7 +562,17 @@ class ImportController extends Controller
                     'status'               => $status,
                 ]);
 
+                // Acumula o valor para incrementar total_amount da fatura futura
+                if (! $isCurrent && $stmtForMonth) {
+                    $stmtAmounts[$stmtForMonth] = ($stmtAmounts[$stmtForMonth] ?? 0) + $amount;
+                }
+
                 $createdAny = true;
+            }
+
+            // Atualiza total_amount das faturas futuras criadas/encontradas
+            foreach ($stmtAmounts as $stmtId => $amt) {
+                CreditCardStatement::where('id', $stmtId)->increment('total_amount', round($amt, 2));
             }
 
             return $createdAny;
@@ -549,19 +592,30 @@ class ImportController extends Controller
             'status'             => InstallmentStatus::Active,
         ]);
 
+        $stmtAmounts = []; // [stmtId => totalAmount] para atualizar faturas futuras
+
         for ($i = 1; $i <= $n; $i++) {
             $dueDate   = (clone $firstDue)->modify('+' . ($i - 1) . ' months');
             $isPaid    = $i <= $current;
             $isCurrent = $i === $current;
             $status    = $isPaid ? TransactionStatus::Paid : TransactionStatus::Pending;
 
-            // For future installments, find existing statement for that month if any
-            $monthKey     = $dueDate->format('Y-m');
-            $stmtForMonth = $isCurrent
-                ? $statementId
-                : CreditCardStatement::where('credit_card_id', $creditCardId)
+            // Resolve statement para o mês desta parcela:
+            // - Parcela atual   → fatura importada
+            // - Parcela futura  → cria fatura do mês com datas corretas (se não existir)
+            // - Parcela passada → busca sem criar (fatura já deveria existir ou fica null)
+            $monthKey = $dueDate->format('Y-m');
+            if ($isCurrent) {
+                $stmtForMonth = $statementId;
+            } elseif ($i > $current) {
+                $stmtForMonth = $this->resolveOrCreateFutureStatement(
+                    $creditCardId, $userId, $monthKey, $card
+                );
+            } else {
+                $stmtForMonth = CreditCardStatement::where('credit_card_id', $creditCardId)
                     ->where('reference_month', $monthKey)
                     ->value('id');
+            }
 
             $transaction = Transaction::create([
                 'user_id'                  => $userId,
@@ -586,9 +640,53 @@ class ImportController extends Controller
                 'due_date'             => $dueDate->format('Y-m-d'),
                 'status'               => $status,
             ]);
+
+            // Acumula o valor para incrementar total_amount da fatura futura
+            if ($i > $current && $stmtForMonth) {
+                $stmtAmounts[$stmtForMonth] = ($stmtAmounts[$stmtForMonth] ?? 0) + $amount;
+            }
+        }
+
+        // Atualiza total_amount das faturas futuras criadas/encontradas
+        foreach ($stmtAmounts as $stmtId => $amt) {
+            CreditCardStatement::where('id', $stmtId)->increment('total_amount', round($amt, 2));
         }
 
         return true;
+    }
+
+    /**
+     * Garante que existe uma CreditCardStatement para o mês informado.
+     * Se não existir, cria com due_date e closing_date calculados a partir
+     * do due_day e closing_day do cartão.
+     */
+    private function resolveOrCreateFutureStatement(
+        int $creditCardId,
+        int $userId,
+        string $monthKey,
+        ?CreditCard $card
+    ): int {
+        $dueDay     = $card?->due_day;
+        $closingDay = $card?->closing_day;
+
+        // Padrão BR: fatura de referência YYYY-MM vence no mês seguinte.
+        // Ex: fatura Março (2026-03) vence em Abril → 2026-04-25.
+        // closing_date fica dentro do próprio monthKey (fecha em março, vence em abril).
+        return CreditCardStatement::firstOrCreate(
+            ['credit_card_id' => $creditCardId, 'reference_month' => $monthKey],
+            [
+                'user_id'      => $userId,
+                'status'       => 'open',
+                'total_amount' => 0,
+                'paid_amount'  => 0,
+                'due_date'     => $dueDay
+                    ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->addMonth()->setDay($dueDay)->format('Y-m-d')
+                    : null,
+                'closing_date' => $closingDay
+                    ? \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->setDay($closingDay)->format('Y-m-d')
+                    : null,
+            ]
+        )->id;
     }
 
     /**

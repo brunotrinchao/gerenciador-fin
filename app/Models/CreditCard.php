@@ -99,16 +99,14 @@ class CreditCard extends Model
     public function recalculateLimit(): void
     {
         $totalSpent = $this->transactions()
-            ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Paid])
+            ->whereIn('status', [TransactionStatus::Pending->value, TransactionStatus::Paid->value])
             ->sum('amount');
-        $this->update(["available_limit" => $this->credit_limit - $totalSpent + ($this->limit_adjustment ?? 0)]);
-
-
+        $this->update(['available_limit' => $this->credit_limit - $totalSpent + ($this->limit_adjustment ?? 0)]);
     }
 
     public function calculateDueDate(\DateTime $purchaseDate): \DateTime
     {
-        $day = $purchaseDate->format('j');
+        $day     = (int) $purchaseDate->format('j');
         $dueDate = clone $purchaseDate;
 
         if ($day <= $this->closing_day) {
@@ -117,7 +115,10 @@ class CreditCard extends Model
             $dueDate->modify('first day of +2 months');
         }
 
-        $dueDate->setDate((int) $dueDate->format('Y'), (int) $dueDate->format('m'), $this->due_day);
+        // Clamp: garante que due_day não ultrapasse o último dia do mês (ex: 31 em fev → 28/29)
+        $maxDay  = (int) $dueDate->format('t');
+        $safeDay = min((int) $this->due_day, $maxDay);
+        $dueDate->setDate((int) $dueDate->format('Y'), (int) $dueDate->format('m'), $safeDay);
 
         return $dueDate;
     }

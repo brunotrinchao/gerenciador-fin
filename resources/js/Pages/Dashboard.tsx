@@ -1,5 +1,6 @@
 import React from 'react';
 import { Head, Deferred } from '@inertiajs/react';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import AppLayout from '@/Layouts/AppLayout';
 import { TrendingUp, TrendingDown, Wallet, Calendar, Receipt, Layers, ArrowDownCircle } from 'lucide-react';
 import {
@@ -289,9 +290,9 @@ export default function Dashboard({
                                                     >
                                                         <div className="flex flex-col">
                                                             <div className="flex items-center gap-1.5">
-                                                                {payment.type === 'invoice' && <Receipt size={14} className="text-purple-400" />}
-                                                                {payment.type === 'installment' && <Layers size={14} className="text-orange-400" />}
-                                                                {payment.type === 'transaction' && <ArrowDownCircle size={14} className="text-red-400" />}
+                                                                {payment.type === 'invoice' && <Receipt size={14} className="text-[var(--md-color-tertiary)]" />}
+                                                                {payment.type === 'installment' && <Layers size={14} className="text-[var(--md-color-secondary)]" />}
+                                                                {payment.type === 'transaction' && <ArrowDownCircle size={14} className="text-[var(--md-color-error)]" />}
                                                                 <span className="text-sm font-medium text-[var(--color-foreground)]">
                                                                     {payment.description}
                                                                 </span>
@@ -424,9 +425,9 @@ export default function Dashboard({
                                     >
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-1.5">
-                                                {payment.type === 'invoice' && <Receipt size={14} className="text-purple-400" />}
-                                                {payment.type === 'installment' && <Layers size={14} className="text-orange-400" />}
-                                                {payment.type === 'transaction' && <ArrowDownCircle size={14} className="text-red-400" />}
+                                                {payment.type === 'invoice' && <Receipt size={14} className="text-[var(--md-color-tertiary)]" />}
+                                                {payment.type === 'installment' && <Layers size={14} className="text-[var(--md-color-secondary)]" />}
+                                                {payment.type === 'transaction' && <ArrowDownCircle size={14} className="text-[var(--md-color-error)]" />}
                                                 <span className="text-sm font-medium" style={{ color: 'var(--color-foreground)' }}>
                                                     {payment.description}
                                                 </span>
@@ -451,19 +452,9 @@ export default function Dashboard({
     );
 }
 
-function formatCurrency(value: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-}
-
-function formatDate(dateStr: string) {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-}
-
 function EmptyState({ message }: { message: string }) {
     return (
-        <div className="h-40 w-full rounded-lg flex items-center justify-center text-xs text-gray-500 border border-dashed border-gray-700">
+        <div className="h-40 w-full rounded-lg flex items-center justify-center text-xs text-[var(--md-color-on-surface-variant)] border border-dashed border-[var(--md-color-outline-variant)]">
             {message}
         </div>
     );
@@ -492,7 +483,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
     return (
         <div
             ref={ref}
-            className={`rounded-xl p-5 transition-all duration-200 ${clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:border-[var(--color-accent)]' : ''}`}
+            className={`rounded-[var(--md-shape-md)] p-5 transition-all duration-200 ${clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:border-[var(--color-accent)]' : ''}`}
             style={{
                 backgroundColor: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',

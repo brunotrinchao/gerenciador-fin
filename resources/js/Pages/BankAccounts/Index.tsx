@@ -63,9 +63,9 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
                 <div className="flex items-center gap-3">
                     <BankIcon bankName={account.bank_name} size={36} />
                     <div>
-                        <p className="text-white font-semibold leading-tight">{account.name}</p>
+                        <p className="text-[var(--md-color-on-surface)] font-semibold leading-tight">{account.name}</p>
                         {account.bank_name && (
-                            <p className="text-gray-400 text-sm">{account.bank_name}</p>
+                            <p className="text-[var(--md-color-on-surface-variant)] text-sm">{account.bank_name}</p>
                         )}
                     </div>
                 </div>
@@ -73,14 +73,14 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => onEdit(account)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors"
                         title="Editar"
                     >
                         <Pencil size={15} />
                     </button>
                     <button
                         onClick={() => onDelete(account)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-error)] hover:bg-red-500/10 transition-colors"
                         title="Excluir"
                     >
                         <Trash2 size={15} />
@@ -90,10 +90,10 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
 
             <div className="flex items-end justify-between">
                 <div>
-                    <p className="text-gray-400 text-xs mb-0.5">Saldo atual</p>
+                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mb-0.5">Saldo atual</p>
                     <p
                         className={`text-xl font-bold ${
-                            account.current_balance >= 0 ? 'text-white' : 'text-red-400'
+                            account.current_balance >= 0 ? 'text-[var(--md-color-on-surface)]' : 'text-[var(--md-color-error)]'
                         }`}
                     >
                         {formatCurrency(account.current_balance)}
@@ -112,7 +112,7 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
                 </div>
 
                 <div className="flex flex-col items-end gap-1.5">
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-surface-2)] text-gray-300">
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-surface-2)] text-[var(--md-color-on-surface-variant)]">
                         {accountTypeLabels[account.account_type]}
                     </span>
                     <span
@@ -179,12 +179,12 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
             <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
-                    <h2 className="text-white font-semibold text-lg">
+                    <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">
                         {isEditing ? 'Editar Conta' : 'Nova Conta'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -194,30 +194,30 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                 <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
                     {/* Nome */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Nome <span className="text-red-400">*</span>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                            Nome <span className="text-[var(--md-color-error)]">*</span>
                         </label>
                         <input
                             type="text"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             placeholder="Ex: Conta Principal"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.name && (
-                            <p className="text-red-400 text-xs">{errors.name}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.name}</p>
                         )}
                     </div>
 
                     {/* Tipo */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Tipo de Conta <span className="text-red-400">*</span>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                            Tipo de Conta <span className="text-[var(--md-color-error)]">*</span>
                         </label>
                         <select
                             value={data.account_type}
                             onChange={(e) => setData('account_type', e.target.value as AccountType)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             {(Object.entries(accountTypeLabels) as [AccountType, string][]).map(
                                 ([value, label]) => (
@@ -228,69 +228,69 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                             )}
                         </select>
                         {errors.account_type && (
-                            <p className="text-red-400 text-xs">{errors.account_type}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.account_type}</p>
                         )}
                     </div>
 
                     {/* Banco */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">Banco</label>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">Banco</label>
                         <BankSelector
                             value={data.bank_name}
-                            onChange={(value, bank) => {
+                            onChange={(value, _bank) => {
                                 setData('bank_name', value);
                             }}
                         />
                         {errors.bank_name && (
-                            <p className="text-red-400 text-xs">{errors.bank_name}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.bank_name}</p>
                         )}
                     </div>
 
                     {/* Saldo Inicial */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Saldo Inicial <span className="text-red-400">*</span>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                            Saldo Inicial <span className="text-[var(--md-color-error)]">*</span>
                         </label>
                         <CurrencyInput
                             value={data.initial_balance}
                             onChange={(v) => setData('initial_balance', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.initial_balance && (
-                            <p className="text-red-400 text-xs">{errors.initial_balance}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.initial_balance}</p>
                         )}
                     </div>
 
                     {/* Saldo atual (apenas na edição) */}
                     {isEditing && (
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Saldo Atual</label>
+                            <label className="text-sm text-[var(--md-color-on-surface-variant)]">Saldo Atual</label>
                             <CurrencyInput
                                 value={data.current_balance}
                                 onChange={(v) => setData('current_balance', v)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.current_balance && (
-                                <p className="text-red-400 text-xs">{errors.current_balance}</p>
+                                <p className="text-[var(--md-color-error)] text-xs">{errors.current_balance}</p>
                             )}
                         </div>
                     )}
 
                     {/* Limite Cheque Especial */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">Limite Cheque Especial</label>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">Limite Cheque Especial</label>
                         <CurrencyInput
                             value={data.overdraft_limit}
                             onChange={(v) => setData('overdraft_limit', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
-                        <p className="text-gray-600 text-xs">Se o saldo ficar negativo, usa este limite.</p>
-                        {errors.overdraft_limit && <p className="text-red-400 text-xs">{errors.overdraft_limit}</p>}
+                        <p className="text-[var(--md-color-on-surface-variant)] text-xs">Se o saldo ficar negativo, usa este limite.</p>
+                        {errors.overdraft_limit && <p className="text-[var(--md-color-error)] text-xs">{errors.overdraft_limit}</p>}
                     </div>
 
                     {/* Cor */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">Cor</label>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">Cor</label>
                         <div className="flex items-center gap-2 flex-wrap">
                             {PRESET_COLORS.map((color) => (
                                 <button
@@ -337,7 +337,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                                     />
                                 </div>
                             </div>
-                            <span className="text-sm text-gray-400">Conta ativa</span>
+                            <span className="text-sm text-[var(--md-color-on-surface-variant)]">Conta ativa</span>
                         </label>
                     )}
 
@@ -346,7 +346,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -395,12 +395,12 @@ function DeleteConfirmModal({ account, onClose }: DeleteConfirmModalProps) {
 
             <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
-                    <h2 className="text-white font-semibold text-lg">Excluir conta</h2>
-                    <p className="text-gray-400 text-sm">
+                    <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">Excluir conta</h2>
+                    <p className="text-[var(--md-color-on-surface-variant)] text-sm">
                         Tem certeza que deseja excluir a conta{' '}
-                        <span className="text-white font-medium">"{account.name}"</span>?
+                        <span className="text-[var(--md-color-on-surface)] font-medium">"{account.name}"</span>?
                     </p>
-                    <p className="text-red-400 text-xs">Esta ação não pode ser desfeita.</p>
+                    <p className="text-[var(--md-color-error)] text-xs">Esta ação não pode ser desfeita.</p>
                 </div>
 
                 <div className="flex gap-3">
@@ -408,7 +408,7 @@ function DeleteConfirmModal({ account, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -439,7 +439,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
     const [typeFilter, setTypeFilter] = useState<AccountType | 'all'>('all');
 
     const activeAccounts = accounts.filter((a) => a.is_active);
-    const totalBalance = activeAccounts.reduce((sum, a) => sum + parseFloat(a.current_balance), 0);
+    const totalBalance = activeAccounts.reduce((sum, a) => sum + (Number(a.current_balance) || 0), 0);
     const totalOverdraftAvailable = activeAccounts
         .filter(a => a.current_balance < 0 && a.overdraft_limit > 0)
         .reduce((sum, a) => sum + Math.max(0, a.overdraft_limit + a.current_balance), 0);
@@ -483,8 +483,8 @@ export default function BankAccountsIndex({ accounts }: Props) {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Contas Bancárias</h1>
-                        <p className="text-gray-400 text-sm mt-1">
+                        <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">Contas Bancárias</h1>
+                        <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
                             {accounts.length === 0
                                 ? 'Nenhuma conta cadastrada'
                                 : `${accounts.length} conta${accounts.length !== 1 ? 's' : ''} cadastrada${accounts.length !== 1 ? 's' : ''}`}
@@ -503,7 +503,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                 {/* Filtros por tipo */}
                 {accounts.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-gray-500 text-xs flex items-center gap-1">
+                        <span className="text-[var(--md-color-on-surface-variant)] text-xs flex items-center gap-1">
                             <Filter size={12} /> Filtrar:
                         </span>
                         {([['all', 'Todas'], ['checking', 'Corrente'], ['savings', 'Poupança'], ['investment', 'Investimento'], ['cash', 'Dinheiro'], ['other', 'Outro']] as [AccountType | 'all', string][]).map(([val, label]) => (
@@ -513,7 +513,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
                                     typeFilter === val
                                         ? 'border-[#22c55e]/40 bg-[#22c55e]/10 text-[#22c55e]'
-                                        : 'border-[var(--color-border)] bg-[var(--color-surface)] text-gray-400 hover:text-white'
+                                        : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)]'
                                 }`}
                             >
                                 {label}
@@ -528,11 +528,11 @@ export default function BankAccountsIndex({ accounts }: Props) {
                         <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center">
                             <Wallet size={18} className="text-[#22c55e]" />
                         </div>
-                        <p className="text-gray-400 text-sm">Saldo Total Consolidado</p>
+                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Saldo Total Consolidado</p>
                     </div>
                     <p
                         className={`text-3xl font-bold ${
-                            totalBalance >= 0 ? 'text-white' : 'text-red-400'
+                            totalBalance >= 0 ? 'text-[var(--md-color-on-surface)]' : 'text-[var(--md-color-error)]'
                         }`}
                     >
                         {formatCurrency(totalBalance)}
@@ -543,7 +543,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                         </p>
                     )}
                     {activeAccounts.length !== accounts.length && (
-                        <p className="text-gray-500 text-xs mt-2">
+                        <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-2">
                             Considera apenas {activeAccounts.length} conta{activeAccounts.length !== 1 ? 's' : ''} ativa{activeAccounts.length !== 1 ? 's' : ''}
                         </p>
                     )}
@@ -553,11 +553,11 @@ export default function BankAccountsIndex({ accounts }: Props) {
                 {accounts.length === 0 ? (
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
-                            <Wallet size={24} className="text-gray-500" />
+                            <Wallet size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">
-                            <p className="text-white font-medium">Nenhuma conta cadastrada</p>
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-[var(--md-color-on-surface)] font-medium">Nenhuma conta cadastrada</p>
+                            <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
                                 Adicione sua primeira conta bancária para começar.
                             </p>
                         </div>

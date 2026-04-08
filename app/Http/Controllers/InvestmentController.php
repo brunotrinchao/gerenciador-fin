@@ -110,6 +110,14 @@ class InvestmentController extends Controller
             'date'            => ['required', 'date'],
         ]);
 
+        // Valida que o valor do resgate não excede o saldo atual
+        if ($request->amount > $investment->current_amount) {
+            return back()->withErrors(['amount' => 'O valor do resgate supera o saldo disponível (' . number_format($investment->current_amount, 2, ',', '.') . ').']);
+        }
+
+        // Valida que a conta bancária pertence ao usuário
+        BankAccount::where('user_id', auth()->id())->findOrFail($request->bank_account_id);
+
         // Criar transação de resgate (investment_out = entrada na conta)
         Transaction::create([
             'user_id'         => auth()->id(),

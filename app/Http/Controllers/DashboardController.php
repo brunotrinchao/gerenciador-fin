@@ -107,9 +107,9 @@ class DashboardController extends Controller
         $upcomingPayments = $upcoming->sortBy('date')->take(10)->values();
         $longUpcomingPayments = $upcoming->sortBy('date')->take(15)->values();
 
-        // ── Gastos por categoria (mês atual) ──────────────────
+        // ── Gastos por categoria (mês atual) — apenas Expense real (sem CreditCard para evitar dupla contagem)
         $expensesByCategory = Transaction::byUser($userId)
-            ->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])
+            ->where('type', TransactionType::Expense->value)
             ->where('status', TransactionStatus::Paid->value)
             ->whereYear('date', $now->year)
             ->whereMonth('date', $now->month)
@@ -157,24 +157,25 @@ class DashboardController extends Controller
         // Add bank accounts detail
         $bankAccounts = BankAccount::byUser($userId)->active()->get();
 
-        // Dívida por cartão: um resumo por cartão (nome, últimos 4 dígitos, bandeira, total pendente)
+        // Dívida por cartão: agrega em uma única query (evita N+1)
+        $pendingByCard = Transaction::byUser($userId)
+            ->where('type', TransactionType::CreditCard->value)
+            ->where('status', TransactionStatus::Pending->value)
+            ->groupBy('credit_card_id')
+            ->selectRaw('credit_card_id, SUM(amount) as total')
+            ->pluck('total', 'credit_card_id');
+
         $detailedDebt = CreditCard::where('user_id', $userId)
             ->where('is_active', true)
             ->get()
-            ->map(function (CreditCard $card) use ($userId) {
-                $pendingAmount = Transaction::byUser($userId)
-                    ->where('type', TransactionType::CreditCard->value)
-                    ->where('status', TransactionStatus::Pending->value)
-                    ->where('credit_card_id', $card->id)
-                    ->sum('amount');
-
+            ->map(function (CreditCard $card) use ($pendingByCard) {
                 return [
                     'id'               => $card->id,
                     'name'             => $card->name,
                     'brand'            => $card->brand,
                     'last_four_digits' => $card->last_four_digits,
                     'color'            => $card->color,
-                    'pending_amount'   => round((float) $pendingAmount, 2),
+                    'pending_amount'   => round((float) ($pendingByCard->get($card->id, 0)), 2),
                 ];
             })
             ->filter(fn (array $item) => $item['pending_amount'] > 0)

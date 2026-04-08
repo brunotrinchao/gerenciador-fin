@@ -9,14 +9,15 @@ use App\Models\CreditCard;
 use App\Models\Installment;
 use App\Models\InstallmentGroup;
 use App\Models\Transaction;
-use DateTime;
+use Carbon\Carbon;
 
 class InstallmentService
 {
     public function create(array $data): InstallmentGroup
     {
         
-        $totalAmount       = (float) $data['amount'];
+        // Aceita 'amount' (via TransactionController) ou 'total_amount' (via InstallmentGroupController/testes)
+        $totalAmount       = (float) ($data['total_amount'] ?? $data['amount'] ?? 0);
         $n                 = (int) $data['total_installments'];
         $installmentAmount = round($totalAmount / $n, 2);
         // Diferença de arredondamento vai na última parcela
@@ -36,20 +37,14 @@ class InstallmentService
             'status'             => InstallmentStatus::Active,
         ]);
 
-        $purchaseDate = new DateTime($data['start_date']);
+        $purchaseDate = Carbon::parse($data['start_date']);
 
         if (! empty($data['credit_card_id'])) {
             $card     = CreditCard::findOrFail($data['credit_card_id']);
-            $firstDue = $card->calculateDueDate($purchaseDate);
+            $firstDue = Carbon::instance($card->calculateDueDate($purchaseDate->toDateTime()));
         } else {
-            // Débito direto: vence no mesmo dia do mês seguinte
-            $firstDue = clone $purchaseDate;
-            // $firstDue->modify('first day of next month');
-            $firstDue->setDate(
-                (int) $firstDue->format('Y'),
-                (int) $firstDue->format('m'),
-                (int) $purchaseDate->format('d')
-            );
+            // Débito direto: vence no mesmo dia do mês seguinte (sem overflow para meses curtos)
+            $firstDue = $purchaseDate->copy()->addMonthNoOverflow();
         }
 
         $txType = ! empty($data['credit_card_id'])
@@ -59,10 +54,8 @@ class InstallmentService
         for ($i = 1; $i <= $n; $i++) {
             $amount = ($i === $n) ? $lastAmount : $installmentAmount;
 
-            $dueDate = clone $firstDue;
-            if ($i > 1) {
-                $dueDate->modify('+' . ($i - 1) . ' months');
-            }
+            // addMonthsNoOverflow evita overflow (ex: jan/31 + 1 mês = fev/28, não mar/03)
+            $dueDate = $firstDue->copy()->addMonthsNoOverflow($i - 1);
 
             $transaction = Transaction::create([
                 'user_id'              => $data['user_id'],

@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
+import { DateInput } from '@/Components/DateInput';
 import { PageHeader, PageHeaderState } from '@/Components/PageHeader';
 import AppLayout from '@/Layouts/AppLayout';
 import {
@@ -55,6 +57,7 @@ interface Props {
     summary: {
         income: number;
         expense: number;
+        credit_card: number;
     };
     currentMonth: string;
 }
@@ -84,11 +87,6 @@ interface TransactionFormData {
 
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 const isDebit = (type: TransactionType) =>
     ['expense', 'credit_card', 'transfer', 'investment_in'].includes(type);
@@ -945,20 +943,13 @@ function TransactionFormModal({
                             )}
                         </div>
 
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">
-                                Data <span className="text-red-400">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                value={data.date}
-                                onChange={(e) => setData('date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.date && (
-                                <p className="text-red-400 text-xs">{errors.date}</p>
-                            )}
-                        </div>
+                        <DateInput
+                            label="Data"
+                            value={data.date}
+                            onChange={(v) => setData('date', v)}
+                            error={errors.date}
+                            required
+                        />
                     </div>
 
                     {/* Parcelamento (apenas na criação) */}
@@ -1051,11 +1042,12 @@ function TransactionFormModal({
                                                 <span className="text-sm text-gray-300">Até a data</span>
                                             </label>
                                             {data.recurrence_end_date && (
-                                                <input
-                                                    type="date"
+                                                <DateInput
+                                                    label="Data de Término"
                                                     value={data.recurrence_end_date}
-                                                    onChange={(e) => setData('recurrence_end_date', e.target.value)}
-                                                    className="ml-6 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                                    onChange={(v) => setData('recurrence_end_date', v)}
+                                                    error={errors.recurrence_end_date}
+                                                    className="ml-6"
                                                 />
                                             )}
                                             <label className="flex items-center gap-2 cursor-pointer">
@@ -1463,7 +1455,7 @@ export default function TransactionsIndex({
     const [scopeModal, setScopeModal] = useState<{ transaction: Transaction; action: 'edit' | 'delete' } | null>(null);
     const [pendingEditScope, setPendingEditScope] = useState<string>('');
 
-    const balance = summary.income - summary.expense;
+    const balance = summary.income - summary.expense - summary.credit_card;
 
     const applyFilter = (newFilters: Record<string, string>) => {
         router.get(
@@ -1639,6 +1631,11 @@ export default function TransactionsIndex({
                                 colorClass="text-red-400"
                             />
                             <PageHeaderState
+                                title="Faturas"
+                                value={formatCurrency(summary.credit_card)}
+                                colorClass="text-purple-400"
+                            />
+                            <PageHeaderState
                                 title="Saldo"
                                 value={formatCurrency(balance)}
                                 colorClass={balance >= 0 ? 'text-blue-400' : 'text-red-400'}
@@ -1647,11 +1644,11 @@ export default function TransactionsIndex({
                     }
                     filters={
                         <>
-                            <input
+                            <DateInput
                                 type="month"
-                                defaultValue={filters.month ?? currentMonth}
-                                onChange={(e) => applyFilter({ month: e.target.value })}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                label="Mês"
+                                value={filters.month ?? currentMonth}
+                                onChange={(v) => applyFilter({ month: v })}
                             />
 
                             <select

@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { CreditCard, BankAccount, Category } from '@/types/models';
 import { CurrencyInput } from '@/Components/CurrencyInput';
+import { DateInput } from '@/Components/DateInput';
 import { BrandSelector, guessBrandFromBank } from '@/Components/BrandSelector';
 import {
     UploadCloud,
@@ -795,15 +796,12 @@ export default function ImportCreate({
                                         className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-[#22c55e] transition-colors"
                                     />
                                 </div>
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-sm text-gray-400">Vencimento <span className="text-red-400">*</span></label>
-                                    <input
-                                        type="date"
-                                        value={boletoForm.due_date}
-                                        onChange={(e) => setBoletoForm(p => ({ ...p, due_date: e.target.value }))}
-                                        className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                                    />
-                                </div>
+                                <DateInput
+                                    label="Data de Vencimento"
+                                    value={boletoForm.due_date}
+                                    onChange={(v) => setBoletoForm(p => ({ ...p, due_date: v }))}
+                                    required
+                                />
                             </div>
 
                             {/* Conta bancária */}
@@ -835,15 +833,12 @@ export default function ImportCreate({
                                     />
                                 </div>
                                 {parseInt(boletoForm.total_installments) > 1 && (
-                                    <div className="flex flex-col gap-1.5">
-                                        <label className="text-sm text-gray-400">Data da 1ª parcela <span className="text-red-400">*</span></label>
-                                        <input
-                                            type="date"
-                                            value={boletoForm.first_payment_date}
-                                            onChange={(e) => setBoletoForm(p => ({ ...p, first_payment_date: e.target.value }))}
-                                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                                        />
-                                    </div>
+                                    <DateInput
+                                        label="Data da 1ª Parcela"
+                                        value={boletoForm.first_payment_date}
+                                        onChange={(v) => setBoletoForm(p => ({ ...p, first_payment_date: v }))}
+                                        required
+                                    />
                                 )}
                             </div>
 

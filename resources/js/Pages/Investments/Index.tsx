@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Investment, BankAccount, InvestmentType } from '@/types/models';
+import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
+import { DateInput } from '@/Components/DateInput';
 import {
     Plus,
     TrendingUp,
@@ -58,11 +60,6 @@ interface RedeemFormData {
 
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 const investmentTypeLabels: Record<InvestmentType, string> = {
     renda_fixa: 'Renda Fixa',
@@ -306,27 +303,17 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
 
                     {/* Datas */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">
-                                Data de início <span className="text-red-400">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                value={form.start_date}
-                                onChange={(e) => set('start_date', e.target.value)}
-                                required
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de vencimento</label>
-                            <input
-                                type="date"
-                                value={form.maturity_date}
-                                onChange={(e) => set('maturity_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                        </div>
+                        <DateInput
+                            label="Data de Início"
+                            value={form.start_date}
+                            onChange={(v) => set('start_date', v)}
+                            required
+                        />
+                        <DateInput
+                            label="Data de Vencimento"
+                            value={form.maturity_date}
+                            onChange={(v) => set('maturity_date', v)}
+                        />
                     </div>
 
                     {/* Actions */}
@@ -419,18 +406,12 @@ function SnapshotModal({ investment, onClose }: SnapshotModalProps) {
                         <span className="text-white font-medium">{investment.name}</span>
                     </p>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Data de referência <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                            type="date"
-                            value={form.reference_date}
-                            onChange={(e) => set('reference_date', e.target.value)}
-                            required
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                        />
-                    </div>
+                    <DateInput
+                        label="Data de Referência"
+                        value={form.reference_date}
+                        onChange={(v) => set('reference_date', v)}
+                        required
+                    />
 
                     <div className="flex flex-col gap-1.5">
                         <label className="text-sm text-gray-400">
@@ -581,18 +562,12 @@ function RedeemModal({ investment, accounts, onClose }: RedeemModalProps) {
                         </select>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Data do resgate <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                            type="date"
-                            value={form.date}
-                            onChange={(e) => set('date', e.target.value)}
-                            required
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                        />
-                    </div>
+                    <DateInput
+                        label="Data do Resgate"
+                        value={form.date}
+                        onChange={(v) => set('date', v)}
+                        required
+                    />
 
                     <div className="flex gap-3 pt-1">
                         <button

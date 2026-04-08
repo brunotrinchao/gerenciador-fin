@@ -18,16 +18,12 @@ class InvoiceController extends Controller
     public function index(Request $request): Response
     {
         $userId = auth()->id();
-        $month = $request->query('month');
+        $month  = $request->query('month', now()->format('Y-m'));
 
-        $query = CreditCardStatement::where('user_id', $userId)
-            ->with('creditCard');
-
-        if ($month) {
-            $query->where('reference_month', $month);
-        }
-
-        $statements = $query->orderBy('reference_month', 'desc')
+        $statements = CreditCardStatement::where('user_id', $userId)
+            ->with('creditCard')
+            ->where('reference_month', $month)
+            ->orderBy('reference_month', 'desc')
             ->paginate(24)
             ->withQueryString();
 
@@ -38,7 +34,7 @@ class InvoiceController extends Controller
             'statements'   => $statements,
             'creditCards'  => $creditCards,
             'bankAccounts' => $bankAccounts,
-            'filters'      => $request->only('month'),
+            'filters'      => ['month' => $month],
         ]);
     }
 
@@ -101,12 +97,15 @@ class InvoiceController extends Controller
             ->where('credit_card_id', $statement->credit_card_id)
             ->whereYear('date', $year)
             ->whereMonth('date', $month)
-            ->where('status', TransactionStatus::Pending)
+            ->where('status', TransactionStatus::Pending->value)
             ->get()
             ->each(fn ($tx) => $tx->update(['status' => TransactionStatus::Paid->value]));
 
         // Cria débito na conta bancária se informada
         if ($bankAccountId) {
+            // Valida que a conta pertence ao usuário autenticado
+            BankAccount::byUser(auth()->id())->findOrFail($bankAccountId);
+
             Transaction::create([
                 'user_id'         => auth()->id(),
                 'bank_account_id' => (int) $bankAccountId,

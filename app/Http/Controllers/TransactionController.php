@@ -65,16 +65,19 @@ class TransactionController extends Controller
             ->whereYear('date', $year)
             ->whereMonth('date', $mon);
 
-        $summary = [
-            'income'  => (clone $allMonth)->where('type', TransactionType::Income->value)->sum('amount'),
-            'expense' => (clone $allMonth)->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])->sum('amount'),
-        ];
-
         // Faturas do mês
         $statements = CreditCardStatement::where('user_id', $userId)
             ->where('reference_month', $month)
             ->with('creditCard')
             ->get();
+
+        // Transações credit_card NÃO são despesa de caixa — são dívidas pagas na fatura.
+        // O valor das faturas é somado diretamente do total_amount dos statements do mês.
+        $summary = [
+            'income'      => (clone $allMonth)->where('type', TransactionType::Income->value)->sum('amount'),
+            'expense'     => (clone $allMonth)->where('type', TransactionType::Expense->value)->sum('amount'),
+            'credit_card' => (float) $statements->sum('total_amount'),
+        ];
 
         // Dados para os formulários
         $accounts    = BankAccount::byUser($userId)->active()->orderBy('name')->get();
@@ -115,8 +118,8 @@ class TransactionController extends Controller
 
         // Transferência: cria 2 transações (saída como expense, entrada como income)
         if ($type === TransactionType::Transfer) {
-            $fromAccount = BankAccount::findOrFail($data['bank_account_id']);
-            $toAccount   = BankAccount::findOrFail($data['transfer_to_account_id']);
+            $fromAccount = BankAccount::where('user_id', $userId)->findOrFail($data['bank_account_id']);
+            $toAccount   = BankAccount::where('user_id', $userId)->findOrFail($data['transfer_to_account_id']);
 
             // Saída da conta origem
             Transaction::create([
@@ -225,6 +228,8 @@ class TransactionController extends Controller
         // Se a transação não tem conta bancária e foi fornecida uma, associar agora
         $bankAccountId = $request->input('bank_account_id');
         if ($bankAccountId && !$transaction->bank_account_id) {
+            // Valida que a conta pertence ao usuário antes de associar
+            BankAccount::where('user_id', $transaction->user_id)->findOrFail($bankAccountId);
             $updateData['bank_account_id'] = (int) $bankAccountId;
         }
 

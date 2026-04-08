@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\InstallmentStatus;
+use App\Enums\TransactionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class InstallmentGroup extends Model
 {
@@ -16,17 +18,19 @@ class InstallmentGroup extends Model
     protected static function booted()
     {
         static::deleting(function (InstallmentGroup $group) {
-            $group->installments()->each(function ($installment) {
-                $installment->delete();
-            });
-            
-            Transaction::where('installment_group_id', $group->id)
-                ->get()
-                ->each(function ($transaction) {
-                    $transaction->installment_group_id = null;
-                    $transaction->save();
-                    $transaction->delete();
+            DB::transaction(function () use ($group) {
+                $group->installments()->each(function ($installment) {
+                    $installment->delete();
                 });
+
+                Transaction::where('installment_group_id', $group->id)
+                    ->get()
+                    ->each(function ($transaction) {
+                        $transaction->installment_group_id = null;
+                        $transaction->save();
+                        $transaction->delete();
+                    });
+            });
         });
     }
 
@@ -81,16 +85,19 @@ class InstallmentGroup extends Model
 
     public function getTotalRemainingAttribute(): float
     {
-        $remaining = $this->total_installments - $this->paid_installments;
+        // Usa total_amount como fonte da verdade para evitar erro de arredondamento
+        // da última parcela (que pode ser diferente das demais).
+        $paid       = (int) $this->paid_installments;
+        $paidAmount = round($paid * (float) $this->installment_amount, 2);
 
-        return $remaining * (float) $this->installment_amount;
+        return max(0.0, round((float) $this->total_amount - $paidAmount, 2));
     }
 
     public function cancelFutureInstallments(): void
     {
         $this->installments()
-            ->where('status', 'pending')
-            ->update(['status' => 'cancelled']);
+            ->where('status', TransactionStatus::Pending->value)
+            ->update(['status' => TransactionStatus::Cancelled->value]);
 
         $this->update(['status' => InstallmentStatus::Cancelled]);
     }

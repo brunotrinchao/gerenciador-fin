@@ -66,7 +66,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                         <Link
                             href={route('imports.index')}
                             onClick={() => setFabOpen(false)}
-                            className="w-11 h-11 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
+                            className="w-11 h-11 rounded-[var(--md-shape-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
                         >
                             <Upload size={18} />
                         </Link>
@@ -84,7 +84,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                         <Link
                             href={route('transactions.index')}
                             onClick={() => setFabOpen(false)}
-                            className="w-11 h-11 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
+                            className="w-11 h-11 rounded-[var(--md-shape-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg flex items-center justify-center text-gray-300 hover:text-white transition-colors"
                         >
                             <ArrowLeftRight size={18} />
                         </Link>
@@ -93,8 +93,12 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                     {/* Botão principal FAB */}
                     <button
                         onClick={() => setFabOpen((o) => !o)}
-                        className="w-14 h-14 rounded-full bg-[#22c55e] hover:bg-[#16a34a] shadow-lg flex items-center justify-center text-black transition-all duration-200"
-                        style={{ transform: fabOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
+                        className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200"
+                        style={{
+                            backgroundColor: 'var(--md-color-primary-container)',
+                            color: 'var(--md-color-on-primary-container)',
+                            transform: fabOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                        }}
                         aria-label="Ações rápidas"
                     >
                         <Plus size={24} />

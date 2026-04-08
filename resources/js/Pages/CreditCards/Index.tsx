@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { CreditCard } from '@/types/models';
-import { formatCurrency } from '@/lib/utils';
 import { LimitBar } from '@/Components/CreditCards/LimitBar';
 import { Plus, CreditCard as CreditCardIcon, Pencil, Trash2, X } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
@@ -33,14 +32,6 @@ interface FormData {
 const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-const brandLabels: Record<string, string> = {
-    visa: 'Visa',
-    mastercard: 'Mastercard',
-    elo: 'Elo',
-    amex: 'American Express',
-    hipercard: 'Hipercard',
-    outro: 'Outro',
-};
 
 const PRESET_COLORS = [
     '#6366f1', '#8b5cf6', '#ec4899', '#ef4444',
@@ -103,11 +94,6 @@ interface CreditCardCardProps {
 }
 
 function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
-    const usedAmount = card.credit_limit - card.available_limit;
-    const usagePercent = card.credit_limit > 0
-        ? Math.min((usedAmount / card.credit_limit) * 100, 100)
-        : 0;
-
     return (
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col">
             {/* Cartão visual — proporção 1.586:1 */}
@@ -163,12 +149,12 @@ function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
                 <div className="flex items-center justify-between text-sm">
                     <div className="flex gap-4">
                         <div>
-                            <p className="text-gray-500 text-xs">Fechamento</p>
-                            <p className="text-white font-medium">Dia {card.closing_day}</p>
+                            <p className="text-[var(--md-color-on-surface-variant)] text-xs">Fechamento</p>
+                            <p className="text-[var(--md-color-on-surface)] font-medium">Dia {card.closing_day}</p>
                         </div>
                         <div>
-                            <p className="text-gray-500 text-xs">Vencimento</p>
-                            <p className="text-white font-medium">Dia {card.due_day}</p>
+                            <p className="text-[var(--md-color-on-surface-variant)] text-xs">Vencimento</p>
+                            <p className="text-[var(--md-color-on-surface)] font-medium">Dia {card.due_day}</p>
                         </div>
                     </div>
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
@@ -179,8 +165,8 @@ function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
                 </div>
 
                 {card.bank_account && (
-                    <p className="text-gray-500 text-xs">
-                        Vinculado a: <span className="text-gray-300">{card.bank_account.name}</span>
+                    <p className="text-[var(--md-color-on-surface-variant)] text-xs">
+                        Vinculado a: <span className="text-[var(--md-color-on-surface-variant)]">{card.bank_account.name}</span>
                     </p>
                 )}
 
@@ -188,14 +174,14 @@ function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
                 <div className="flex items-center gap-2 pt-1 border-t border-[var(--color-border)]">
                     <button
                         onClick={() => onEdit(card)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
                     >
                         <Pencil size={13} />
                         Editar
                     </button>
                     <button
                         onClick={() => onDelete(card)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-error)] hover:bg-red-500/10 transition-colors text-xs font-medium"
                     >
                         <Trash2 size={13} />
                         Excluir
@@ -254,12 +240,12 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
             <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-surface)] z-10">
-                    <h2 className="text-white font-semibold text-lg">
+                    <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">
                         {isEditing ? 'Editar Cartão' : 'Novo Cartão'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -269,53 +255,53 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                 <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
                     {/* Nome */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Nome <span className="text-red-400">*</span>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                            Nome <span className="text-[var(--md-color-error)]">*</span>
                         </label>
                         <input
                             type="text"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             placeholder="Ex: Nubank Roxinho"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.name && (
-                            <p className="text-red-400 text-xs">{errors.name}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.name}</p>
                         )}
                     </div>
 
                     {/* Bandeira */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">Bandeira</label>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">Bandeira</label>
                         <BrandSelector
                             value={data.brand}
                             onChange={(v) => setData('brand', v)}
                         />
                         {errors.brand && (
-                            <p className="text-red-400 text-xs">{errors.brand}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.brand}</p>
                         )}
                     </div>
 
                     {/* Limite */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Limite de Crédito <span className="text-red-400">*</span>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                            Limite de Crédito <span className="text-[var(--md-color-error)]">*</span>
                         </label>
                         <CurrencyInput
                             value={data.credit_limit}
                             onChange={(v) => setData('credit_limit', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.credit_limit && (
-                            <p className="text-red-400 text-xs">{errors.credit_limit}</p>
+                            <p className="text-[var(--md-color-error)] text-xs">{errors.credit_limit}</p>
                         )}
                     </div>
 
                     {/* Dias */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">
-                                Dia de Fechamento <span className="text-red-400">*</span>
+                            <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                                Dia de Fechamento <span className="text-[var(--md-color-error)]">*</span>
                             </label>
                             <input
                                 type="number"
@@ -324,16 +310,16 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                                 value={data.closing_day}
                                 onChange={(e) => setData('closing_day', e.target.value)}
                                 placeholder="Ex: 20"
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.closing_day && (
-                                <p className="text-red-400 text-xs">{errors.closing_day}</p>
+                                <p className="text-[var(--md-color-error)] text-xs">{errors.closing_day}</p>
                             )}
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">
-                                Dia de Vencimento <span className="text-red-400">*</span>
+                            <label className="text-sm text-[var(--md-color-on-surface-variant)]">
+                                Dia de Vencimento <span className="text-[var(--md-color-error)]">*</span>
                             </label>
                             <input
                                 type="number"
@@ -342,17 +328,17 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                                 value={data.due_day}
                                 onChange={(e) => setData('due_day', e.target.value)}
                                 placeholder="Ex: 27"
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.due_day && (
-                                <p className="text-red-400 text-xs">{errors.due_day}</p>
+                                <p className="text-[var(--md-color-error)] text-xs">{errors.due_day}</p>
                             )}
                         </div>
                     </div>
 
                     {/* Cor */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">Cor do Cartão</label>
+                        <label className="text-sm text-[var(--md-color-on-surface-variant)]">Cor do Cartão</label>
                         <div className="flex items-center gap-2 flex-wrap">
                             {PRESET_COLORS.map((color) => (
                                 <button
@@ -408,7 +394,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                                     />
                                 </div>
                             </div>
-                            <span className="text-sm text-gray-400">Cartão ativo</span>
+                            <span className="text-sm text-[var(--md-color-on-surface-variant)]">Cartão ativo</span>
                         </label>
                     )}
 
@@ -417,7 +403,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -466,12 +452,12 @@ function DeleteConfirmModal({ card, onClose }: DeleteConfirmModalProps) {
 
             <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
-                    <h2 className="text-white font-semibold text-lg">Excluir cartão</h2>
-                    <p className="text-gray-400 text-sm">
+                    <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">Excluir cartão</h2>
+                    <p className="text-[var(--md-color-on-surface-variant)] text-sm">
                         Tem certeza que deseja excluir o cartão{' '}
-                        <span className="text-white font-medium">"{card.name}"</span>?
+                        <span className="text-[var(--md-color-on-surface)] font-medium">"{card.name}"</span>?
                     </p>
-                    <p className="text-red-400 text-xs">Esta ação não pode ser desfeita.</p>
+                    <p className="text-[var(--md-color-error)] text-xs">Esta ação não pode ser desfeita.</p>
                 </div>
 
                 <div className="flex gap-3">
@@ -479,7 +465,7 @@ function DeleteConfirmModal({ card, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -547,8 +533,8 @@ export default function CreditCardsIndex({ cards }: Props) {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Cartões de Crédito</h1>
-                        <p className="text-gray-400 text-sm mt-1">
+                        <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">Cartões de Crédito</h1>
+                        <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
                             {cards.length === 0
                                 ? 'Nenhum cartão cadastrado'
                                 : `${cards.length} cartão${cards.length !== 1 ? 'ões' : ''} cadastrado${cards.length !== 1 ? 's' : ''}`}
@@ -575,12 +561,12 @@ export default function CreditCardsIndex({ cards }: Props) {
                                 <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-2)] flex items-center justify-center">
-                                            <CreditCardIcon size={16} className="text-gray-400" />
+                                            <CreditCardIcon size={16} className="text-[var(--md-color-on-surface-variant)]" />
                                         </div>
-                                        <p className="text-gray-400 text-sm">Limite Total</p>
+                                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Limite Total</p>
                                     </div>
-                                    <p className="text-white font-bold text-2xl">{formatCurrency(totalLimit)}</p>
-                                    <p className="text-gray-500 text-xs mt-1">
+                                    <p className="text-[var(--md-color-on-surface)] font-bold text-2xl">{formatCurrency(totalLimit)}</p>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
                                         {activeCards.length} cartão{activeCards.length !== 1 ? 'ões' : ''} ativo{activeCards.length !== 1 ? 's' : ''}
                                     </p>
                                 </div>
@@ -591,10 +577,10 @@ export default function CreditCardsIndex({ cards }: Props) {
                                         <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
                                             <CreditCardIcon size={16} className="text-[#22c55e]" />
                                         </div>
-                                        <p className="text-gray-400 text-sm">Disponível</p>
+                                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Disponível</p>
                                     </div>
                                     <p className="text-[#22c55e] font-bold text-2xl">{formatCurrency(totalAvailable)}</p>
-                                    <p className="text-gray-500 text-xs mt-1">
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
                                         {totalLimit > 0 ? `${(100 - usagePercent).toFixed(0)}% livre` : 'Sem limite'}
                                     </p>
                                 </div>
@@ -603,12 +589,12 @@ export default function CreditCardsIndex({ cards }: Props) {
                                 <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
-                                            <CreditCardIcon size={16} className="text-red-400" />
+                                            <CreditCardIcon size={16} className="text-[var(--md-color-error)]" />
                                         </div>
-                                        <p className="text-gray-400 text-sm">Utilizado</p>
+                                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Utilizado</p>
                                     </div>
-                                    <p className="text-red-400 font-bold text-2xl">{formatCurrency(totalUsed)}</p>
-                                    <p className="text-gray-500 text-xs mt-1">
+                                    <p className="text-[var(--md-color-error)] font-bold text-2xl">{formatCurrency(totalUsed)}</p>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
                                         {usagePercent.toFixed(0)}% do limite total
                                     </p>
                                 </div>
@@ -617,8 +603,8 @@ export default function CreditCardsIndex({ cards }: Props) {
                             {/* Barra de uso geral */}
                             <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl px-5 py-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <p className="text-gray-400 text-xs">Uso geral dos cartões</p>
-                                    <p className="text-gray-400 text-xs">{usagePercent.toFixed(1)}% utilizado</p>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs">Uso geral dos cartões</p>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs">{usagePercent.toFixed(1)}% utilizado</p>
                                 </div>
                                 <div className="w-full h-2 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
                                     <div
@@ -638,11 +624,11 @@ export default function CreditCardsIndex({ cards }: Props) {
                 {cards.length === 0 ? (
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
-                            <CreditCardIcon size={24} className="text-gray-500" />
+                            <CreditCardIcon size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">
-                            <p className="text-white font-medium">Nenhum cartão cadastrado</p>
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-[var(--md-color-on-surface)] font-medium">Nenhum cartão cadastrado</p>
+                            <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
                                 Adicione seu primeiro cartão de crédito para começar.
                             </p>
                         </div>

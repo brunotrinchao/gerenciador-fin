@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/types/models';
+import { formatDate } from '@/lib/utils';
 import { PageHeader } from '@/Components/PageHeader';
-import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { DateInput } from '@/Components/DateInput';
+import { Plus, X, Trash2, Upload, CheckCircle, AlertCircle, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 
 // ─────────────────────────────────────────────
@@ -41,10 +43,6 @@ const formatMonth = (ym: string) => {
     return `${months[parseInt(month) - 1]} ${year}`;
 };
 
-const formatDate = (d: string) => {
-    const [y, m, day] = d.split('-');
-    return `${day}/${m}/${y}`;
-};
 
 const isOverdue = (dueDateStr: string | null): boolean => {
     if (!dueDateStr) return false;
@@ -378,48 +376,29 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
                     </div>
 
                     {/* Mês de referência */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-400">
-                            Mês de Referência <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                            type="month"
-                            value={data.reference_month}
-                            onChange={(e) => setData('reference_month', e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                        />
-                        {errors.reference_month && (
-                            <p className="text-red-400 text-xs">{errors.reference_month}</p>
-                        )}
-                    </div>
+                    <DateInput
+                        type="month"
+                        label="Mês de Referência"
+                        value={data.reference_month}
+                        onChange={(v) => setData('reference_month', v)}
+                        error={errors.reference_month}
+                        required
+                    />
 
                     {/* Datas */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Fechamento</label>
-                            <input
-                                type="date"
-                                value={data.closing_date}
-                                onChange={(e) => setData('closing_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.closing_date && (
-                                <p className="text-red-400 text-xs">{errors.closing_date}</p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Vencimento</label>
-                            <input
-                                type="date"
-                                value={data.due_date}
-                                onChange={(e) => setData('due_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.due_date && (
-                                <p className="text-red-400 text-xs">{errors.due_date}</p>
-                            )}
-                        </div>
+                        <DateInput
+                            label="Data de Fechamento"
+                            value={data.closing_date}
+                            onChange={(v) => setData('closing_date', v)}
+                            error={errors.closing_date}
+                        />
+                        <DateInput
+                            label="Data de Vencimento"
+                            value={data.due_date}
+                            onChange={(v) => setData('due_date', v)}
+                            error={errors.due_date}
+                        />
                     </div>
 
                     {/* Valor total */}
@@ -507,31 +486,18 @@ function EditStatementModal({ statement, onClose }: EditStatementModalProps) {
                 <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
                     {/* Datas */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Fechamento</label>
-                            <input
-                                type="date"
-                                value={data.closing_date}
-                                onChange={(e) => setData('closing_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.closing_date && (
-                                <p className="text-red-400 text-xs">{errors.closing_date}</p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm text-gray-400">Data de Vencimento</label>
-                            <input
-                                type="date"
-                                value={data.due_date}
-                                onChange={(e) => setData('due_date', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                            />
-                            {errors.due_date && (
-                                <p className="text-red-400 text-xs">{errors.due_date}</p>
-                            )}
-                        </div>
+                        <DateInput
+                            label="Data de Fechamento"
+                            value={data.closing_date}
+                            onChange={(v) => setData('closing_date', v)}
+                            error={errors.closing_date}
+                        />
+                        <DateInput
+                            label="Data de Vencimento"
+                            value={data.due_date}
+                            onChange={(v) => setData('due_date', v)}
+                            error={errors.due_date}
+                        />
                     </div>
 
                     {/* Valor total */}
@@ -737,6 +703,14 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
         ? statements.data.filter((s) => s.credit_card_id === selectedCardId)
         : statements.data;
 
+    const navigateMonth = (direction: -1 | 1) => {
+        const [year, month] = (filters.month || new Date().toISOString().slice(0, 7))
+            .split('-').map(Number);
+        const date = new Date(year, month - 1 + direction, 1);
+        const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        router.get(route('invoices.index'), { month: newMonth }, { preserveState: true });
+    };
+
     return (
         <AppLayout title="Faturas">
             <Head title="Faturas" />
@@ -787,19 +761,25 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     ))}
                                 </select>
                             )}
-                            <input
-                                type="month"
-                                value={filters?.month || ''}
-                                onChange={(e) => {
-                                    router.get(
-                                        route('invoices.index'), 
-                                        { month: e.target.value }, 
-                                        { preserveState: true }
-                                    );
-                                }}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                                placeholder="Filtrar por Mês"
-                            />
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => navigateMonth(-1)}
+                                    className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                    aria-label="Mês anterior"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="min-w-[130px] text-center text-sm font-medium text-[var(--color-foreground)]">
+                                    {formatMonth(filters.month || new Date().toISOString().slice(0, 7))}
+                                </span>
+                                <button
+                                    onClick={() => navigateMonth(1)}
+                                    className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                    aria-label="Próximo mês"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
                         </>
                     }
                 />
