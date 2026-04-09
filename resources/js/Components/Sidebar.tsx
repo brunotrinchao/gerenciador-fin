@@ -16,6 +16,7 @@ import {
     ChevronLeft,
     ChevronRight,
     UploadCloud,
+    CalendarClock,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -48,9 +49,10 @@ const navSections: NavSection[] = [
     {
         title: 'Movimentações',
         items: [
-            { label: 'Transações',      href: '/transactions', icon: ArrowLeftRight },
-            { label: 'Faturas',         href: '/invoices',     icon: Receipt },
-            { label: 'Importação',      href: '/imports',      icon: UploadCloud },
+            { label: 'Transações',      href: '/transactions',    icon: ArrowLeftRight },
+            { label: 'Faturas',         href: '/invoices',        icon: Receipt },
+            { label: 'Importação',      href: '/imports',         icon: UploadCloud },
+            { label: 'Processamentos',  href: '/scheduled-logs',  icon: CalendarClock },
         ],
     },
     {

@@ -12,7 +12,7 @@ export type TransactionType =
     | 'investment_in'
     | 'investment_out';
 
-export type TransactionStatus = 'pending' | 'paid' | 'cancelled';
+export type TransactionStatus = 'pending' | 'paid' | 'cancelled' | 'scheduled';
 
 export type InstallmentStatus = 'active' | 'completed' | 'cancelled';
 
@@ -251,6 +251,18 @@ export interface Budget {
     updated_at: string;
     // relations
     category?: Category;
+}
+
+export interface ScheduledTransactionLog {
+    id: number;
+    processed_at: string;
+    transactions_count: number;
+    failed_count: number;
+    processed_transaction_ids: number[] | null;
+    failed_transaction_ids: number[] | null;
+    execution_ms: number | null;
+    created_at: string;
+    updated_at: string;
 }
 
 // ─────────────────────────────────────────────

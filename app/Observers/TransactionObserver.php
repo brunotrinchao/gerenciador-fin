@@ -19,9 +19,13 @@ class TransactionObserver
             $this->recalculateCardLimit($transaction->credit_card_id);
         }
 
-        // Cria evento no Calendar para transações pendentes (exceto parcelas, que têm evento próprio)
+        // Cria evento no Calendar para transações pendentes ou agendadas (exceto parcelas, que têm evento próprio)
+        $isEligibleForCalendar = in_array($transaction->status, [
+            TransactionStatus::Pending,
+            TransactionStatus::Scheduled,
+        ]);
         if (
-            $transaction->status === TransactionStatus::Pending
+            $isEligibleForCalendar
             && is_null($transaction->installment_group_id)
             && $transaction->user->google_calendar_enabled
         ) {
@@ -50,8 +54,12 @@ class TransactionObserver
             }
         }
 
-        // Remove evento do Calendar quando a transação sai do status pendente
-        if ($transaction->wasChanged('status') && $transaction->status !== TransactionStatus::Pending) {
+        // Remove evento do Calendar quando a transação sai do status pendente ou agendado
+        $hadCalendarStatus = in_array(
+            $transaction->getOriginal('status'),
+            [TransactionStatus::Pending->value, TransactionStatus::Scheduled->value]
+        );
+        if ($transaction->wasChanged('status') && $hadCalendarStatus) {
             if (! empty($transaction->google_event_id)) {
                 DeleteCalendarEvent::dispatch($transaction->google_event_id, $transaction->user_id);
                 $transaction->withoutEvents(fn () => $transaction->update(['google_event_id' => null]));

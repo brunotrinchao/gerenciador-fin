@@ -116,6 +116,11 @@ class Transaction extends Model
         return $query->where('type', TransactionType::Income);
     }
 
+    public function scopeScheduled(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('status', TransactionStatus::Scheduled);
+    }
+
     public function markAsPaid(): void
     {
         $this->update(['status' => TransactionStatus::Paid]);

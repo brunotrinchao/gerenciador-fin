@@ -7,6 +7,7 @@ enum TransactionStatus: string
     case Pending = 'pending';
     case Paid = 'paid';
     case Cancelled = 'cancelled';
+    case Scheduled = 'scheduled';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum TransactionStatus: string
             self::Pending => 'Pendente',
             self::Paid => 'Pago',
             self::Cancelled => 'Cancelado',
+            self::Scheduled => 'Agendado',
         };
     }
 }

@@ -150,6 +150,13 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
                 </span>
             );
         }
+        if (transaction.status === 'scheduled') {
+            return (
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+                    Agendado
+                </span>
+            );
+        }
         return (
             <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400">
                 Pendente
@@ -996,7 +1003,14 @@ function TransactionFormModal({
                         <DateInput
                             label="Data"
                             value={data.date}
-                            onChange={(v) => setData('date', v)}
+                            onChange={(v) => {
+                                setData('date', v);
+                                if (v > new Date().toISOString().split('T')[0] && data.status === 'pending') {
+                                    setData('status', 'scheduled');
+                                } else if (v <= new Date().toISOString().split('T')[0] && data.status === 'scheduled') {
+                                    setData('status', 'pending');
+                                }
+                            }}
                             error={errors.date}
                             required
                         />
@@ -1145,6 +1159,7 @@ function TransactionFormModal({
                                 <option value="pending">Pendente</option>
                                 <option value="paid">Pago</option>
                                 <option value="cancelled">Cancelado</option>
+                                <option value="scheduled">Agendado</option>
                             </select>
                             {errors.status && (
                                 <p className="text-red-400 text-xs">{errors.status}</p>
@@ -1859,6 +1874,7 @@ export default function TransactionsIndex({
                                 <option value="pending">Pendente</option>
                                 <option value="paid">Pago</option>
                                 <option value="cancelled">Cancelado</option>
+                                <option value="scheduled">Agendado</option>
                             </select>
 
                             <input
