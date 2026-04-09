@@ -98,7 +98,7 @@ class InstallmentService
         $targets = $this->resolveTargets($installment, $scope);
         $group   = $installment->group;
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($targets, $group, $data, $scope) {
+        DB::transaction(function () use ($targets, $group, $data, $scope) {
             foreach ($targets as $target) {
                 $targetUpdate = [];
                 if (isset($data['amount'])) {
