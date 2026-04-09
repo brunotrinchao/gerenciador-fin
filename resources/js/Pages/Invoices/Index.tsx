@@ -19,7 +19,8 @@ interface Props {
     statements: PaginatedData<CreditCardStatement>;
     creditCards: CreditCard[];
     bankAccounts: BankAccount[];
-    filters: { month?: string };
+    filters: { month?: string; year?: string; view?: 'month' | 'year' };
+    googleCalendarEnabled?: boolean;
 }
 
 interface StatementFormData {
@@ -721,12 +722,29 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
 
     const { start: startTutorial } = useTutorial({ key: 'invoices', title: 'Tour das Faturas', steps: invoicesSteps });
 
+    const currentView = filters.view ?? 'month';
+
     const navigateMonth = (direction: -1 | 1) => {
         const [year, month] = (filters.month || new Date().toISOString().slice(0, 7))
             .split('-').map(Number);
         const date = new Date(year, month - 1 + direction, 1);
         const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        router.get(route('invoices.index'), { month: newMonth }, { preserveState: true });
+        router.get(route('invoices.index'), { view: 'month', month: newMonth }, { preserveState: true });
+    };
+
+    const navigateYear = (direction: -1 | 1) => {
+        const year = parseInt(filters.year || String(new Date().getFullYear())) + direction;
+        router.get(route('invoices.index'), { view: 'year', year: String(year) }, { preserveState: true });
+    };
+
+    const switchView = (newView: 'month' | 'year') => {
+        if (newView === 'year') {
+            const year = (filters.month || new Date().toISOString().slice(0, 7)).split('-')[0];
+            router.get(route('invoices.index'), { view: 'year', year }, { preserveState: true });
+        } else {
+            const month = filters.month || new Date().toISOString().slice(0, 7);
+            router.get(route('invoices.index'), { view: 'month', month }, { preserveState: true });
+        }
     };
 
     return (
@@ -781,24 +799,73 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     ))}
                                 </select>
                             )}
-                            <div data-tutorial="inv-month-filter" className="flex items-center gap-1">
-                                <button
-                                    onClick={() => navigateMonth(-1)}
-                                    className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
-                                    aria-label="Mês anterior"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <span className="min-w-[130px] text-center text-sm font-medium text-[var(--color-foreground)]">
-                                    {formatMonth(filters.month || new Date().toISOString().slice(0, 7))}
-                                </span>
-                                <button
-                                    onClick={() => navigateMonth(1)}
-                                    className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
-                                    aria-label="Próximo mês"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
+                            <div data-tutorial="inv-month-filter" className="flex items-center gap-2">
+                                {/* Toggle Mês / Ano */}
+                                <div className="flex items-center rounded-lg border border-[var(--color-border)] overflow-hidden">
+                                    <button
+                                        onClick={() => switchView('month')}
+                                        className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                                            currentView === 'month'
+                                                ? 'bg-[var(--color-surface-2)] text-[var(--color-foreground)]'
+                                                : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'
+                                        }`}
+                                    >
+                                        Mês
+                                    </button>
+                                    <button
+                                        onClick={() => switchView('year')}
+                                        className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                                            currentView === 'year'
+                                                ? 'bg-[var(--color-surface-2)] text-[var(--color-foreground)]'
+                                                : 'text-[var(--color-muted)] hover:text-[var(--color-foreground)]'
+                                        }`}
+                                    >
+                                        Ano
+                                    </button>
+                                </div>
+
+                                {/* Navegação condicional */}
+                                {currentView === 'month' ? (
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => navigateMonth(-1)}
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            aria-label="Mês anterior"
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+                                        <span className="min-w-[130px] text-center text-sm font-medium text-[var(--color-foreground)]">
+                                            {formatMonth(filters.month || new Date().toISOString().slice(0, 7))}
+                                        </span>
+                                        <button
+                                            onClick={() => navigateMonth(1)}
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            aria-label="Próximo mês"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => navigateYear(-1)}
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            aria-label="Ano anterior"
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+                                        <span className="min-w-[60px] text-center text-sm font-medium text-[var(--color-foreground)]">
+                                            {filters.year || new Date().getFullYear()}
+                                        </span>
+                                        <button
+                                            onClick={() => navigateYear(1)}
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            aria-label="Próximo ano"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </>
                     }

@@ -19,14 +19,31 @@ class InvoiceController extends Controller
     public function index(Request $request): Response
     {
         $userId = auth()->id();
-        $month  = $request->query('month', now()->format('Y-m'));
+        $view   = $request->query('view', 'month'); // 'month' | 'year'
 
-        $statements = CreditCardStatement::where('user_id', $userId)
-            ->with('creditCard')
-            ->where('reference_month', $month)
-            ->orderBy('reference_month', 'desc')
-            ->paginate(24)
-            ->withQueryString();
+        if ($view === 'year') {
+            $year = $request->query('year', now()->format('Y'));
+
+            $statements = CreditCardStatement::where('user_id', $userId)
+                ->with('creditCard')
+                ->where('reference_month', 'like', $year . '-%')
+                ->orderBy('reference_month', 'desc')
+                ->paginate(50)
+                ->withQueryString();
+
+            $filters = ['view' => 'year', 'year' => $year];
+        } else {
+            $month = $request->query('month', now()->format('Y-m'));
+
+            $statements = CreditCardStatement::where('user_id', $userId)
+                ->with('creditCard')
+                ->where('reference_month', $month)
+                ->orderBy('reference_month', 'desc')
+                ->paginate(24)
+                ->withQueryString();
+
+            $filters = ['view' => 'month', 'month' => $month];
+        }
 
         $creditCards  = CreditCard::byUser($userId)->active()->orderBy('name')->get();
         $bankAccounts = BankAccount::byUser($userId)->active()->orderBy('name')->get();
@@ -35,7 +52,7 @@ class InvoiceController extends Controller
             'statements'            => $statements,
             'creditCards'           => $creditCards,
             'bankAccounts'          => $bankAccounts,
-            'filters'               => ['month' => $month],
+            'filters'               => $filters,
             'googleCalendarEnabled' => (bool) auth()->user()->google_calendar_enabled,
         ]);
     }
