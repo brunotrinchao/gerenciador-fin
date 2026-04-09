@@ -56,7 +56,7 @@ class TransactionController extends Controller
             )
             ->whereYear('due_date', $year)
             ->whereMonth('due_date', $mon)
-            ->with(['group.category', 'group.bankAccount'])
+            ->with(['group.category', 'group.bankAccount', 'transaction'])
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->orderBy('due_date', 'desc')
             ->get();

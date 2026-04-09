@@ -353,9 +353,11 @@ function StatementRow({ statement, onClick }: StatementRowProps) {
 interface InstallmentRowProps {
     installment: Installment;
     onClick: (i: Installment) => void;
+    onEdit: (t: Transaction) => void;
+    onDelete: (t: Transaction) => void;
 }
 
-function InstallmentRow({ installment, onClick }: InstallmentRowProps) {
+function InstallmentRow({ installment, onClick, onEdit, onDelete }: InstallmentRowProps) {
     const handleMarkPaid = (e: React.MouseEvent) => {
         e.stopPropagation();
         router.patch(route('installments.pay', { installment: installment.id }), {}, {
@@ -363,10 +365,26 @@ function InstallmentRow({ installment, onClick }: InstallmentRowProps) {
         });
     };
 
+    const handleEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (installment.transaction) {
+            onEdit(installment.transaction);
+        }
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (installment.transaction) {
+            onDelete(installment.transaction);
+        }
+    };
+
     const isPaid = installment.status === 'paid';
     const label = installment.group
         ? `${installment.group.description} (${installment.number}/${installment.group.total_installments})`
         : `Parcela ${installment.number}`;
+
+    const isCreditCard = !!installment.group?.credit_card_id;
 
     return (
         <div
@@ -374,7 +392,11 @@ function InstallmentRow({ installment, onClick }: InstallmentRowProps) {
             onClick={() => onClick(installment)}
         >
             <div className="flex-shrink-0">
-                <Layers size={20} className="text-orange-400" />
+                {isCreditCard ? (
+                    <CreditCardIcon size={20} className="text-purple-400" />
+                ) : (
+                    <Layers size={20} className="text-orange-400" />
+                )}
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate" style={{ color: 'var(--color-foreground)' }}>
@@ -395,11 +417,16 @@ function InstallmentRow({ installment, onClick }: InstallmentRowProps) {
                             {installment.group.category.name}
                         </span>
                     )}
+                    {isCreditCard && installment.group?.creditCard && (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400">
+                            {installment.group.creditCard.name}
+                        </span>
+                    )}
                 </div>
             </div>
             <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 min-w-[100px]">
                 <span className="text-xs truncate max-w-[120px]" style={{ color: 'var(--color-muted)' }}>
-                    {installment.group?.bankAccount?.name ?? '—'}
+                    {installment.group?.creditCard?.name ?? installment.group?.bankAccount?.name ?? '—'}
                 </span>
                 <span
                     className="text-[11px] font-medium px-2 py-0.5 rounded-full"
@@ -412,7 +439,7 @@ function InstallmentRow({ installment, onClick }: InstallmentRowProps) {
                 </span>
             </div>
             <div className="flex-shrink-0 text-right min-w-[90px]">
-                <p className="text-sm font-semibold text-orange-400">
+                <p className={`text-sm font-semibold ${isCreditCard ? 'text-purple-400' : 'text-orange-400'}`}>
                     - {formatCurrency(installment.amount)}
                 </p>
             </div>
@@ -426,6 +453,20 @@ function InstallmentRow({ installment, onClick }: InstallmentRowProps) {
                         <Check size={15} />
                     </button>
                 )}
+                <button
+                    onClick={handleEdit}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                    title="Editar"
+                >
+                    <Pencil size={15} />
+                </button>
+                <button
+                    onClick={handleDelete}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Excluir"
+                >
+                    <Trash2 size={15} />
+                </button>
             </div>
         </div>
     );
@@ -443,9 +484,11 @@ type DetailItem =
 interface DetailModalProps {
     item: DetailItem;
     onClose: () => void;
+    onEdit: (t: Transaction) => void;
+    onDelete: (t: Transaction) => void;
 }
 
-function DetailModal({ item, onClose }: DetailModalProps) {
+function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
     const handlePayStatement = () => {
         if (item.kind !== 'statement') return;
         router.patch(route('invoices.pay', { statement: item.data.id }), {}, {
@@ -591,6 +634,30 @@ function DetailModal({ item, onClose }: DetailModalProps) {
                             </button>
                         )}
                     </div>
+                    <div className="flex gap-3 pt-1">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onEdit(t);
+                                onClose();
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                        >
+                            <Pencil size={14} />
+                            Editar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onDelete(t);
+                                onClose();
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-red-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/5 text-sm font-medium transition-colors"
+                        >
+                            <Trash2 size={14} />
+                            Excluir
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -702,6 +769,38 @@ function DetailModal({ item, onClose }: DetailModalProps) {
                                 Desfazer Pagamento
                             </button>
                         )}
+                    </div>
+                    <div className="flex gap-3 pt-1">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                console.log('Edit button clicked in DetailModal', { hasTransaction: !!inst.transaction });
+                                if (inst.transaction) {
+                                    onEdit(inst.transaction);
+                                    onClose();
+                                } else {
+                                    console.warn('No transaction linked to installment', inst);
+                                }
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                        >
+                            <Pencil size={14} />
+                            Editar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                console.log('Delete button clicked in DetailModal', { hasTransaction: !!inst.transaction });
+                                if (inst.transaction) {
+                                    onDelete(inst.transaction);
+                                    onClose();
+                                }
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-red-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/5 text-sm font-medium transition-colors"
+                        >
+                            <Trash2 size={14} />
+                            Excluir
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1865,7 +1964,7 @@ export default function TransactionsIndex({
                         <div data-tutorial="tx-filters" className="contents">
                             <DateInput
                                 type="month"
-                                label="Mês"
+                                label=""
                                 value={filters.month ?? currentMonth}
                                 onChange={(v) => applyFilter({ month: v })}
                             />
@@ -2029,6 +2128,8 @@ export default function TransactionsIndex({
                 <DetailModal
                     item={detailItem}
                     onClose={() => setDetailItem(null)}
+                    onEdit={openEdit}
+                    onDelete={handleDeleteClick}
                 />
             )}
 
