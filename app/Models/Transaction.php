@@ -13,18 +13,6 @@ class Transaction extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected static function booted()
-    {
-        static::deleting(function (Transaction $transaction) {
-            if ($transaction->installment_group_id) {
-                $group = InstallmentGroup::find($transaction->installment_group_id);
-                if ($group) {
-                    $group->delete();
-                }
-            }
-        });
-    }
-
     protected $fillable = [
         'user_id', 'bank_account_id', 'credit_card_id', 'credit_card_statement_id',
         'category_id', 'installment_group_id', 'parent_transaction_id', 'description',
