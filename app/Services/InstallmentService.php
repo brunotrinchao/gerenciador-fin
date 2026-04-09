@@ -93,120 +93,120 @@ class InstallmentService
         return $group;
     }
 
-    public function updateSeries(Installment $installment, array $data, string $scope): void
+    /**
+     * Update installment transactions based on scope.
+     *
+     * @param Transaction $transaction
+     * @param array $data
+     * @param string $scope  'only_this' | 'this_and_future' | 'all'
+     */
+    public function updateSeries(Transaction $transaction, array $data, string $scope): void
     {
-        $targets = $this->resolveTargets($installment, $scope);
-        $group   = $installment->group;
+        $groupId = $transaction->installment_group_id;
+        if (!$groupId) return;
 
-        DB::transaction(function () use ($targets, $group, $data, $scope) {
+        $targets = $this->resolveTargets($transaction, $scope);
+
+        DB::transaction(function () use ($targets, $transaction, $data, $scope, $groupId) {
             foreach ($targets as $target) {
-                $targetUpdate = [];
-                if (isset($data['amount'])) {
-                    $targetUpdate['amount'] = $data['amount'];
-                }
-                if (isset($data['status'])) {
-                    $targetUpdate['status'] = $data['status'];
-                }
-
-                if (! empty($targetUpdate)) {
-                    $target->update($targetUpdate);
+                $update = $data;
+                
+                // Do not sync date/due_date in bulk
+                unset($update['date']);
+                
+                // Only update if not paid (protection)
+                if ($scope !== 'only_this' && $target->status === TransactionStatus::Paid) {
+                    continue;
                 }
 
-                if ($target->transaction) {
-                    $txData = [];
-                    if (isset($data['description'])) {
-                        $txData['description'] = $data['description'] . " ({$target->number}/{$group->total_installments})";
-                    }
-                    if (isset($data['amount'])) {
-                        $txData['amount'] = $data['amount'];
-                    }
-                    if (array_key_exists('category_id', $data)) {
-                        $txData['category_id'] = $data['category_id'];
-                    }
-                    if (array_key_exists('bank_account_id', $data)) {
-                        $txData['bank_account_id'] = $data['bank_account_id'];
-                    }
-                    if (array_key_exists('notes', $data)) {
-                        $txData['notes'] = $data['notes'];
-                    }
-                    if (isset($data['status'])) {
-                        $txData['status'] = $data['status'];
-                    }
+                $target->update($update);
 
-                    if (! empty($txData)) {
-                        $target->transaction->update($txData);
+                // Sync with Installment model if it exists
+                $installment = Installment::where('transaction_id', $target->id)->first();
+                if ($installment) {
+                    $instUpdate = [];
+                    if (isset($update['amount'])) $instUpdate['amount'] = $update['amount'];
+                    if (isset($update['status'])) $instUpdate['status'] = $update['status'];
+                    if (!empty($instUpdate)) {
+                        $installment->update($instUpdate);
                     }
                 }
             }
 
-            if ($scope === 'all') {
-                $groupUpdate = [];
-                if (isset($data['description'])) {
-                    $groupUpdate['description'] = $data['description'];
-                }
-                if (array_key_exists('category_id', $data)) {
-                    $groupUpdate['category_id'] = $data['category_id'];
-                }
-                if (array_key_exists('bank_account_id', $data)) {
-                    $groupUpdate['bank_account_id'] = $data['bank_account_id'];
-                }
-                if (isset($data['amount'])) {
-                    $groupUpdate['installment_amount'] = $data['amount'];
-                }
-
-                if (! empty($groupUpdate)) {
-                    $group->update($groupUpdate);
+            // Recalculate group total if amount changed
+            if (isset($data['amount'])) {
+                $group = InstallmentGroup::find($groupId);
+                if ($group) {
+                    $group->update([
+                        'total_amount' => Installment::where('installment_group_id', $groupId)->sum('amount')
+                    ]);
                 }
             }
-
-            // Recalcula o total do grupo
-            $group->update([
-                'total_amount' => $group->installments()->sum('amount'),
-            ]);
         });
     }
 
-    public function deleteSeries(Installment $installment, string $scope): void
+    /**
+     * Delete installment transactions based on scope.
+     *
+     * @param Transaction $transaction
+     * @param string $scope  'only_this' | 'this_and_future' | 'all'
+     */
+    public function deleteSeries(Transaction $transaction, string $scope): void
     {
-        if ($scope === 'all') {
-            $installment->group->delete();
+        $groupId = $transaction->installment_group_id;
+        if (!$groupId) return;
 
-            return;
-        }
+        $targets = $this->resolveTargets($transaction, $scope);
 
-        $targets = $this->resolveTargets($installment, $scope);
-        $group   = $installment->group;
-
-        \Illuminate\Support\Facades\DB::transaction(function () use ($targets, $group) {
+        DB::transaction(function () use ($targets, $groupId) {
             foreach ($targets as $target) {
-                if ($target->transaction) {
-                    // Dissocia do grupo para evitar o observer que deleta o grupo inteiro
-                    $target->transaction->update(['installment_group_id' => null]);
-                    $target->transaction->delete();
-                }
+                // Delete Installment first to satisfy FK if needed
+                Installment::where('transaction_id', $target->id)->delete();
+                
+                // Dissocia do grupo para evitar o observer que deleta o grupo inteiro
+                $target->update(['installment_group_id' => null]);
                 $target->delete();
             }
 
-            if ($group->installments()->count() === 0) {
-                $group->delete();
+            // If all installments are gone, delete the group
+            $remaining = Installment::where('installment_group_id', $groupId)->count();
+            if ($remaining === 0) {
+                InstallmentGroup::find($groupId)?->delete();
             } else {
-                $group->update([
-                    'total_installments' => $group->installments()->count(),
-                    'total_amount'       => $group->installments()->sum('amount'),
-                ]);
+                // Update total amount and count
+                $group = InstallmentGroup::find($groupId);
+                if ($group) {
+                    $group->update([
+                        'total_installments' => $remaining,
+                        'total_amount'       => Installment::where('installment_group_id', $groupId)->sum('amount')
+                    ]);
+                }
             }
         });
     }
 
-    private function resolveTargets(Installment $installment, string $scope)
+    private function resolveTargets(Transaction $transaction, string $scope): \Illuminate\Support\Collection
     {
-        return match ($scope) {
-            'only_this'       => collect([$installment]),
-            'this_and_future' => $installment->group->installments()
-                ->where('number', '>=', $installment->number)
-                ->get(),
-            'all'             => $installment->group->installments,
-            default           => collect([$installment]),
-        };
+        if ($scope === 'only_this') {
+            return collect([$transaction]);
+        }
+
+        $groupId = $transaction->installment_group_id;
+        $currentInstallment = Installment::where('transaction_id', $transaction->id)->first();
+        
+        if (!$currentInstallment) return collect([$transaction]);
+
+        $query = Transaction::where('installment_group_id', $groupId);
+
+        if ($scope === 'all') {
+            return $query->get();
+        }
+
+        // 'this_and_future'
+        $futureTransactionIds = Installment::where('installment_group_id', $groupId)
+            ->where('number', '>=', $currentInstallment->number)
+            ->pluck('transaction_id');
+
+        return Transaction::whereIn('id', $futureTransactionIds)->get();
     }
 }

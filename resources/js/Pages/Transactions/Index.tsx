@@ -1325,12 +1325,21 @@ interface RecurrenceScopeModalProps {
 }
 
 function RecurrenceScopeModal({ transaction, action, onSelect, onClose }: RecurrenceScopeModalProps) {
-    const title = action === 'edit' ? 'Editar transação recorrente' : 'Excluir transação recorrente';
+    const isInstallment = !!transaction.installment_group_id;
+
+    const title = action === 'edit'
+        ? (isInstallment ? 'Editar parcelas' : 'Editar transação recorrente')
+        : (isInstallment ? 'Excluir parcelas' : 'Excluir transação recorrente');
+
     const description = action === 'edit'
         ? 'Escolha o escopo da edição:'
         : 'Escolha o escopo da exclusão:';
 
-    const options = [
+    const options = isInstallment ? [
+        { value: 'only_this', label: 'Só esta parcela' },
+        { value: 'this_and_future', label: 'Esta e as futuras parcelas' },
+        { value: 'all', label: 'Todas as parcelas do grupo' },
+    ] : [
         { value: 'only_this', label: 'Só esta ocorrência' },
         { value: 'this_and_future', label: 'Esta e as futuras' },
         { value: 'all', label: 'Todas as ocorrências' },
@@ -1665,7 +1674,7 @@ export default function TransactionsIndex({
     };
 
     const openEdit = (transaction: Transaction) => {
-        if (transaction.is_recurring || transaction.parent_transaction_id) {
+        if (transaction.is_recurring || transaction.parent_transaction_id || transaction.installment_group_id) {
             setScopeModal({ transaction, action: 'edit' });
             return;
         }
@@ -1695,7 +1704,7 @@ export default function TransactionsIndex({
     };
 
     const handleDeleteClick = (transaction: Transaction) => {
-        if (transaction.is_recurring || transaction.parent_transaction_id) {
+        if (transaction.is_recurring || transaction.parent_transaction_id || transaction.installment_group_id) {
             setScopeModal({ transaction, action: 'delete' });
             return;
         }
