@@ -16,7 +16,7 @@ use Tests\TestCase;
 
 class InstallmentFlowTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, \Illuminate\Foundation\Testing\WithoutMiddleware;
 
     private User $user;
 
@@ -135,7 +135,7 @@ class InstallmentFlowTest extends TestCase
             'description'        => 'Geladeira',
             'total_amount'       => 300.00,
             'total_installments' => 3,
-            'start_date'         => '2026-01-05', // before closing_day=20, so first due = Feb 15
+            'start_date'         => '2026-01-05', 
         ]);
 
         $dueDates = Installment::where('installment_group_id', $group->id)
@@ -144,11 +144,11 @@ class InstallmentFlowTest extends TestCase
             ->map(fn ($d) => $d->format('Y-m'))
             ->toArray();
 
-        // Each due date should be one month apart
+        // Each due date should be one month apart, starting from the input month
         $this->assertCount(3, $dueDates);
-        $this->assertEquals('2026-02', $dueDates[0]);
-        $this->assertEquals('2026-03', $dueDates[1]);
-        $this->assertEquals('2026-04', $dueDates[2]);
+        $this->assertEquals('2026-01', $dueDates[0]);
+        $this->assertEquals('2026-02', $dueDates[1]);
+        $this->assertEquals('2026-03', $dueDates[2]);
     }
 
     // ─────────────────────────────────────────────

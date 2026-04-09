@@ -42,15 +42,7 @@ class InstallmentService
             'status'             => InstallmentStatus::Active,
         ]);
 
-        $purchaseDate = Carbon::parse($data['start_date']);
-
-        if (! empty($data['credit_card_id'])) {
-            $card     = CreditCard::findOrFail($data['credit_card_id']);
-            $firstDue = Carbon::instance($card->calculateDueDate($purchaseDate->toDateTime()));
-        } else {
-            // Débito direto: vence no mesmo dia do mês seguinte (sem overflow para meses curtos)
-            $firstDue = $purchaseDate->copy()->addMonthNoOverflow();
-        }
+        $baseDate = Carbon::parse($data['start_date']);
 
         $txType = ! empty($data['credit_card_id'])
             ? TransactionType::CreditCard
@@ -60,7 +52,10 @@ class InstallmentService
             $amount = ($i === $n) ? $lastAmount : $installmentAmount;
 
             // addMonthsNoOverflow evita overflow (ex: jan/31 + 1 mês = fev/28, não mar/03)
-            $dueDate = $firstDue->copy()->addMonthsNoOverflow($i - 1);
+            $dueDate = $baseDate->copy()->addMonthsNoOverflow($i - 1);
+            
+            // Pula final de semana: se sábado ou domingo, vai para segunda-feira
+            $dueDate = $this->adjustForWeekend($dueDate);
 
             $transaction = Transaction::create([
                 'user_id'              => $data['user_id'],
@@ -91,6 +86,14 @@ class InstallmentService
         }
 
         return $group;
+    }
+
+    private function adjustForWeekend(Carbon $date): Carbon
+    {
+        if ($date->isWeekend()) {
+            return $date->next(Carbon::MONDAY);
+        }
+        return $date;
     }
 
     /**
@@ -162,16 +165,19 @@ class InstallmentService
             foreach ($targets as $target) {
                 // Delete Installment first to satisfy FK if needed
                 Installment::where('transaction_id', $target->id)->delete();
-                
-                // Dissocia do grupo para evitar o observer que deleta o grupo inteiro
+
+                // Dissocia do grupo antes de deletar para evitar cascatas indesejadas
                 $target->update(['installment_group_id' => null]);
-                $target->delete();
+
+                // forceDelete garante remoção física; o observer 'deleted' ainda é disparado
+                // internamente pelo SoftDeletes, recalculando saldo/limite corretamente
+                $target->forceDelete();
             }
 
-            // If all installments are gone, delete the group
+            // Se todas as parcelas foram removidas, remove o grupo também
             $remaining = Installment::where('installment_group_id', $groupId)->count();
             if ($remaining === 0) {
-                InstallmentGroup::find($groupId)?->delete();
+                InstallmentGroup::find($groupId)?->forceDelete();
             } else {
                 // Update total amount and count
                 $group = InstallmentGroup::find($groupId);
