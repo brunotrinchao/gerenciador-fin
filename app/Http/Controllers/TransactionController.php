@@ -244,8 +244,13 @@ class TransactionController extends Controller
 
         if ($transaction->is_recurring && $scope !== 'only_this') {
             $this->recurringService->updateSeries($transaction, $data, $scope);
+        } elseif ($transaction->installment_group_id && $scope !== 'only_this') {
+            $this->installmentService->updateSeries($transaction, $data, $scope);
         } else {
             $transaction->update($data);
+            if ($transaction->installment_group_id) {
+                \App\Models\Installment::where('transaction_id', $transaction->id)->update(['amount' => $transaction->amount, 'status' => $transaction->status]);
+            }
         }
 
         return redirect()->route('transactions.index')
@@ -262,7 +267,12 @@ class TransactionController extends Controller
 
         if ($transaction->is_recurring && $scope !== 'only_this') {
             $this->recurringService->deleteSeries($transaction, $scope);
+        } elseif ($transaction->installment_group_id && $scope !== 'only_this') {
+            $this->installmentService->deleteSeries($transaction, $scope);
         } else {
+            if ($transaction->installment_group_id) {
+                \App\Models\Installment::where('transaction_id', $transaction->id)->delete();
+            }
             $transaction->delete();
         }
 
