@@ -1019,8 +1019,8 @@ function TransactionFormModal({
                         />
                     </div>
 
-                    {/* Parcelamento (apenas na criação) */}
-                    {!isEditing && (data.type === 'credit_card' || data.type === 'expense') && (
+                    {/* Parcelamento (apenas na criação, apenas para despesa em conta bancária) */}
+                    {!isEditing && data.type === 'expense' && (
                         <div className="flex flex-col gap-1.5">
                             <label className="text-sm text-gray-400">Parcelas (Opcional)</label>
                             <div className="flex items-center gap-3">

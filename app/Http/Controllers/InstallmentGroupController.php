@@ -56,7 +56,7 @@ class InstallmentGroupController extends Controller
         $importedInstallments = Transaction::where('user_id', $userId)
             ->where('is_imported', true)
             ->whereNotNull('credit_card_id')
-            ->whereRaw("description REGEXP '[0-9]+/[0-9]+'")
+            ->whereRaw("description ~ '[0-9]+/[0-9]+'")
             ->with('creditCard')
             ->orderBy('date', 'desc')
             ->get()
