@@ -91,4 +91,113 @@ class InstallmentService
 
         return $group;
     }
+
+    /**
+     * Update installment transactions based on scope.
+     *
+     * @param Transaction $transaction
+     * @param array $data
+     * @param string $scope  'only_this' | 'this_and_future' | 'all'
+     */
+    public function updateSeries(Transaction $transaction, array $data, string $scope): void
+    {
+        $groupId = $transaction->installment_group_id;
+        if (!$groupId) return;
+
+        $targets = $this->resolveTargets($transaction, $scope);
+
+        foreach ($targets as $target) {
+            $update = $data;
+            
+            // Do not sync date/due_date in bulk
+            unset($update['date']);
+            
+            // Only update if not paid (protection)
+            if ($scope !== 'only_this' && $target->status === TransactionStatus::Paid) {
+                continue;
+            }
+
+            $target->update($update);
+
+            // Sync with Installment model if it exists
+            $installment = Installment::where('transaction_id', $target->id)->first();
+            if ($installment) {
+                $instUpdate = [];
+                if (isset($update['amount'])) $instUpdate['amount'] = $update['amount'];
+                if (isset($update['status'])) $instUpdate['status'] = $update['status'];
+                if (!empty($instUpdate)) {
+                    $installment->update($instUpdate);
+                }
+            }
+        }
+
+        // Recalculate group total if amount changed
+        if (isset($data['amount'])) {
+            $group = InstallmentGroup::find($groupId);
+            if ($group) {
+                $group->update([
+                    'total_amount' => Installment::where('installment_group_id', $groupId)->sum('amount')
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Delete installment transactions based on scope.
+     *
+     * @param Transaction $transaction
+     * @param string $scope  'only_this' | 'this_and_future' | 'all'
+     */
+    public function deleteSeries(Transaction $transaction, string $scope): void
+    {
+        $groupId = $transaction->installment_group_id;
+        if (!$groupId) return;
+
+        $targets = $this->resolveTargets($transaction, $scope);
+
+        foreach ($targets as $target) {
+            // Delete Installment first to satisfy FK if needed
+            Installment::where('transaction_id', $target->id)->delete();
+            $target->delete();
+        }
+
+        // If all installments are gone, delete the group
+        $remaining = Installment::where('installment_group_id', $groupId)->count();
+        if ($remaining === 0) {
+            InstallmentGroup::find($groupId)?->delete();
+        } else {
+            // Update total amount
+            $group = InstallmentGroup::find($groupId);
+            if ($group) {
+                $group->update([
+                    'total_amount' => Installment::where('installment_group_id', $groupId)->sum('amount')
+                ]);
+            }
+        }
+    }
+
+    private function resolveTargets(Transaction $transaction, string $scope): \Illuminate\Support\Collection
+    {
+        if ($scope === 'only_this') {
+            return collect([$transaction]);
+        }
+
+        $groupId = $transaction->installment_group_id;
+        $currentInstallment = Installment::where('transaction_id', $transaction->id)->first();
+        
+        if (!$currentInstallment) return collect([$transaction]);
+
+        $query = Transaction::where('installment_group_id', $groupId);
+
+        if ($scope === 'all') {
+            return $query->get();
+        }
+
+        // 'this_and_future'
+        $futureTransactionIds = Installment::where('installment_group_id', $groupId)
+            ->where('number', '>=', $currentInstallment->number)
+            ->pluck('transaction_id');
+
+        return Transaction::whereIn('id', $futureTransactionIds)->get();
+    }
 }
