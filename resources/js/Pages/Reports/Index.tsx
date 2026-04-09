@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { reportsSteps } from '@/tutorials/steps/reports';
 import {
     BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -75,6 +78,7 @@ export default function ReportsIndex({
     cashFlow, expensesByCategory, fixedExpenses, variableExpenses, netWorth,
 }: Props) {
     const [activeTab, setActiveTab] = useState<TabId>('cashflow');
+    const { start } = useTutorial({ key: 'reports', steps: reportsSteps });
 
     return (
         <AppLayout title="Relatórios">
@@ -83,12 +87,15 @@ export default function ReportsIndex({
             <div className="w-full flex flex-col gap-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Relatórios</h1>
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Relatórios</h1>
+                        <TutorialHelpButton onStart={start} />
+                    </div>
                     <p className="text-gray-400 text-sm mt-1">Análises e exportações do seu financeiro</p>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex items-center gap-2 flex-wrap border-b border-[var(--color-border)] pb-0">
+                <div data-tutorial="rep-tabs" className="flex items-center gap-2 flex-wrap border-b border-[var(--color-border)] pb-0">
                     {TABS.map(({ id, label, icon: Icon }) => (
                         <button
                             key={id}
@@ -110,13 +117,14 @@ export default function ReportsIndex({
                     <div className="flex flex-col gap-4">
                         <div className="flex justify-end">
                             <button
+                                data-tutorial="rep-export"
                                 onClick={() => exportCSV(cashFlow as unknown as Record<string, unknown>[], 'fluxo-de-caixa.csv')}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white text-sm transition-colors"
                             >
                                 <Download size={14} /> Exportar CSV
                             </button>
                         </div>
-                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                        <div data-tutorial="rep-charts" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
                             <ResponsiveContainer width="100%" height={320}>
                                 <BarChart data={cashFlow}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -278,6 +286,7 @@ export default function ReportsIndex({
                     </div>
                 )}
             </div>
+
         </AppLayout>
     );
 }

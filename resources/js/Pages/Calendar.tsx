@@ -1,6 +1,9 @@
 import { useRef, useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { calendarSteps } from '@/tutorials/steps/calendar';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -488,6 +491,7 @@ function BoletoImporter() {
 // ─────────────────────────────────────────────
 
 export default function CalendarPage({ events, year, month, summary }: Props) {
+    const { start } = useTutorial({ key: 'calendar', steps: calendarSteps });
     const calendarRef = useRef<FullCalendar>(null);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
@@ -556,9 +560,12 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                 {/* Header */}
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
-                        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-foreground)' }}>
-                            Calendário de Pagamentos
-                        </h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display" style={{ color: 'var(--color-foreground)' }}>
+                                Calendário de Pagamentos
+                            </h1>
+                            <TutorialHelpButton onStart={start} />
+                        </div>
                         <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
                             Clique em um evento para marcar como pago ou ver detalhes
                         </p>
@@ -570,7 +577,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                 </div>
 
                 {/* Type filter */}
-                <div className="flex items-center gap-2 flex-wrap">
+                <div data-tutorial="cal-nav" className="flex items-center gap-2 flex-wrap">
                     {[
                         { key: 'all',         label: 'Todos',    color: '#6b7280' },
                         { key: 'invoice',     label: 'Faturas',  color: '#a855f7' },
@@ -638,6 +645,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
 
                 {/* FullCalendar */}
                 <div
+                    data-tutorial="cal-grid"
                     className="rounded-2xl p-4 fc-theme-custom"
                     style={{
                         backgroundColor: 'var(--color-surface)',

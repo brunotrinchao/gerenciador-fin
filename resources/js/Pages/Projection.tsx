@@ -2,6 +2,9 @@ import { Head } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { projectionSteps } from '@/tutorials/steps/projection';
 import { PageHeader, PageHeaderState } from '@/Components/PageHeader';
 import {
     ComposedChart,
@@ -142,6 +145,8 @@ export default function Projection({
     const balanceDiff = finalBalance - currentBalance;
     const balanceTrend = balanceDiff >= 0 ? 'text-[#22c55e]' : 'text-red-400';
 
+    const { start: startTutorial } = useTutorial({ key: 'projection', title: 'Tour da Projeção', steps: projectionSteps });
+
     return (
         <AppLayout title="Projeção Financeira">
             <Head title="Projeção Financeira" />
@@ -150,9 +155,11 @@ export default function Projection({
                 <PageHeader
                     title="Projeção Financeira"
                     subtitle={`Fluxo de caixa projetado para os próximos ${months} meses`}
+                    onStartTutorial={startTutorial}
                     actions={
                         <>
                             <button
+                                data-tutorial="proj-export"
                                 onClick={() => exportCSV(projection)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                             >
@@ -209,7 +216,7 @@ export default function Projection({
                 />
 
                 {/* Chart */}
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                <div data-tutorial="proj-chart" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
                     <h2 className="text-sm font-semibold text-gray-300 mb-4">Fluxo de Caixa Mensal</h2>
                     <ResponsiveContainer width="100%" height={320}>
                         <ComposedChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
@@ -263,7 +270,7 @@ export default function Projection({
                 </div>
 
                 {/* Monthly breakdown table */}
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                <div data-tutorial="proj-table" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
                     <div className="px-5 py-3 border-b border-[var(--color-border)]">
                         <h2 className="text-sm font-semibold text-gray-300">Detalhamento Mensal</h2>
                     </div>

@@ -19,6 +19,7 @@ export interface AppPageProps {
         success: string | null;
         error: string | null;
     };
+    unread_notifications_count: number;
     [key: string]: unknown;
 }
 

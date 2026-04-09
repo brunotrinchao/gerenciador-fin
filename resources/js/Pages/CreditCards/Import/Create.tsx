@@ -251,7 +251,7 @@ export default function ImportCreate({
                         Cartões <span className="text-gray-400">→</span>{' '}
                         <span className="text-gray-300">Importar</span>
                     </p>
-                    <h1 className="text-2xl font-bold text-white">Importação</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Importação</h1>
                     <p className="text-gray-500 text-sm">
                         Importe faturas de cartão ou boletos bancários. Apenas PDF.
                     </p>

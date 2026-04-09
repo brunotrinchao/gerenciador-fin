@@ -3,6 +3,7 @@ import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { UserPlus, Users, Mail, Trash2, X, Clock } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { ConfirmDeleteDialog } from '@/Components/ConfirmDeleteDialog';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -122,17 +123,30 @@ function InviteModal({ roles, onClose }: { roles: Role[]; onClose: () => void })
 export default function MembersIndex({ members, invites, roles }: Props) {
     const { flash } = usePage().props;
     const [showInvite, setShowInvite] = useState(false);
+    const [deletingMember, setDeletingMember] = useState<Member | null>(null);
+    const [cancelingInvite, setCancelingInvite] = useState<Invite | null>(null);
+    const [processingDelete, setProcessingDelete] = useState(false);
 
-    const handleRemoveMember = (id: number) => {
-        if (confirm('Tem certeza que deseja remover este membro?')) {
-            router.delete(route('settings.members.destroy', id));
-        }
+    const handleRemoveMember = () => {
+        if (!deletingMember) return;
+        setProcessingDelete(true);
+        router.delete(route('settings.members.destroy', deletingMember.id), {
+            onFinish: () => {
+                setProcessingDelete(false);
+                setDeletingMember(null);
+            },
+        });
     };
 
-    const handleCancelInvite = (id: number) => {
-        if (confirm('Cancelar este convite?')) {
-            router.delete(route('settings.invites.destroy', id));
-        }
+    const handleCancelInvite = () => {
+        if (!cancelingInvite) return;
+        setProcessingDelete(true);
+        router.delete(route('settings.invites.destroy', cancelingInvite.id), {
+            onFinish: () => {
+                setProcessingDelete(false);
+                setCancelingInvite(null);
+            },
+        });
     };
 
     return (
@@ -141,16 +155,16 @@ export default function MembersIndex({ members, invites, roles }: Props) {
             <div className="w-full flex flex-col gap-6">
                 {/* Flash messages */}
                 {(flash as any)?.success && (
-                    <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-xl px-4 py-3">{(flash as any).success}</div>
+                    <div className="alert-success p-4 rounded-xl text-sm">{(flash as any).success}</div>
                 )}
                 {(flash as any)?.error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{(flash as any).error}</div>
+                    <div className="alert-error p-4 rounded-xl text-sm">{(flash as any).error}</div>
                 )}
 
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Membros</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Membros</h1>
                         <p className="text-gray-400 text-sm mt-1">
                             {members.length} membro{members.length !== 1 ? 's' : ''} · {invites.length} convite{invites.length !== 1 ? 's' : ''} pendente{invites.length !== 1 ? 's' : ''}
                         </p>
@@ -191,7 +205,7 @@ export default function MembersIndex({ members, invites, roles }: Props) {
                                             </span>
                                         )}
                                         <button
-                                            onClick={() => handleRemoveMember(member.id)}
+                                            onClick={() => setDeletingMember(member)}
                                             className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                                             title="Remover membro"
                                         >
@@ -230,7 +244,7 @@ export default function MembersIndex({ members, invites, roles }: Props) {
                                             </span>
                                         )}
                                         <button
-                                            onClick={() => handleCancelInvite(invite.id)}
+                                            onClick={() => setCancelingInvite(invite)}
                                             className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                                             title="Cancelar convite"
                                         >
@@ -245,6 +259,26 @@ export default function MembersIndex({ members, invites, roles }: Props) {
             </div>
 
             {showInvite && <InviteModal roles={roles} onClose={() => setShowInvite(false)} />}
+
+            <ConfirmDeleteDialog
+                open={!!deletingMember}
+                title="Remover membro"
+                description={`Tem certeza que deseja remover "${deletingMember?.name}" do time? Esta ação não pode ser desfeita.`}
+                confirmLabel="Remover"
+                loading={processingDelete}
+                onConfirm={handleRemoveMember}
+                onCancel={() => setDeletingMember(null)}
+            />
+
+            <ConfirmDeleteDialog
+                open={!!cancelingInvite}
+                title="Cancelar convite"
+                description={`Tem certeza que deseja cancelar o convite para "${cancelingInvite?.email}"?`}
+                confirmLabel="Cancelar convite"
+                loading={processingDelete}
+                onConfirm={handleCancelInvite}
+                onCancel={() => setCancelingInvite(null)}
+            />
         </AppLayout>
     );
 }

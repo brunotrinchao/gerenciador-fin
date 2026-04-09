@@ -1,8 +1,9 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { CATEGORY_ICONS, ICON_NAMES } from '@/lib/categoryIcons';
 import { CategoryIcon } from '@/Components/CategoryIcon';
+import { ConfirmDeleteDialog } from '@/Components/ConfirmDeleteDialog';
 
 type CategoryType = 'income' | 'expense';
 
@@ -30,6 +31,8 @@ export default function CategoriesIndex({ categories, root_categories }: Categor
         color: '',
         parent_id: '' as number | string,
     });
+    const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+    const [processingDelete, setProcessingDelete] = useState(false);
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -41,10 +44,15 @@ export default function CategoriesIndex({ categories, root_categories }: Categor
         });
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm('Tem certeza que deseja excluir esta categoria?')) {
-            router.delete(route('categories.destroy', id));
-        }
+    const handleDelete = () => {
+        if (!deletingCategory) return;
+        setProcessingDelete(true);
+        router.delete(route('categories.destroy', deletingCategory.id), {
+            onFinish: () => {
+                setProcessingDelete(false);
+                setDeletingCategory(null);
+            },
+        });
     };
 
     return (
@@ -52,7 +60,7 @@ export default function CategoriesIndex({ categories, root_categories }: Categor
             <div className="text-white flex flex-col gap-6">
                 <Head title="Gerenciar Categorias" />
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Categorias</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold font-display">Categorias</h1>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -196,7 +204,7 @@ export default function CategoriesIndex({ categories, root_categories }: Categor
                                         </div>
                                         {!category.is_default && (
                                             <button
-                                                onClick={() => handleDelete(category.id)}
+                                                onClick={() => setDeletingCategory(category)}
                                                 className="text-gray-500 hover:text-red-500 transition px-2"
                                             >
                                                 Excluir
@@ -237,7 +245,7 @@ export default function CategoriesIndex({ categories, root_categories }: Categor
                                         </div>
                                         {!category.is_default && (
                                             <button
-                                                onClick={() => handleDelete(category.id)}
+                                                onClick={() => setDeletingCategory(category)}
                                                 className="text-gray-500 hover:text-red-500 transition px-2"
                                             >
                                                 Excluir
@@ -253,6 +261,16 @@ export default function CategoriesIndex({ categories, root_categories }: Categor
                     </div>
                 </div>
             </div>
+
+            <ConfirmDeleteDialog
+                open={!!deletingCategory}
+                title="Excluir categoria"
+                description={`Tem certeza que deseja excluir a categoria "${deletingCategory?.name}"? Esta ação não pode ser desfeita.`}
+                confirmLabel="Excluir"
+                loading={processingDelete}
+                onConfirm={handleDelete}
+                onCancel={() => setDeletingCategory(null)}
+            />
         </AppLayout>
     );
 }

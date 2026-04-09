@@ -1,0 +1,84 @@
+/* Override Driver.js theme com M3 tokens */
+.driver-popover {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 16px !important;
+  color: var(--color-foreground) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  max-width: 340px !important;
+  padding: 20px !important;
+}
+
+.driver-popover .driver-popover-title {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--md-color-on-surface) !important;
+  margin-bottom: 8px !important;
+  letter-spacing: -0.02em !important;
+}
+
+.driver-popover .driver-popover-description {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  color: var(--md-color-on-surface-variant) !important;
+  line-height: 1.6 !important;
+}
+
+.driver-popover .driver-popover-progress-text {
+  font-size: 11px !important;
+  color: var(--color-muted) !important;
+}
+
+.driver-popover .driver-popover-navigation-btns {
+  gap: 8px !important;
+  margin-top: 16px !important;
+}
+
+.driver-popover .driver-popover-next-btn {
+  background-color: #22c55e !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+}
+
+.driver-popover .driver-popover-next-btn:hover {
+  background-color: #16a34a !important;
+}
+
+.driver-popover .driver-popover-prev-btn {
+  background-color: transparent !important;
+  color: var(--color-muted) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+}
+
+.driver-popover .driver-popover-close-btn {
+  color: var(--color-muted) !important;
+  font-size: 18px !important;
+}
+
+.driver-overlay {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.driver-active-element {
+  outline: 2px solid #22c55e !important;
+  outline-offset: 4px !important;
+  border-radius: 12px !important;
+}
+
+@media (max-width: 640px) {
+  .driver-popover {
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 16px !important;
+    padding: 16px !important;
+  }
+}

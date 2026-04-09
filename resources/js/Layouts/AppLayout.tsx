@@ -8,6 +8,7 @@ import BottomNav from '@/Components/BottomNav';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/Components/PageTransition';
 import type { AppPageProps } from '@/types/global';
+import { TutorialProvider } from '@/Components/TutorialProvider';
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -20,7 +21,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     const [fabOpen, setFabOpen] = useState(false);
     const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const { props, url } = usePage<AppPageProps>();
-    const { auth, flash } = props;
+    const { auth, flash, unread_notifications_count } = props;
 
     useEffect(() => {
         const off = router.on('navigate', () => setMobileOpen(false));
@@ -42,6 +43,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     }, [flash?.success, flash?.error]);
 
     return (
+        <TutorialProvider>
         <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
             <Sidebar
                 collapsed={sidebarCollapsed}
@@ -55,6 +57,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                     title={title}
                     onMenuToggle={() => setMobileOpen(true)}
                     user={auth.user}
+                    unreadNotificationsCount={unread_notifications_count ?? 0}
                 />
 
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 lg:pb-6">
@@ -75,7 +78,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                             fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
                         }`}
                     >
-                        <span className="bg-[var(--color-surface)] border border-[var(--color-border)] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow">
+                        <span className="text-xs font-medium px-3 py-1.5 rounded-full shadow" style={{ backgroundColor: 'var(--color-surface)', borderWidth: '1px', borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}>
                             Importar
                         </span>
                         <Link
@@ -93,7 +96,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                             fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
                         }`}
                     >
-                        <span className="bg-[var(--color-surface)] border border-[var(--color-border)] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow">
+                        <span className="text-xs font-medium px-3 py-1.5 rounded-full shadow" style={{ backgroundColor: 'var(--color-surface)', borderWidth: '1px', borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}>
                             Nova Transação
                         </span>
                         <Link
@@ -147,5 +150,6 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                 </div>
             )}
         </div>
+        </TutorialProvider>
     );
 }

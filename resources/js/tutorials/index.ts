@@ -1,0 +1,16 @@
+export { dashboardSteps } from './steps/dashboard';
+export { transactionsSteps } from './steps/transactions';
+export { invoicesSteps } from './steps/invoices';
+export { creditCardsSteps } from './steps/credit-cards';
+export { bankAccountsSteps } from './steps/bank-accounts';
+export { investmentsSteps } from './steps/investments';
+export { projectionSteps } from './steps/projection';
+export { healthScoreSteps } from './steps/health-score';
+export { aiAnalysisSteps } from './steps/ai-analysis';
+export { taxPlanningSteps } from './steps/tax-planning';
+export { simulatorSteps } from './steps/simulator';
+export { recurrencesSteps } from './steps/recurrences';
+export { notificationsSteps } from './steps/notifications';
+export { reportsSteps } from './steps/reports';
+export { calendarSteps } from './steps/calendar';
+export { installmentsSteps } from './steps/installments';

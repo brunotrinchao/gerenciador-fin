@@ -19,8 +19,14 @@ use App\Http\Controllers\ProjectionController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\BoletoController;
 use App\Http\Controllers\CalendarSyncController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\RecurrenceController;
 use App\Http\Controllers\ScheduledTransactionLogController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AIAnalysisController;
+use App\Http\Controllers\TaxPlanningController;
+use App\Http\Controllers\FinancialHealthController;
+use App\Http\Controllers\SimulatorController;
 use App\Http\Middleware\EnsureIsAdmin;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -126,8 +132,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/invoices/{statement}/calendar-sync', [InvoiceController::class, 'syncCalendar'])->name('invoices.calendar-sync');
     Route::patch('/invoices/{statement}/undo-payment', [InvoiceController::class, 'undoPayment'])->name('invoices.undo-payment');
 
+    // Recorrências
+    Route::get('/recurrences', [RecurrenceController::class, 'index'])->name('recurrences.index');
+    Route::patch('/recurrences/{transaction}/cancel', [RecurrenceController::class, 'cancel'])->name('recurrences.cancel');
+
     // Scheduled transaction logs
     Route::get('/scheduled-logs', [ScheduledTransactionLogController::class, 'index'])->name('scheduled-logs.index');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
     // Calendar bulk sync
     Route::post('/calendar/sync-pending', [CalendarSyncController::class, 'syncAll'])->name('calendar.sync-all');
@@ -136,4 +151,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/auth/google/calendar', [GoogleCalendarController::class, 'connect'])->name('google.calendar.connect');
     Route::get('/auth/google/calendar/callback', [GoogleCalendarController::class, 'callback'])->name('google.calendar.callback');
     Route::delete('/settings/google-calendar', [GoogleCalendarController::class, 'disconnect'])->name('google.calendar.disconnect');
+
+    // AI Analysis
+    Route::get('/ai-analysis', [AIAnalysisController::class, 'index'])->name('ai-analysis.index');
+    Route::post('/ai-analysis/generate', [AIAnalysisController::class, 'generate'])->name('ai-analysis.generate');
+
+    // Planejamento de Impostos
+    Route::get('/tax-planning', [TaxPlanningController::class, 'index'])->name('tax-planning.index');
+    Route::post('/tax-planning', [TaxPlanningController::class, 'store'])->name('tax-planning.store');
+    Route::delete('/tax-planning/{taxEvent}', [TaxPlanningController::class, 'destroy'])->name('tax-planning.destroy');
+
+    // Score de Saúde Financeira
+    Route::get('/health-score', [FinancialHealthController::class, 'index'])->name('health-score.index');
+
+    // Simulador de Decisões Financeiras
+    Route::get('/simulator', [SimulatorController::class, 'index'])->name('simulator.index');
+    Route::post('/simulator/calculate', [SimulatorController::class, 'calculate'])->name('simulator.calculate');
 });

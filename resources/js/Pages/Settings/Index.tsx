@@ -282,7 +282,7 @@ export default function SettingsIndex({ googleCalendar }: Props) {
             <Head title="Configurações Gerais" />
             <div className="w-full flex flex-col gap-6 max-w-2xl">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Configurações Gerais</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Configurações Gerais</h1>
                     <p className="text-gray-400 text-sm mt-1">Gerencie as opções gerais do sistema</p>
                 </div>
 

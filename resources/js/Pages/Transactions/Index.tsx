@@ -1,5 +1,8 @@
 import { useState, useRef } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { transactionsSteps } from '@/tutorials/steps/transactions';
 import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
 import { DateInput } from '@/Components/DateInput';
@@ -222,7 +225,7 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
             {/* Amount */}
             <div className="flex-shrink-0 text-right min-w-[90px]">
                 <p
-                    className={`text-sm font-semibold ${
+                    className={`text-sm font-semibold font-finance ${
                         debit ? 'text-red-400' : 'text-green-400'
                     }`}
                 >
@@ -1645,6 +1648,8 @@ export default function TransactionsIndex({
 
     const balance = summary.income - summary.expense - summary.credit_card;
 
+    const { start: startTutorial } = useTutorial({ key: 'transactions', title: 'Tour das Transações', steps: transactionsSteps });
+
     const applyFilter = (newFilters: Record<string, string>) => {
         router.get(
             route('transactions.index'),
@@ -1768,8 +1773,10 @@ export default function TransactionsIndex({
                 )}
 
                 {/* Header Components via PageHeader */}
+                <div data-tutorial="tx-summary">
                 <PageHeader
                     title="Transações"
+                    onStartTutorial={startTutorial}
                     subtitle={
                         transactions.total === 0
                             ? 'Nenhuma transação encontrada'
@@ -1812,6 +1819,7 @@ export default function TransactionsIndex({
                             </button>
 
                             <button
+                                data-tutorial="tx-add-btn"
                                 onClick={openCreate}
                                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors"
                             >
@@ -1845,7 +1853,7 @@ export default function TransactionsIndex({
                         </>
                     }
                     filters={
-                        <>
+                        <div data-tutorial="tx-filters" className="contents">
                             <DateInput
                                 type="month"
                                 label="Mês"
@@ -1891,9 +1899,10 @@ export default function TransactionsIndex({
                                 onBlur={(e) => applyFilter({ search: e.target.value })}
                                 className="flex-1 min-w-[160px] bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
-                        </>
+                        </div>
                     }
                 />
+                </div>
 
                 {/* Boleto error */}
                 {boletoError && (
@@ -1906,7 +1915,7 @@ export default function TransactionsIndex({
                 )}
 
                 {/* Transaction list */}
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                <div data-tutorial="tx-list" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
                     {transactions.data.length === 0 && statements.length === 0 && installments.length === 0 ? (
                         <div className="flex flex-col items-center gap-4 py-16 px-6">
                             <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">

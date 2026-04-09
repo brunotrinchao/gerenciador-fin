@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { creditCardsSteps } from '@/tutorials/steps/credit-cards';
 import { CreditCard } from '@/types/models';
 import { LimitBar } from '@/Components/CreditCards/LimitBar';
 import { Plus, CreditCard as CreditCardIcon, Pencil, Trash2, X } from 'lucide-react';
@@ -141,12 +144,12 @@ function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
             {/* Informações */}
             <div className="px-5 py-4 flex flex-col gap-3">
                 {/* Limite disponível + uso */}
-                <div>
+                <div data-tutorial="cc-limit-bar">
                     <LimitBar card={card} />
                 </div>
 
                 {/* Datas */}
-                <div className="flex items-center justify-between text-sm">
+                <div data-tutorial="cc-closing-day" className="flex items-center justify-between text-sm">
                     <div className="flex gap-4">
                         <div>
                             <p className="text-[var(--md-color-on-surface-variant)] text-xs">Fechamento</p>
@@ -498,6 +501,8 @@ export default function CreditCardsIndex({ cards }: Props) {
     const totalLimit = activeCards.reduce((sum, c) => sum + c.credit_limit, 0);
     const totalAvailable = activeCards.reduce((sum, c) => sum + c.available_limit, 0);
 
+    const { start: startTutorial } = useTutorial({ key: 'credit-cards', title: 'Tour dos Cartões', steps: creditCardsSteps });
+
     const openCreate = () => {
         setEditingCard(null);
         setShowFormModal(true);
@@ -533,7 +538,10 @@ export default function CreditCardsIndex({ cards }: Props) {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">Cartões de Crédito</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display text-[var(--md-color-on-surface)]">Cartões de Crédito</h1>
+                            <TutorialHelpButton onStart={startTutorial} />
+                        </div>
                         <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
                             {cards.length === 0
                                 ? 'Nenhum cartão cadastrado'
@@ -542,6 +550,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                     </div>
 
                     <button
+                        data-tutorial="cc-add-btn"
                         onClick={openCreate}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors flex-shrink-0"
                     >
@@ -565,7 +574,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                                         </div>
                                         <p className="text-[var(--md-color-on-surface-variant)] text-sm">Limite Total</p>
                                     </div>
-                                    <p className="text-[var(--md-color-on-surface)] font-bold text-2xl">{formatCurrency(totalLimit)}</p>
+                                    <p className="text-[var(--md-color-on-surface)] font-bold text-2xl font-finance">{formatCurrency(totalLimit)}</p>
                                     <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
                                         {activeCards.length} cartão{activeCards.length !== 1 ? 'ões' : ''} ativo{activeCards.length !== 1 ? 's' : ''}
                                     </p>
@@ -579,7 +588,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                                         </div>
                                         <p className="text-[var(--md-color-on-surface-variant)] text-sm">Disponível</p>
                                     </div>
-                                    <p className="text-[#22c55e] font-bold text-2xl">{formatCurrency(totalAvailable)}</p>
+                                    <p className="text-[#22c55e] font-bold text-2xl font-finance">{formatCurrency(totalAvailable)}</p>
                                     <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
                                         {totalLimit > 0 ? `${(100 - usagePercent).toFixed(0)}% livre` : 'Sem limite'}
                                     </p>
@@ -593,7 +602,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                                         </div>
                                         <p className="text-[var(--md-color-on-surface-variant)] text-sm">Utilizado</p>
                                     </div>
-                                    <p className="text-[var(--md-color-error)] font-bold text-2xl">{formatCurrency(totalUsed)}</p>
+                                    <p className="text-[var(--md-color-error)] font-bold text-2xl font-finance">{formatCurrency(totalUsed)}</p>
                                     <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
                                         {usagePercent.toFixed(0)}% do limite total
                                     </p>
@@ -641,7 +650,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div data-tutorial="cc-card-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {cards.map((card) => (
                             <CreditCardCard
                                 key={card.id}

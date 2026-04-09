@@ -29,7 +29,8 @@
         </script>
 
         <link rel="preconnect" href="https://fonts.bunny.net" />
-        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+        {{-- Inter: padrão da indústria fintech (Stripe, Linear, Vercel) — excelente legibilidade em telas | IBM Plex Mono: projetada para dados financeiros tabulares --}}
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|ibm-plex-mono:400,500&display=swap" rel="stylesheet" />
 
         @routes
         @viteReactRefresh

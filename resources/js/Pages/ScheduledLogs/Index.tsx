@@ -30,7 +30,7 @@ export default function ScheduledLogsIndex({ logs, transactions }: Props) {
             <Head title="Processamentos Automáticos" />
             <div className="space-y-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Processamentos Automáticos</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold font-display">Processamentos Automáticos</h1>
                     <p className="text-muted-foreground text-sm mt-1">
                         Histórico de execuções do job de transações agendadas
                     </p>
@@ -90,7 +90,7 @@ export default function ScheduledLogsIndex({ logs, transactions }: Props) {
                                                         {tx.bank_account && (
                                                             <span className="text-xs">{(tx.bank_account as any).name}</span>
                                                         )}
-                                                        <span className="font-medium text-foreground">
+                                                        <span className="font-medium font-finance text-foreground">
                                                             {formatCurrency(Number(tx.amount))}
                                                         </span>
                                                     </div>

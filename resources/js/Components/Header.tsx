@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Menu, Sun, Moon, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, Sun, Moon, LogOut, ChevronDown, Bell } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { useTheme } from '@/hooks/useTheme';
 import type { AuthUser } from '@/types/global';
@@ -8,9 +8,10 @@ interface HeaderProps {
     title?: string;
     onMenuToggle: () => void;
     user: AuthUser | null;
+    unreadNotificationsCount?: number;
 }
 
-export default function Header({ title, onMenuToggle, user }: HeaderProps) {
+export default function Header({ title, onMenuToggle, user, unreadNotificationsCount = 0 }: HeaderProps) {
     const { theme, toggle } = useTheme();
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,6 +52,28 @@ export default function Header({ title, onMenuToggle, user }: HeaderProps) {
                     </h1>
                 )}
             </div>
+
+            {/* Bell notification icon */}
+            <Link
+                href="/notifications"
+                className="relative p-1.5 rounded-lg transition-colors"
+                style={{ color: 'var(--color-muted)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            >
+                <Bell size={20} />
+                {unreadNotificationsCount > 0 && (
+                    <span
+                        className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold px-1"
+                        style={{
+                            backgroundColor: 'var(--md-color-primary)',
+                            color: 'var(--md-color-on-primary)',
+                        }}
+                    >
+                        {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                    </span>
+                )}
+            </Link>
 
             {/* Avatar dropdown */}
             {user && (

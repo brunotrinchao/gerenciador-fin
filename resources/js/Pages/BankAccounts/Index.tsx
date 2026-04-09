@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { bankAccountsSteps } from '@/tutorials/steps/bank-accounts';
 import { BankAccount, AccountType } from '@/types/models';
 import { Plus, Pencil, Trash2, X, Wallet, Filter } from 'lucide-react';
 import { CurrencyInput } from '@/Components/CurrencyInput';
@@ -89,10 +92,10 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
             </div>
 
             <div className="flex items-end justify-between">
-                <div>
+                <div data-tutorial="ba-balance">
                     <p className="text-[var(--md-color-on-surface-variant)] text-xs mb-0.5">Saldo atual</p>
                     <p
-                        className={`text-xl font-bold ${
+                        className={`text-xl font-bold font-finance ${
                             account.current_balance >= 0 ? 'text-[var(--md-color-on-surface)]' : 'text-[var(--md-color-error)]'
                         }`}
                     >
@@ -448,6 +451,8 @@ export default function BankAccountsIndex({ accounts }: Props) {
         ? accounts
         : accounts.filter(a => a.account_type === typeFilter);
 
+    const { start: startTutorial } = useTutorial({ key: 'bank-accounts', title: 'Tour das Contas', steps: bankAccountsSteps });
+
     const openCreate = () => {
         setEditingAccount(null);
         setShowFormModal(true);
@@ -470,12 +475,12 @@ export default function BankAccountsIndex({ accounts }: Props) {
             <div className="w-full flex flex-col gap-6">
                 {/* Flash message */}
                 {flash?.success && (
-                    <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-xl px-4 py-3">
+                    <div className="alert-success p-4 rounded-xl text-sm">
                         {flash.success}
                     </div>
                 )}
                 {flash?.error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">
+                    <div className="alert-error p-4 rounded-xl text-sm">
                         {flash.error}
                     </div>
                 )}
@@ -483,7 +488,10 @@ export default function BankAccountsIndex({ accounts }: Props) {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">Contas Bancárias</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display text-[var(--md-color-on-surface)]">Contas Bancárias</h1>
+                            <TutorialHelpButton onStart={startTutorial} />
+                        </div>
                         <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
                             {accounts.length === 0
                                 ? 'Nenhuma conta cadastrada'
@@ -492,6 +500,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                     </div>
 
                     <button
+                        data-tutorial="ba-add-btn"
                         onClick={openCreate}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors flex-shrink-0"
                     >
@@ -523,7 +532,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                 )}
 
                 {/* Saldo consolidado */}
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
+                <div data-tutorial="ba-total" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center">
                             <Wallet size={18} className="text-[#22c55e]" />
@@ -531,7 +540,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                         <p className="text-[var(--md-color-on-surface-variant)] text-sm">Saldo Total Consolidado</p>
                     </div>
                     <p
-                        className={`text-3xl font-bold ${
+                        className={`text-3xl font-bold font-finance ${
                             totalBalance >= 0 ? 'text-[var(--md-color-on-surface)]' : 'text-[var(--md-color-error)]'
                         }`}
                     >
@@ -570,7 +579,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div data-tutorial="ba-account-list" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {filteredAccounts.map((account) => (
                             <AccountCard
                                 key={account.id}

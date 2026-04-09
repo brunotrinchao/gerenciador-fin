@@ -97,6 +97,70 @@ PROMPT;
     }
 
     /**
+     * Gera análise mensal financeira com IA para o usuário.
+     */
+    public function generateMonthlyAnalysis(\App\Models\User $user, int $month, int $year): string
+    {
+        if (empty($this->apiKey)) {
+            return 'Serviço de IA não configurado. Configure GEMINI_API_KEY no .env';
+        }
+
+        try {
+            $transactions = \App\Models\Transaction::where('user_id', $user->id)
+                ->whereMonth('date', $month)
+                ->whereYear('date', $year)
+                ->with('category')
+                ->get();
+
+            $incomeTypes  = [\App\Enums\TransactionType::Income->value];
+            $expenseTypes = [\App\Enums\TransactionType::Expense->value, \App\Enums\TransactionType::CreditCard->value];
+
+            $totalIncome  = $transactions->whereIn('type', array_map(fn($t) => \App\Enums\TransactionType::from($t), $incomeTypes))->sum('amount');
+            $totalExpense = $transactions->whereIn('type', array_map(fn($t) => \App\Enums\TransactionType::from($t), $expenseTypes))->sum('amount');
+            $savingsRate  = $totalIncome > 0 ? round((($totalIncome - $totalExpense) / $totalIncome) * 100, 1) : 0;
+
+            $byCategory = $transactions
+                ->filter(fn($t) => in_array($t->type->value, $expenseTypes))
+                ->groupBy(fn($t) => $t->category?->name ?? 'Sem categoria')
+                ->map(fn($txs) => $txs->sum('amount'))
+                ->sortDesc()
+                ->take(5);
+
+            $monthName = \Carbon\Carbon::create($year, $month, 1)->locale('pt_BR')->monthName;
+
+            $prompt = "Você é um consultor financeiro pessoal brasileiro. Analise os dados financeiros de {$monthName}/{$year}:\n\n"
+                . "- Receita total: R$ " . number_format((float) $totalIncome, 2, ',', '.') . "\n"
+                . "- Despesas totais: R$ " . number_format((float) $totalExpense, 2, ',', '.') . "\n"
+                . "- Taxa de poupança: {$savingsRate}%\n"
+                . "- Top categorias de gastos:\n";
+
+            foreach ($byCategory as $cat => $amount) {
+                $prompt .= "  • {$cat}: R$ " . number_format((float) $amount, 2, ',', '.') . "\n";
+            }
+
+            $prompt .= "\nForneça em formato estruturado:\n"
+                . "## Resumo do Mês\n[2-3 frases]\n\n"
+                . "## Insights\n[3 insights específicos com valores]\n\n"
+                . "## Recomendações\n[2 recomendações práticas para o próximo mês]\n\n"
+                . "Seja direto, use linguagem informal e mostre valores em R$.";
+
+            $response = Http::withHeader('x-goog-api-key', $this->apiKey)
+                ->timeout(30)
+                ->post($this->endpoint, [
+                    'contents' => [
+                        ['parts' => [['text' => $prompt]]]
+                    ],
+                    'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 2048],
+                ]);
+
+            return $response->json('candidates.0.content.parts.0.text', 'Não foi possível obter análise da IA.');
+        } catch (\Throwable $e) {
+            Log::error('GeminiService::generateMonthlyAnalysis falhou: ' . $e->getMessage());
+            return 'Serviço de IA temporariamente indisponível.';
+        }
+    }
+
+    /**
      * Chat financeiro com contexto do usuário.
      */
     public function chat(string $message, string $context = ''): string

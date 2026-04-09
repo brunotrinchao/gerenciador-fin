@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { investmentsSteps } from '@/tutorials/steps/investments';
 import { Investment, BankAccount, InvestmentType } from '@/types/models';
 import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
@@ -705,13 +708,13 @@ function InvestmentCard({
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <p className="text-gray-500 text-xs mb-0.5">Investido</p>
-                    <p className="text-white font-semibold text-sm">
+                    <p className="text-white font-semibold text-sm font-finance">
                         {formatCurrency(investment.invested_amount)}
                     </p>
                 </div>
                 <div>
                     <p className="text-gray-500 text-xs mb-0.5">Valor atual</p>
-                    <p className="text-white font-semibold text-sm">
+                    <p className="text-white font-semibold text-sm font-finance">
                         {formatCurrency(investment.current_amount)}
                     </p>
                 </div>
@@ -770,6 +773,7 @@ function InvestmentCard({
             {/* Actions */}
             <div className="flex items-center gap-1.5 pt-1 border-t border-[var(--color-border)]">
                 <button
+                    data-tutorial="inv-snapshot-btn"
                     onClick={() => onSnapshot(investment)}
                     title="Snapshot"
                     className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
@@ -778,6 +782,7 @@ function InvestmentCard({
                     Snapshot
                 </button>
                 <button
+                    data-tutorial="inv-redeem-btn"
                     onClick={() => onRedeem(investment)}
                     title="Resgatar"
                     className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors text-xs font-medium"
@@ -827,6 +832,8 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
             : 0;
     const isPositive = totalYield >= 0;
 
+    const { start: startTutorial } = useTutorial({ key: 'investments', title: 'Tour dos Investimentos', steps: investmentsSteps });
+
     const openCreate = () => {
         setEditingInvestment(null);
         setShowFormModal(true);
@@ -862,7 +869,10 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Investimentos</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Investimentos</h1>
+                            <TutorialHelpButton onStart={startTutorial} />
+                        </div>
                         <p className="text-gray-400 text-sm mt-1">
                             {investments.length === 0
                                 ? 'Nenhum investimento cadastrado'
@@ -870,6 +880,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                         </p>
                     </div>
                     <button
+                        data-tutorial="inv-add-btn"
                         onClick={openCreate}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors flex-shrink-0"
                     >
@@ -879,7 +890,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                 </div>
 
                 {/* Summary cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div data-tutorial="inv-summary" className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-2)] flex items-center justify-center">
@@ -887,7 +898,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                             </div>
                             <p className="text-gray-400 text-sm">Total Investido</p>
                         </div>
-                        <p className="text-white font-bold text-2xl">
+                        <p className="text-white font-bold text-2xl font-finance">
                             {formatCurrency(summary.total_invested)}
                         </p>
                     </div>
@@ -899,7 +910,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                             </div>
                             <p className="text-gray-400 text-sm">Valor Atual</p>
                         </div>
-                        <p className="text-white font-bold text-2xl">
+                        <p className="text-white font-bold text-2xl font-finance">
                             {formatCurrency(summary.total_current)}
                         </p>
                     </div>
@@ -920,7 +931,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                             <p className="text-gray-400 text-sm">Rendimento Total</p>
                         </div>
                         <p
-                            className={`font-bold text-2xl ${
+                            className={`font-bold text-2xl font-finance ${
                                 isPositive ? 'text-[#22c55e]' : 'text-red-400'
                             }`}
                         >
@@ -958,7 +969,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div data-tutorial="inv-list" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {investments.map((inv) => (
                             <InvestmentCard
                                 key={inv.id}

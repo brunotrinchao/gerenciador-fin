@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { installmentsSteps } from '@/tutorials/steps/installments';
 import { InstallmentGroup, Installment, BankAccount, CreditCard, Category, TransactionStatus } from '@/types/models';
 import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
@@ -163,7 +166,7 @@ function InstallmentRow({ installment, accounts }: { installment: Installment; a
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <p className={`text-sm font-semibold ${isPaid ? 'text-green-400' : isCancelled ? 'text-gray-600' : 'text-white'}`}>
+                    <p className={`text-sm font-semibold font-finance ${isPaid ? 'text-green-400' : isCancelled ? 'text-gray-600' : 'text-white'}`}>
                         {formatCurrency(installment.amount)}
                     </p>
 
@@ -361,7 +364,7 @@ function GroupCard({ group, accounts, onCancel }: GroupCardProps) {
                 </div>
 
                 {/* Progress */}
-                <div>
+                <div data-tutorial="inst-progress">
                     <div className="flex items-center justify-between mb-1.5">
                         <p className="text-xs text-gray-400">
                             {group.paid_installments}/{group.total_installments} parcelas pagas
@@ -386,7 +389,7 @@ function GroupCard({ group, accounts, onCancel }: GroupCardProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-gray-500 text-xs mb-0.5">Valor total</p>
-                        <p className="text-white font-semibold">{formatCurrency(group.total_amount)}</p>
+                        <p className="text-white font-semibold font-finance">{formatCurrency(group.total_amount)}</p>
                     </div>
                     <div className="text-right">
                         <p className="text-gray-500 text-xs mb-0.5">Restante</p>
@@ -803,6 +806,7 @@ const statusClass: Record<TransactionStatus, string> = {
 
 export default function InstallmentsIndex({ groups, accounts, creditCards, categories, importedInstallments, filters = {} }: Props) {
     const { flash } = usePage().props;
+    const { start } = useTutorial({ key: 'installments', steps: installmentsSteps });
 
     const [showFormModal, setShowFormModal] = useState(false);
     const [cancellingGroup, setCancellingGroup] = useState<InstallmentGroup | null>(null);
@@ -830,7 +834,10 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Parcelamentos</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Parcelamentos</h1>
+                            <TutorialHelpButton onStart={start} />
+                        </div>
                         <p className="text-gray-400 text-sm mt-1">
                             {groups.length === 0
                                 ? 'Nenhum parcelamento cadastrado'
@@ -848,7 +855,7 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                 </div>
 
                 {/* Summary */}
-                <div className="grid grid-cols-2 gap-4">
+                <div data-tutorial="inst-remaining" className="grid grid-cols-2 gap-4">
                     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -895,7 +902,7 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                         </button>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-4">
+                    <div data-tutorial="inst-list" className="flex flex-col gap-4">
                         {/* Filter bar */}
                         <FilterBar accounts={accounts} creditCards={creditCards} filters={filters} />
 
@@ -986,6 +993,7 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                     onClose={() => setCancellingGroup(null)}
                 />
             )}
+
         </AppLayout>
     );
 }

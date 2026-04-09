@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
 
 interface PageHeaderProps {
     title: string;
@@ -6,14 +7,18 @@ interface PageHeaderProps {
     actions?: ReactNode;
     filters?: ReactNode;
     states?: ReactNode;
+    onStartTutorial?: () => void;
 }
 
-export function PageHeader({ title, subtitle, actions, filters, states }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, actions, filters, states, onStartTutorial }: PageHeaderProps) {
     return (
         <div className="w-full flex flex-col gap-6">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">{title}</h1>
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">{title}</h1>
+                        {onStartTutorial && <TutorialHelpButton onStart={onStartTutorial} />}
+                    </div>
                     {subtitle && <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">{subtitle}</p>}
                 </div>
                 {actions && <div className="flex items-center gap-3 flex-wrap">{actions}</div>}

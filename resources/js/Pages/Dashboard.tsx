@@ -2,6 +2,9 @@ import React from 'react';
 import { Head, Deferred } from '@inertiajs/react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { dashboardSteps } from '@/tutorials/steps/dashboard';
 import { TrendingUp, TrendingDown, Wallet, Calendar, Receipt, Layers, ArrowDownCircle } from 'lucide-react';
 import {
     PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
@@ -94,11 +97,18 @@ export default function Dashboard({
     bankAccounts,
     detailedDebt
 }: Props) {
+    const { start } = useTutorial({ key: 'dashboard', title: 'Tour do Dashboard', steps: dashboardSteps });
+
     return (
         <AppLayout title="Dashboard">
             <Head title="Dashboard" />
 
             <div className="page-transition space-y-6">
+                {/* Header */}
+                <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-[var(--md-color-on-surface)]">Dashboard</h1>
+                    <TutorialHelpButton onStart={start} />
+                </div>
                 {/* Stat cards */}
                 <Deferred data="stats" fallback={
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -113,6 +123,7 @@ export default function Dashboard({
                         <Sheet>
                             <SheetTrigger asChild>
                                 <StatCard
+                                    data-tutorial="dash-balance"
                                     label="Saldo Total"
                                     value={stats?.total_balance}
                                     icon={Wallet}
@@ -151,7 +162,7 @@ export default function Dashboard({
                                                     )}
                                                 </div>
                                             </div>
-                                            <span className={`text-sm font-bold ml-4 shrink-0 ${account.current_balance >= 0 ? 'text-[var(--color-accent)]' : 'text-[var(--color-danger)]'}`}>
+                                            <span className={`text-sm font-bold font-finance ml-4 shrink-0 ${account.current_balance >= 0 ? 'text-[var(--color-accent)]' : 'text-[var(--color-danger)]'}`}>
                                                 {formatCurrency(account.current_balance)}
                                             </span>
                                         </div>
@@ -177,6 +188,7 @@ export default function Dashboard({
                         <Sheet>
                             <SheetTrigger asChild>
                                 <StatCard
+                                    data-tutorial="dash-debt"
                                     label="Dívida Atual de Cartões"
                                     value={stats?.total_debt}
                                     icon={TrendingDown}
@@ -248,6 +260,7 @@ export default function Dashboard({
                         </Sheet>
 
                         <StatCard
+                            data-tutorial="dash-invested"
                             label="Total Investido"
                             value={stats?.total_invested}
                             icon={TrendingUp}
@@ -259,6 +272,7 @@ export default function Dashboard({
                         <Sheet>
                             <SheetTrigger asChild>
                                 <StatCard
+                                    data-tutorial="dash-upcoming"
                                     label="Vencimentos (Próx. 7 dias)"
                                     value={stats?.upcoming_count}
                                     icon={Calendar}
@@ -324,6 +338,7 @@ export default function Dashboard({
                     {/* Pie: Gastos por Categoria */}
                     <Deferred data="expensesByCategory" fallback={<ChartSkeleton />}>
                         <div
+                            data-tutorial="dash-pie-chart"
                             className="rounded-xl p-5 flex flex-col h-full"
                             style={{
                                 backgroundColor: 'var(--color-surface)',
@@ -363,6 +378,7 @@ export default function Dashboard({
                     {/* Bar: Fluxo de Caixa */}
                     <Deferred data="cashFlow" fallback={<ChartSkeleton />}>
                         <div
+                            data-tutorial="dash-bar-chart"
                             className="rounded-xl p-5 h-full"
                             style={{
                                 backgroundColor: 'var(--color-surface)',
@@ -406,6 +422,7 @@ export default function Dashboard({
                     </div>
                 }>
                     <div
+                        data-tutorial="dash-payments-list"
                         className="rounded-xl p-5"
                         style={{
                             backgroundColor: 'var(--color-surface)',
@@ -460,7 +477,7 @@ function EmptyState({ message }: { message: string }) {
     );
 }
 
-interface StatCardProps {
+interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
     label: string;
     value: number;
     icon: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>;
@@ -501,7 +518,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
                     <Icon size={15} style={{ color: 'var(--color-accent)' }} />
                 </div>
             </div>
-            <p className="text-xl font-bold mb-1" style={{ color: 'var(--color-foreground)' }}>
+            <p className="text-xl font-bold mb-1 font-finance" style={{ color: 'var(--color-foreground)' }}>
                 {isCount ? value : formatCurrency(value)}
             </p>
             <p

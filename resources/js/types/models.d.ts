@@ -253,6 +253,26 @@ export interface Budget {
     category?: Category;
 }
 
+export interface Notification {
+    id: number;
+    user_id: number;
+    type: 'low_balance' | 'upcoming_due' | 'card_near_limit' | 'scheduled_processed' | 'budget_exceeded';
+    title: string;
+    message: string;
+    data: Record<string, unknown> | null;
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface NotificationPreference {
+    id: number;
+    user_id: number;
+    alert_type: string;
+    enabled: boolean;
+    threshold: string | null;
+}
+
 export interface ScheduledTransactionLog {
     id: number;
     processed_at: string;
@@ -263,6 +283,82 @@ export interface ScheduledTransactionLog {
     execution_ms: number | null;
     created_at: string;
     updated_at: string;
+}
+
+export interface TaxEvent {
+  id: number;
+  user_id: number;
+  bank_account_id: number | null;
+  type: 'ipva' | 'iptu' | 'irpf' | 'other';
+  description: string;
+  year: number;
+  total_amount: string;
+  installments_count: number;
+  first_due_date: string;
+  status: 'pending' | 'paid' | 'partial';
+  notes: string | null;
+  bank_account?: BankAccount;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─────────────────────────────────────────────
+// Financial Health Score
+// ─────────────────────────────────────────────
+
+export interface HealthScoreComponent {
+    score: number;
+    label: string;
+    value: number;
+    unit: string;
+    max: number;
+}
+
+export interface HealthScore {
+    total: number;
+    grade: string;
+    components: Record<string, HealthScoreComponent>;
+    calculated_at: string;
+}
+
+// ─────────────────────────────────────────────
+// Simulator
+// ─────────────────────────────────────────────
+
+export interface SimulatorScenario {
+    name: string;
+    description?: string;
+    initial_amount: number;
+    monthly_contribution: number;
+    annual_rate: number;
+    monthly_cost?: number;
+}
+
+export interface SimulatorProjectionPoint {
+    month: number;
+    balance: number;
+}
+
+export interface SimulatorResult {
+    name: string;
+    description: string;
+    final_value: number;
+    total_invested: number;
+    total_return: number;
+    points: SimulatorProjectionPoint[];
+}
+
+export interface SimulatorComparison {
+    scenario_a: SimulatorResult;
+    scenario_b: SimulatorResult;
+    months: number;
+}
+
+export interface SimulatorPreset {
+    id: string;
+    label: string;
+    scenario_a: SimulatorScenario;
+    scenario_b: SimulatorScenario;
 }
 
 // ─────────────────────────────────────────────

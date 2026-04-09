@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import {
     LayoutDashboard,
     CalendarDays,
@@ -17,6 +18,12 @@ import {
     ChevronRight,
     UploadCloud,
     CalendarClock,
+    RefreshCw,
+    Bell,
+    Sparkles,
+    Landmark,
+    Calculator,
+    HeartPulse,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -50,6 +57,7 @@ const navSections: NavSection[] = [
         title: 'Movimentações',
         items: [
             { label: 'Transações',      href: '/transactions',    icon: ArrowLeftRight },
+            { label: 'Recorrências',    href: '/recurrences',     icon: RefreshCw },
             { label: 'Faturas',         href: '/invoices',        icon: Receipt },
             { label: 'Importação',      href: '/imports',         icon: UploadCloud },
             { label: 'Processamentos',  href: '/scheduled-logs',  icon: CalendarClock },
@@ -66,17 +74,22 @@ const navSections: NavSection[] = [
     {
         title: 'Análise',
         items: [
-            { label: 'Projeção',   href: '/projection', icon: CalendarRange },
-            { label: 'Relatórios', href: '/relatorios', icon: BarChart3 },
+            { label: 'Projeção',    href: '/projection',   icon: CalendarRange },
+            { label: 'Relatórios',  href: '/relatorios',   icon: BarChart3 },
+            { label: 'Análise IA',  href: '/ai-analysis',  icon: Sparkles },
+            { label: 'Impostos',        href: '/tax-planning',  icon: Landmark },
+            { label: 'Simulador',       href: '/simulator',     icon: Calculator },
+            { label: 'Saúde Financeira', href: '/health-score', icon: HeartPulse },
         ],
     },
     {
         title: 'Configurações',
         items: [
-            { label: 'Categorias', href: '/categories',       icon: Tags },
-            { label: 'Perfis',     href: '/settings/roles',   icon: ShieldCheck },
-            { label: 'Membros',    href: '/settings/members', icon: Users },
-            { label: 'Geral',      href: '/settings',         icon: Settings },
+            { label: 'Notificações', href: '/notifications',     icon: Bell },
+            { label: 'Categorias',   href: '/categories',        icon: Tags },
+            { label: 'Perfis',       href: '/settings/roles',    icon: ShieldCheck },
+            { label: 'Membros',      href: '/settings/members',  icon: Users },
+            { label: 'Geral',        href: '/settings',          icon: Settings },
         ],
     },
 ];
@@ -230,7 +243,7 @@ function NavLink({
 }) {
     const Icon = item.icon;
 
-    return (
+    const link = (
         <Link
             href={item.href}
             className="flex items-center gap-3 px-2 py-2 text-sm transition-colors"
@@ -239,7 +252,6 @@ function NavLink({
                 color: active ? 'var(--md-color-on-secondary-container)' : 'var(--color-muted)',
                 borderRadius: 'var(--md-shape-full)',
             }}
-            title={collapsed ? item.label : undefined}
             onMouseEnter={(e) => {
                 if (!active) e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--md-color-on-surface) 8%, transparent)';
             }}
@@ -251,4 +263,19 @@ function NavLink({
             {!collapsed && <span className="truncate">{item.label}</span>}
         </Link>
     );
+
+    if (collapsed) {
+        return (
+            <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                    <TooltipTrigger asChild>{link}</TooltipTrigger>
+                    <TooltipContent side="right">
+                        <p>{item.label}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+
+    return link;
 }

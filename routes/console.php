@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\ProcessScheduledTransactionsCommand;
+use App\Jobs\ProcessNotificationsJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -14,3 +15,5 @@ Schedule::command(ProcessScheduledTransactionsCommand::class)
     ->withoutOverlapping()
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/scheduled-transactions.log'));
+
+Schedule::job(new ProcessNotificationsJob())->dailyAt('08:00')->withoutOverlapping();

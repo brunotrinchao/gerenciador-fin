@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Plus, X, Trash2, Shield, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/Components/ConfirmDeleteDialog';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -292,77 +293,45 @@ function RoleFormModal({
     );
 }
 
-// ─── DeleteConfirmModal ───────────────────────────────────────────────────────
-
-function DeleteConfirmModal({ role, onClose }: { role: Role; onClose: () => void }) {
-    const [deleting, setDeleting] = useState(false);
-    const handleDelete = () => {
-        setDeleting(true);
-        router.delete(route('settings.roles.destroy', role.id), {
-            onFinish: () => { setDeleting(false); onClose(); },
-        });
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5">
-                <div className="flex flex-col gap-2">
-                    <h2 className="text-white font-semibold text-lg">Excluir perfil</h2>
-                    <p className="text-gray-400 text-sm">Tem certeza que deseja excluir o perfil <span className="text-white font-medium">"{role.name}"</span>?</p>
-                    <p className="text-red-400 text-xs">Esta ação não pode ser desfeita.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={onClose}
-                        disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 text-sm disabled:opacity-50"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleDelete}
-                        disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold disabled:opacity-50"
-                    >
-                        {deleting ? 'Excluindo...' : 'Excluir'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RolesIndex({ roles }: Props) {
     const { flash } = usePage().props;
-    const [showForm, setShowForm]       = useState(false);
-    const [editingRole, setEditingRole] = useState<Role | null>(null);
+    const [showForm, setShowForm]         = useState(false);
+    const [editingRole, setEditingRole]   = useState<Role | null>(null);
     const [deletingRole, setDeletingRole] = useState<Role | null>(null);
+    const [processingDelete, setProcessingDelete] = useState(false);
 
-    const openNew  = () => { setEditingRole(null); setShowForm(true); };
-    const openEdit = (role: Role) => { setEditingRole(role); setShowForm(true); };
+    const openNew   = () => { setEditingRole(null); setShowForm(true); };
+    const openEdit  = (role: Role) => { setEditingRole(role); setShowForm(true); };
     const closeForm = () => { setShowForm(false); setEditingRole(null); };
+
+    const handleDeleteRole = () => {
+        if (!deletingRole) return;
+        setProcessingDelete(true);
+        router.delete(route('settings.roles.destroy', deletingRole.id), {
+            onFinish: () => { setProcessingDelete(false); setDeletingRole(null); },
+        });
+    };
 
     return (
         <AppLayout title="Perfis">
             <Head title="Perfis e Permissões" />
             <div className="w-full flex flex-col gap-6">
                 {(flash as any)?.success && (
-                    <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-xl px-4 py-3">
+                    <div className="alert-success p-4 rounded-xl text-sm">
                         {(flash as any).success}
                     </div>
                 )}
                 {(flash as any)?.error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">
+                    <div className="alert-error p-4 rounded-xl text-sm">
                         {(flash as any).error}
                     </div>
                 )}
 
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Perfis e Permissões</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Perfis e Permissões</h1>
                         <p className="text-gray-400 text-sm mt-1">
                             {roles.length === 0
                                 ? 'Nenhum perfil criado'
@@ -413,12 +382,15 @@ export default function RolesIndex({ roles }: Props) {
                     onClose={closeForm}
                 />
             )}
-            {deletingRole && (
-                <DeleteConfirmModal
-                    role={deletingRole}
-                    onClose={() => setDeletingRole(null)}
-                />
-            )}
+            <ConfirmDeleteDialog
+                open={!!deletingRole}
+                title="Excluir perfil"
+                description={`Tem certeza que deseja excluir o perfil "${deletingRole?.name}"? Esta ação não pode ser desfeita.`}
+                confirmLabel="Excluir"
+                loading={processingDelete}
+                onConfirm={handleDeleteRole}
+                onCancel={() => setDeletingRole(null)}
+            />
         </AppLayout>
     );
 }

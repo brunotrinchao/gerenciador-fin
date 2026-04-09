@@ -135,7 +135,7 @@ export default function ImportReview({ items, creditCardId, fileName, categories
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Revisar Importação</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Revisar Importação</h1>
                         <p className="text-gray-400 text-sm mt-1">
                             <span className="text-gray-300 font-medium">{fileName}</span>
                             {' · '}

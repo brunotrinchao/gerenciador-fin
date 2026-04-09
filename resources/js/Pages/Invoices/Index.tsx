@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Head, useForm, router, usePage, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
+import { invoicesSteps } from '@/tutorials/steps/invoices';
 import { BankAccount, CreditCard, CreditCardStatement, PaginatedData } from '@/types/models';
 import { formatDate } from '@/lib/utils';
 import { PageHeader } from '@/Components/PageHeader';
@@ -127,7 +130,7 @@ function StatementCard({ statement, onDelete, onPay, onDetail }: StatementCardPr
                 {/* Total */}
                 <div>
                     <p className="text-gray-500 text-xs mb-0.5">Valor total</p>
-                    <p className="text-white font-bold text-xl">
+                    <p className="text-white font-bold text-xl font-finance">
                         {formatCurrency(statement.total_amount)}
                     </p>
                 </div>
@@ -244,13 +247,13 @@ function StatementDetailModal({ statement, onClose, onPay, onDelete, onEdit }: S
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <span className="text-gray-400 text-sm">Valor total</span>
-                            <span className="text-white font-semibold">
+                            <span className="text-white font-semibold font-finance">
                                 {formatCurrency(statement.total_amount)}
                             </span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-gray-400 text-sm">Valor pago</span>
-                            <span className="text-green-400 font-semibold">
+                            <span className="text-green-400 font-semibold font-finance">
                                 {formatCurrency(statement.paid_amount)}
                             </span>
                         </div>
@@ -716,6 +719,8 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
         ? statements.data.filter((s) => s.credit_card_id === selectedCardId)
         : statements.data;
 
+    const { start: startTutorial } = useTutorial({ key: 'invoices', title: 'Tour das Faturas', steps: invoicesSteps });
+
     const navigateMonth = (direction: -1 | 1) => {
         const [year, month] = (filters.month || new Date().toISOString().slice(0, 7))
             .split('-').map(Number);
@@ -744,6 +749,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                 {/* Header Components via PageHeader */}
                 <PageHeader
                     title="Faturas"
+                    onStartTutorial={startTutorial}
                     subtitle={
                         statements.total === 0
                             ? 'Nenhuma fatura cadastrada'
@@ -751,6 +757,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                     }
                     actions={
                         <button
+                            data-tutorial="inv-add-btn"
                             onClick={() => setShowFormModal(true)}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors flex-shrink-0"
                         >
@@ -774,7 +781,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     ))}
                                 </select>
                             )}
-                            <div className="flex items-center gap-1">
+                            <div data-tutorial="inv-month-filter" className="flex items-center gap-1">
                                 <button
                                     onClick={() => navigateMonth(-1)}
                                     className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
@@ -822,7 +829,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div data-tutorial="inv-card-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredStatements.map((statement) => (
                             <StatementCard
                                 key={statement.id}
