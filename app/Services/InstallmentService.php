@@ -12,6 +12,7 @@ use App\Models\InstallmentGroup;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class InstallmentService
 {
@@ -90,5 +91,122 @@ class InstallmentService
         }
 
         return $group;
+    }
+
+    public function updateSeries(Installment $installment, array $data, string $scope): void
+    {
+        $targets = $this->resolveTargets($installment, $scope);
+        $group   = $installment->group;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($targets, $group, $data, $scope) {
+            foreach ($targets as $target) {
+                $targetUpdate = [];
+                if (isset($data['amount'])) {
+                    $targetUpdate['amount'] = $data['amount'];
+                }
+                if (isset($data['status'])) {
+                    $targetUpdate['status'] = $data['status'];
+                }
+
+                if (! empty($targetUpdate)) {
+                    $target->update($targetUpdate);
+                }
+
+                if ($target->transaction) {
+                    $txData = [];
+                    if (isset($data['description'])) {
+                        $txData['description'] = $data['description'] . " ({$target->number}/{$group->total_installments})";
+                    }
+                    if (isset($data['amount'])) {
+                        $txData['amount'] = $data['amount'];
+                    }
+                    if (array_key_exists('category_id', $data)) {
+                        $txData['category_id'] = $data['category_id'];
+                    }
+                    if (array_key_exists('bank_account_id', $data)) {
+                        $txData['bank_account_id'] = $data['bank_account_id'];
+                    }
+                    if (array_key_exists('notes', $data)) {
+                        $txData['notes'] = $data['notes'];
+                    }
+                    if (isset($data['status'])) {
+                        $txData['status'] = $data['status'];
+                    }
+
+                    if (! empty($txData)) {
+                        $target->transaction->update($txData);
+                    }
+                }
+            }
+
+            if ($scope === 'all') {
+                $groupUpdate = [];
+                if (isset($data['description'])) {
+                    $groupUpdate['description'] = $data['description'];
+                }
+                if (array_key_exists('category_id', $data)) {
+                    $groupUpdate['category_id'] = $data['category_id'];
+                }
+                if (array_key_exists('bank_account_id', $data)) {
+                    $groupUpdate['bank_account_id'] = $data['bank_account_id'];
+                }
+                if (isset($data['amount'])) {
+                    $groupUpdate['installment_amount'] = $data['amount'];
+                }
+
+                if (! empty($groupUpdate)) {
+                    $group->update($groupUpdate);
+                }
+            }
+
+            // Recalcula o total do grupo
+            $group->update([
+                'total_amount' => $group->installments()->sum('amount'),
+            ]);
+        });
+    }
+
+    public function deleteSeries(Installment $installment, string $scope): void
+    {
+        if ($scope === 'all') {
+            $installment->group->delete();
+
+            return;
+        }
+
+        $targets = $this->resolveTargets($installment, $scope);
+        $group   = $installment->group;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($targets, $group) {
+            foreach ($targets as $target) {
+                if ($target->transaction) {
+                    // Dissocia do grupo para evitar o observer que deleta o grupo inteiro
+                    $target->transaction->update(['installment_group_id' => null]);
+                    $target->transaction->delete();
+                }
+                $target->delete();
+            }
+
+            if ($group->installments()->count() === 0) {
+                $group->delete();
+            } else {
+                $group->update([
+                    'total_installments' => $group->installments()->count(),
+                    'total_amount'       => $group->installments()->sum('amount'),
+                ]);
+            }
+        });
+    }
+
+    private function resolveTargets(Installment $installment, string $scope)
+    {
+        return match ($scope) {
+            'only_this'       => collect([$installment]),
+            'this_and_future' => $installment->group->installments()
+                ->where('number', '>=', $installment->number)
+                ->get(),
+            'all'             => $installment->group->installments,
+            default           => collect([$installment]),
+        };
     }
 }
