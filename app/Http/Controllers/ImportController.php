@@ -210,7 +210,8 @@ class ImportController extends Controller
             "import_filename_{$userId}"        => $file->getClientOriginalName(),
             "import_file_path_{$userId}"       => $storedPath,
             "import_matched_card_{$userId}"    => $matchedCard?->id,
-            "import_due_date_{$userId}"        => $dueDateFull,  // ← chave separada, não apagada por index()
+            "import_due_date_{$userId}"        => $dueDateFull,    // ← chave separada, não apagada por index()
+            "import_total_amount_{$userId}"    => $totalAmount,    // ← chave separada, não apagada por index()
             "import_invoice_details_{$userId}" => [
                 'bank'        => $bank,
                 'lastFour'    => $lastFour,
@@ -279,7 +280,9 @@ class ImportController extends Controller
         $months = $items->map(fn ($i) => substr($i['date'], 0, 7))->countBy();
         $referenceMonth = $months->sortDesc()->keys()->first() ?? now()->format('Y-m');
 
-        $totalAmount = $items->sum('amount');
+        // Usa o total extraído do PDF (chave separada que sobrevive ao forget() de index()).
+        // Fallback para soma dos itens se o PDF não informou o total.
+        $totalAmount = session("import_total_amount_{$userId}") ?? $items->sum('amount');
         $filePath    = session("import_file_path_{$userId}");
         $fileName    = session("import_filename_{$userId}", 'fatura');
         $invoiceDetails = session("import_invoice_details_{$userId}", []);
@@ -331,6 +334,7 @@ class ImportController extends Controller
             "import_invoice_details_{$userId}",
             "import_matched_card_{$userId}",
             "import_due_date_{$userId}",
+            "import_total_amount_{$userId}",
         ]);
 
         // Cria evento no Calendar para a fatura importada (se tiver vencimento)
@@ -576,8 +580,13 @@ class ImportController extends Controller
                 $createdAny = true;
             }
 
-            // Atualiza total_amount das faturas futuras criadas/encontradas
+            // Atualiza total_amount das faturas futuras criadas/encontradas.
+            // Guard: nunca incrementa o statement atual — pode ocorrer quando o item tem
+            // data no mês anterior ao mês de referência (ex: 2026-01 numa fatura 02/2026)
+            // e sua próxima parcela cai em 2026-02, fazendo resolveOrCreateFutureStatement
+            // retornar o mesmo $statementId.
             foreach ($stmtAmounts as $stmtId => $amt) {
+                if ($statementId !== null && $stmtId === $statementId) continue;
                 CreditCardStatement::where('id', $stmtId)->increment('total_amount', round($amt, 2));
             }
 
@@ -653,8 +662,13 @@ class ImportController extends Controller
             }
         }
 
-        // Atualiza total_amount das faturas futuras criadas/encontradas
+        // Atualiza total_amount das faturas futuras criadas/encontradas.
+        // Guard: nunca incrementa o statement atual — pode ocorrer quando o item tem
+        // data no mês anterior ao mês de referência (ex: 2026-01 numa fatura 02/2026)
+        // e sua próxima parcela cai em 2026-02, fazendo resolveOrCreateFutureStatement
+        // retornar o mesmo $statementId.
         foreach ($stmtAmounts as $stmtId => $amt) {
+            if ($statementId !== null && $stmtId === $statementId) continue;
             CreditCardStatement::where('id', $stmtId)->increment('total_amount', round($amt, 2));
         }
 
