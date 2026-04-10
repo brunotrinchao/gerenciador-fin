@@ -91,7 +91,7 @@ class TransactionController extends Controller
         $pendingSyncItems = [];
         if (auth()->user()->google_calendar_enabled) {
             $pendingTx = Transaction::byUser($userId)
-                ->where('status', TransactionStatus::Pending)
+                ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Scheduled])
                 ->whereNull('google_event_id')
                 ->whereNull('installment_group_id')
                 ->whereNotIn('type', ['credit_card', 'transfer'])
@@ -105,7 +105,7 @@ class TransactionController extends Controller
                 ]);
 
             $pendingInst = Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId)->whereNull('credit_card_id'))
-                ->where('status', TransactionStatus::Pending)
+                ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Scheduled])
                 ->whereNull('google_event_id')
                 ->with('group:id,description,total_installments')
                 ->get(['id', 'installment_group_id', 'number', 'amount', 'due_date'])
