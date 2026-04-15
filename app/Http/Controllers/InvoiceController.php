@@ -131,14 +131,15 @@ class InvoiceController extends Controller
             BankAccount::byUser(auth()->id())->findOrFail($bankAccountId);
 
             Transaction::create([
-                'user_id'         => auth()->id(),
-                'bank_account_id' => (int) $bankAccountId,
-                'category_id'     => null,
-                'description'     => 'Pagamento Fatura ' . ($statement->creditCard?->name ?? 'Cartão') . ' ' . $statement->reference_month,
-                'amount'          => $statement->total_amount,
-                'type'            => TransactionType::Expense,
-                'status'          => TransactionStatus::Paid,
-                'date'            => now()->toDateString(),
+                'user_id'                    => auth()->id(),
+                'bank_account_id'            => (int) $bankAccountId,
+                'credit_card_statement_id'   => $statement->id,
+                'category_id'                => null,
+                'description'                => 'Pagamento Fatura ' . ($statement->creditCard?->name ?? 'Cartão') . ' ' . $statement->reference_month,
+                'amount'                     => $statement->total_amount,
+                'type'                       => TransactionType::Expense,
+                'status'                     => TransactionStatus::Paid,
+                'date'                       => now()->toDateString(),
             ]);
         }
 
@@ -162,6 +163,23 @@ class InvoiceController extends Controller
             'status'      => 'open',
             'paid_amount' => 0,
         ]);
+
+        [$year, $month] = explode('-', $statement->reference_month);
+
+        // Reverte transações do mês para "pendente"
+        Transaction::where('user_id', auth()->id())
+            ->where('credit_card_id', $statement->credit_card_id)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->where('status', TransactionStatus::Paid->value)
+            ->get()
+            ->each(fn ($tx) => $tx->update(['status' => TransactionStatus::Pending->value]));
+
+        // Exclui transação de pagamento no banco (dispara recalculo de saldo via observer)
+        Transaction::where('user_id', auth()->id())
+            ->where('credit_card_statement_id', $statement->id)
+            ->where('type', TransactionType::Expense->value)
+            ->delete();
 
         // Cria evento no Calendar se conectado e sem evento
         if (auth()->user()->google_calendar_enabled && empty($statement->google_event_id) && $statement->due_date) {

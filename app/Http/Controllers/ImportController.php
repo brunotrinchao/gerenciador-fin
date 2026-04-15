@@ -116,6 +116,18 @@ class ImportController extends Controller
                         ->with('error', 'Não foi possível ler este PDF como boleto. Verifique se o arquivo está correto.');
                 }
 
+                // Verifica duplicidade se houver paymentCode
+                if ($boletoDto->paymentCode) {
+                    $exists = Transaction::where('user_id', $userId)
+                        ->where('payment_code', $boletoDto->paymentCode)
+                        ->exists();
+
+                    if ($exists) {
+                        return redirect()->route('imports.index')
+                            ->with('error', 'Este boleto já foi importado anteriormente!');
+                    }
+                }
+
                 session([
                     "import_boleto_{$userId}" => [
                         'beneficiary' => $boletoDto->beneficiary,
@@ -371,6 +383,18 @@ class ImportController extends Controller
         ]);
 
         $userId = Auth::id();
+
+        // Verificação final de duplicidade
+        if (! empty($data['payment_code'])) {
+            $exists = Transaction::where('user_id', $userId)
+                ->where('payment_code', $data['payment_code'])
+                ->exists();
+
+            if ($exists) {
+                return redirect()->route('imports.index')
+                    ->with('error', 'Este boleto já foi importado anteriormente!');
+            }
+        }
 
         Transaction::create([
             'user_id'              => $userId,
