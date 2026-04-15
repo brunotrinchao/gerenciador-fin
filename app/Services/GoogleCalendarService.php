@@ -15,10 +15,10 @@ class GoogleCalendarService
     // colorId do Google Calendar por tipo de lançamento
     private const COLOR_EXPENSE     = '11'; // Tomato (vermelho)
     private const COLOR_INCOME      = '2';  // Sage (verde claro)
-    private const COLOR_CREDIT_CARD = '7';  // Peacock (azul petróleo)
-    private const COLOR_BOLETO      = '5';  // Banana (amarelo)
+    private const COLOR_CREDIT_CARD = '9';  // Blueberry (azul)
     private const COLOR_INSTALLMENT = '9';  // Blueberry (azul)
     private const COLOR_INVOICE     = '7';  // Peacock (azul petróleo)
+    private const COLOR_TRANSFER    = '8';  // Graphite (cinza)
 
     /**
      * Cria um evento no Google Calendar e retorna o eventId.
@@ -52,6 +52,39 @@ class GoogleCalendarService
         }
 
         return null;
+    }
+
+    /**
+     * Atualiza um evento no Google Calendar.
+     */
+    public function updateEvent(User $user, string $eventId, array $payload): bool
+    {
+        $user = $this->refreshTokenIfNeeded($user);
+
+        if (! $user->google_calendar_token) {
+            return false;
+        }
+
+        $token = json_decode($user->google_calendar_token, true);
+
+        try {
+            $response = Http::withToken($token['access_token'])
+                ->timeout(10)
+                ->put(self::API_BASE . '/calendars/' . self::CALENDAR_ID . '/events/' . $eventId, $payload);
+
+            if ($response->successful()) {
+                return true;
+            }
+
+            Log::warning('GoogleCalendarService: falha ao atualizar evento', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('GoogleCalendarService: exceção ao atualizar evento', ['error' => $e->getMessage()]);
+        }
+
+        return false;
     }
 
     /**
@@ -131,7 +164,9 @@ class GoogleCalendarService
 
     public function buildTransactionPayload(\App\Models\Transaction $tx): array
     {
-        $emoji = match ($tx->type->value ?? $tx->type) {
+        $type = $tx->type instanceof \App\Enums\TransactionType ? $tx->type->value : (string) ($tx->type ?? 'expense');
+
+        $emoji = match ($type) {
             'income'       => '💰',
             'expense'      => '💸',
             'credit_card'  => '💳',
@@ -141,9 +176,10 @@ class GoogleCalendarService
             default        => '📌',
         };
 
-        $colorId = match ($tx->type->value ?? $tx->type) {
+        $colorId = match ($type) {
             'income'      => self::COLOR_INCOME,
             'credit_card' => self::COLOR_CREDIT_CARD,
+            'transfer'    => self::COLOR_TRANSFER,
             default       => self::COLOR_EXPENSE,
         };
 
@@ -152,9 +188,11 @@ class GoogleCalendarService
         $account     = $tx->bankAccount?->name ?? $tx->creditCard?->name ?? '';
         $description = "Valor: R$ {$amount}\nCategoria: {$category}" . ($account ? "\nConta: {$account}" : '');
 
+        $dateStr = $tx->date instanceof \Carbon\Carbon ? $tx->date->format('Y-m-d') : substr((string) ($tx->date ?? now()), 0, 10);
+
         return $this->buildEventPayload(
-            title:       "{$emoji} {$tx->description} | R$ {$amount}",
-            date:        $tx->date instanceof \Carbon\Carbon ? $tx->date->format('Y-m-d') : substr($tx->date, 0, 10),
+            title:       "{$emoji} " . ($tx->description ?? 'Sem descrição') . " | R$ {$amount}",
+            date:        $dateStr,
             description: $description,
             colorId:     $colorId,
         );
@@ -164,14 +202,16 @@ class GoogleCalendarService
     {
         $group  = $installment->group;
         $amount = number_format((float) $installment->amount, 2, ',', '.');
-        $num    = "{$installment->number}/{$group?->total_installments}";
+        $num    = "{$installment->number}/" . ($group?->total_installments ?? 1);
         $cat    = $group?->category?->name ?? 'Sem categoria';
 
+        $dateStr = $installment->due_date instanceof \Carbon\Carbon
+            ? $installment->due_date->format('Y-m-d')
+            : substr((string) ($installment->due_date ?? now()), 0, 10);
+
         return $this->buildEventPayload(
-            title:       "💳 {$group?->description} ({$num}) | R$ {$amount}",
-            date:        $installment->due_date instanceof \Carbon\Carbon
-                             ? $installment->due_date->format('Y-m-d')
-                             : substr($installment->due_date, 0, 10),
+            title:       "💳 " . ($group?->description ?? 'Parcela') . " ({$num}) | R$ {$amount}",
+            date:        $dateStr,
             description: "Valor: R$ {$amount}\nParcela: {$num}\nCategoria: {$cat}",
             colorId:     self::COLOR_INSTALLMENT,
         );
@@ -181,14 +221,14 @@ class GoogleCalendarService
     {
         $amount  = number_format((float) $statement->total_amount, 2, ',', '.');
         $card    = $statement->creditCard?->name ?? 'Cartão';
-        $dueDate = $statement->due_date instanceof \Carbon\Carbon
+        $dueDateStr = $statement->due_date instanceof \Carbon\Carbon
             ? $statement->due_date->format('Y-m-d')
-            : substr($statement->due_date, 0, 10);
+            : substr((string) ($statement->due_date ?? now()), 0, 10);
 
         return $this->buildEventPayload(
-            title:       "💳 Fatura {$card} {$statement->reference_month} | R$ {$amount}",
-            date:        $dueDate,
-            description: "Valor: R$ {$amount}\nCartão: {$card}\nMês de referência: {$statement->reference_month}",
+            title:       "💳 Fatura {$card} " . ($statement->reference_month ?? '') . " | R$ {$amount}",
+            date:        $dueDateStr,
+            description: "Valor: R$ {$amount}\nCartão: {$card}\nMês de referência: " . ($statement->reference_month ?? ''),
             colorId:     self::COLOR_INVOICE,
         );
     }

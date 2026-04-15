@@ -5,6 +5,9 @@ namespace App\Observers;
 use App\Enums\TransactionStatus;
 use App\Jobs\CreateCalendarEvent;
 use App\Jobs\DeleteCalendarEvent;
+use App\Jobs\UpdateCalendarEvent;
+use App\Models\BankAccount;
+use App\Models\CreditCard;
 use App\Models\Transaction;
 
 class TransactionObserver
@@ -41,7 +44,7 @@ class TransactionObserver
             }
             // Se mudou de conta, recalcular a conta anterior também
             if ($transaction->wasChanged('bank_account_id') && $transaction->getOriginal('bank_account_id')) {
-                $oldAccount = \App\Models\BankAccount::find($transaction->getOriginal('bank_account_id'));
+                $oldAccount = BankAccount::find($transaction->getOriginal('bank_account_id'));
                 $oldAccount?->recalculateBalance();
             }
 
@@ -54,15 +57,25 @@ class TransactionObserver
             }
         }
 
-        // Remove evento do Calendar quando a transação sai do status pendente ou agendado
-        $hadCalendarStatus = in_array(
-            $transaction->getOriginal('status'),
-            [TransactionStatus::Pending->value, TransactionStatus::Scheduled->value]
-        );
-        if ($transaction->wasChanged('status') && $hadCalendarStatus) {
-            if (! empty($transaction->google_event_id)) {
-                DeleteCalendarEvent::dispatch($transaction->google_event_id, $transaction->user_id);
-                $transaction->withoutEvents(fn () => $transaction->update(['google_event_id' => null]));
+        // --- Sincronização Google Calendar ---
+        if ($transaction->user->google_calendar_enabled) {
+            $isEligible = in_array($transaction->status, [TransactionStatus::Pending, TransactionStatus::Scheduled])
+                && is_null($transaction->installment_group_id);
+
+            if ($isEligible) {
+                if (empty($transaction->google_event_id)) {
+                    // Passou a ser elegível (ex: de Pago para Pendente)
+                    \App\Jobs\CreateCalendarEvent::dispatch(Transaction::class, $transaction->id, $transaction->user_id);
+                } elseif ($transaction->isDirty(['description', 'amount', 'date', 'status', 'category_id', 'bank_account_id', 'credit_card_id'])) {
+                    // Já tem evento, mas os dados mudaram
+                    \App\Jobs\UpdateCalendarEvent::dispatch(Transaction::class, $transaction->id, $transaction->user_id);
+                }
+            } else {
+                // Deixou de ser elegível (ex: Pago ou Cancelado)
+                if (! empty($transaction->google_event_id)) {
+                    \App\Jobs\DeleteCalendarEvent::dispatch($transaction->google_event_id, $transaction->user_id);
+                    $transaction->withoutEvents(fn () => $transaction->update(['google_event_id' => null]));
+                }
             }
         }
     }
@@ -96,7 +109,7 @@ class TransactionObserver
 
     protected function recalculateCardLimit(int $cardId): void
     {
-        $card = \App\Models\CreditCard::find($cardId);
+        $card = CreditCard::find($cardId);
         $card?->recalculateLimit();
     }
 }

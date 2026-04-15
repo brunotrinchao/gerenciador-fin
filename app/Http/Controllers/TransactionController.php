@@ -311,10 +311,8 @@ class TransactionController extends Controller
 
         $transaction->update(['status' => TransactionStatus::Pending]);
 
-        // Cria evento no Calendar se conectado e sem evento
-        if (auth()->user()->google_calendar_enabled && empty($transaction->google_event_id)) {
-            CreateCalendarEvent::dispatch(Transaction::class, $transaction->id, Auth::id());
-        }
+        // Sincronização Google Calendar agora via TransactionObserver
+
 
         return back()->with('success', 'Pagamento desfeito! Transação voltou para pendente.');
     }

@@ -14,15 +14,7 @@ class Installment extends Model
 
     protected static function booted(): void
     {
-        static::updated(function (Installment $installment) {
-            // Remove evento do Calendar quando a parcela sai do status pendente
-            if ($installment->wasChanged('status') && $installment->status !== TransactionStatus::Pending) {
-                if (! empty($installment->google_event_id)) {
-                    DeleteCalendarEvent::dispatch($installment->google_event_id, $installment->group->user_id);
-                    $installment->withoutEvents(fn () => $installment->update(['google_event_id' => null]));
-                }
-            }
-        });
+        // Movido para InstallmentObserver
     }
 
     protected $fillable = [

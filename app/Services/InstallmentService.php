@@ -79,10 +79,7 @@ class InstallmentService
                 'status'               => TransactionStatus::Pending,
             ]);
 
-            // Cria evento no Google Calendar para cada parcela pendente
-            if ($user?->google_calendar_enabled) {
-                CreateCalendarEvent::dispatch(Installment::class, $installment->id, $data['user_id']);
-            }
+            // Sincronização Google Calendar agora via InstallmentObserver
         }
 
         return $group;

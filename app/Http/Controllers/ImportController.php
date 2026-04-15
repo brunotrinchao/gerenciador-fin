@@ -346,10 +346,8 @@ class ImportController extends Controller
             "import_total_amount_{$userId}",
         ]);
 
-        // Cria evento no Calendar para a fatura importada (se tiver vencimento)
-        if (Auth::user()->google_calendar_enabled && $dueDate) {
-            CreateCalendarEvent::dispatch(CreditCardStatement::class, $statement->id, $userId);
-        }
+        // Sincronização Google Calendar agora via CreditCardStatementObserver
+
 
         // Processa o Job de forma síncrona (sem necessidade de queue worker)
         ProcessStatementImport::dispatchSync($statement->id);

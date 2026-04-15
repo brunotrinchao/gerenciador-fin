@@ -26,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        Transaction::observe(TransactionObserver::class);
+        \App\Models\Transaction::observe(\App\Observers\TransactionObserver::class);
+        \App\Models\Installment::observe(\App\Observers\InstallmentObserver::class);
+        \App\Models\CreditCardStatement::observe(\App\Observers\CreditCardStatementObserver::class);
     }
 }
