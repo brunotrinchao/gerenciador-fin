@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { useTutorial } from '@/hooks/useTutorial';
-import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
 import { transactionsSteps } from '@/tutorials/steps/transactions';
 import { formatDate } from '@/lib/utils';
 import { CurrencyInput } from '@/Components/CurrencyInput';
@@ -155,7 +154,7 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
         }
         if (transaction.status === 'scheduled') {
             return (
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-orange-600/10 text-orange-500">
                     Agendado
                 </span>
             );
@@ -431,11 +430,17 @@ function InstallmentRow({ installment, onClick, onEdit, onDelete }: InstallmentR
                 <span
                     className="text-[11px] font-medium px-2 py-0.5 rounded-full"
                     style={{
-                        backgroundColor: isPaid ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',
-                        color: isPaid ? '#22c55e' : '#f59e0b',
+                        backgroundColor: 
+                            isPaid ? 'rgba(34,197,94,0.1)' : 
+                            installment.status === 'scheduled' ? 'rgba(249,115,22,0.1)' :
+                            'rgba(245,158,11,0.1)',
+                        color: 
+                            isPaid ? '#22c55e' : 
+                            installment.status === 'scheduled' ? '#f97316' : 
+                                '#f59e0b',
                     }}
                 >
-                    {isPaid ? 'Pago' : 'Pendente'}
+                    {isPaid ? 'Pago' : installment.status === 'scheduled' ? 'Agendado' : 'Pendente'}
                 </span>
             </div>
             <div className="flex-shrink-0 text-right min-w-[90px]">
@@ -559,9 +564,12 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                             <span className="text-gray-500">Status</span>
                             <span className={`font-medium ${
                                 t.status === 'paid' ? 'text-green-400' :
+                                t.status === 'scheduled' ? 'text-orange-500' :
                                 t.status === 'cancelled' ? 'text-gray-500' : 'text-yellow-400'
                             }`}>
-                                {t.status === 'paid' ? 'Pago' : t.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
+                                {t.status === 'paid' ? 'Pago' : 
+                                 t.status === 'scheduled' ? 'Agendado' :
+                                 t.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
                             </span>
                         </div>
                         {t.category && (
@@ -963,7 +971,7 @@ function TransactionFormModal({
             description: editingTransaction?.description ?? prefillData?.description ?? '',
             amount: editingTransaction ? String(editingTransaction.amount) : (prefillData?.amount ?? ''),
             date:
-                editingTransaction?.date ??
+                (editingTransaction?.date ? editingTransaction.date.substring(0, 10) : null) ??
                 prefillData?.date ??
                 new Date().toISOString().split('T')[0],
             status: editingTransaction?.status ?? 'pending',
@@ -2075,6 +2083,8 @@ export default function TransactionsIndex({
                                     key={`installment-${inst.id}`}
                                     installment={inst}
                                     onClick={(i) => setDetailItem({ kind: 'installment', data: i })}
+                                    onEdit={openEdit}
+                                    onDelete={handleDeleteClick}
                                 />
                             ))}
 

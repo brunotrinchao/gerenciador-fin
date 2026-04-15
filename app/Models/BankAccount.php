@@ -60,13 +60,20 @@ class BankAccount extends Model
 
     public function recalculateBalance(): void
     {
-        $income = $this->transactions()
-            ->whereIn('type', [TransactionType::Income->value, TransactionType::InvestmentOut->value])
+        $income = Transaction::where('bank_account_id', $this->id)
+            ->whereIn('type', [
+                TransactionType::Income->value, 
+                TransactionType::InvestmentOut->value
+            ])
             ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
-        $expense = $this->transactions()
-            ->whereIn('type', [TransactionType::Expense->value, TransactionType::InvestmentIn->value])
+        $expense = Transaction::where('bank_account_id', $this->id)
+            ->whereIn('type', [
+                TransactionType::Expense->value, 
+                TransactionType::InvestmentIn->value,
+                TransactionType::Transfer->value // Transferência saindo desta conta
+            ])
             ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
