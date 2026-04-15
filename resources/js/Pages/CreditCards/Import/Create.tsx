@@ -32,6 +32,7 @@ interface InvoiceDetails {
     closingDay: number | null;
     dueDay: number | null;
     creditLimit: number | null;
+    availableLimit: number | null;
 }
 
 interface BoletoDetails {
@@ -142,7 +143,7 @@ export default function ImportCreate({
                 closing_day:      invoiceDetails.closingDay ? String(invoiceDetails.closingDay) : prev.closing_day,
                 due_day:          invoiceDetails.dueDay ? String(invoiceDetails.dueDay) : prev.due_day,
                 credit_limit:     invoiceDetails.creditLimit ? String(invoiceDetails.creditLimit) : prev.credit_limit,
-                available_limit:  invoiceDetails.creditLimit ? String(invoiceDetails.creditLimit) : prev.available_limit,
+                available_limit:  invoiceDetails.availableLimit !== null && invoiceDetails.availableLimit !== undefined ? String(invoiceDetails.availableLimit) : prev.available_limit,
             }));
             setShowModal(true);
         }
@@ -236,7 +237,6 @@ export default function ImportCreate({
         (useNewCard
             ? !newCard.name || !newCard.credit_limit || !newCard.closing_day || !newCard.due_day
             : !selectedCardId);
-
     // ── Render ────────────────────────────────
 
     return (

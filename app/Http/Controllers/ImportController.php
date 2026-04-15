@@ -164,11 +164,19 @@ class ImportController extends Controller
                 ->with('error', 'Nenhuma transação encontrada no arquivo. Verifique se o formato é suportado.');
         }
 
-        // 2. Parseia limite de crédito
-        $creditLimit = null;
+        // 2. Parseia limites de crédito
+        $creditLimit    = null;
+        $availableLimit = null;
+
         if ($invoiceData?->card?->limit) {
-            $creditLimit = (float) str_replace(['.', ','], ['', '.'], (string) $invoiceData?->card?->limit);
+            $creditLimit = (float) $invoiceData->card->limit;
             if ($creditLimit <= 0) $creditLimit = null;
+        }
+
+        if (isset($invoiceData?->card?->availableLimit) && $invoiceData->card->availableLimit !== null) {
+            $availableLimit = (float) $invoiceData->card->availableLimit;
+        } elseif ($creditLimit !== null && $invoiceData?->card?->used !== null) {
+            $availableLimit = max(0, $creditLimit - (float) $invoiceData->card->used);
         }
 
         $bank        = $invoiceData?->bank?->name;
@@ -213,16 +221,17 @@ class ImportController extends Controller
             "import_due_date_{$userId}"        => $dueDateFull,    // ← chave separada, não apagada por index()
             "import_total_amount_{$userId}"    => $totalAmount,    // ← chave separada, não apagada por index()
             "import_invoice_details_{$userId}" => [
-                'bank'        => $bank,
-                'lastFour'    => $lastFour,
-                'totalAmount' => $totalAmount,
-                'itemCount'   => $items->count(),
-                'isValidSum'  => $invoiceData?->isValidSum ?? true,
-                'cardName'    => $cardName,
-                'brand'       => $brand,
-                'closingDay'  => $closingDay,
-                'dueDay'      => $dueDay,
-                'creditLimit' => $creditLimit,
+                'bank'           => $bank,
+                'lastFour'       => $lastFour,
+                'totalAmount'    => $totalAmount,
+                'itemCount'      => $items->count(),
+                'isValidSum'     => $invoiceData?->isValidSum ?? true,
+                'cardName'       => $cardName,
+                'brand'          => $brand,
+                'closingDay'     => $closingDay,
+                'dueDay'         => $dueDay,
+                'creditLimit'    => $creditLimit,
+                'availableLimit' => $availableLimit,
             ],
         ]);
 

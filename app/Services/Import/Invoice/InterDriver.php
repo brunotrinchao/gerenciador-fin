@@ -8,11 +8,14 @@ use App\DTO\ImportedInvoiceDTO;
 use App\DTO\InvoiceDTO;
 use App\DTO\InvoiceTransactionDTO;
 use App\Helpers\MaskHelper;
+use App\Services\Import\Invoice\Concerns\HasBrandDetection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class InterDriver implements InvoiceDriver
 {
+    use HasBrandDetection;
+
     const CARDNAME = 'Banco Inter Mastercard';
 
     public function canParse(string $text): bool
@@ -49,12 +52,12 @@ class InterDriver implements InvoiceDriver
             totalAmount: $totalAmount,
         );
         $bank= new BankDTO(
-            name: 'Mercado Pago',
+            name: 'Banco Inter',
             cnpj: null,
         );
         $card= new CardDTO(
             name: self::CARDNAME,
-            brand: 'Visa',
+            brand: $this->detectBrand($text) ?? 'Mastercard',
             lastFourDigits: $lastFour,
             closingDay: $closingDate->day,
             dueDay: $dueDate->day,

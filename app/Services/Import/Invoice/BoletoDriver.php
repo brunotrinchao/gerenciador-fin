@@ -7,11 +7,14 @@ use App\DTO\CardDTO;
 use App\DTO\ImportedInvoiceDTO;
 use App\DTO\InvoiceDTO;
 use App\Services\Import\Boleto\BoletoParserFactory;
+use App\Services\Import\Invoice\Concerns\HasBrandDetection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class BoletoDriver implements InvoiceDriver
 {
+    use HasBrandDetection;
+
     public function __construct(protected BoletoParserFactory $factory) {}
 
     public function canParse(string $text): bool
@@ -37,6 +40,7 @@ class BoletoDriver implements InvoiceDriver
             ),
             card: new CardDTO(
                 name: $dto->beneficiary,
+                brand: $this->detectBrand($text),
             ),
             transactions: collect(),
             totalAmount: $dto->amount,

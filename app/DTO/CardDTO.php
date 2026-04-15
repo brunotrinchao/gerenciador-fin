@@ -15,6 +15,7 @@ readonly class CardDTO
         public ?int $dueDay = null,
         public ?float $limit = null,
         public ?float $used = null,
+        public ?float $availableLimit = null,
     )
     {
         

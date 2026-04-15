@@ -8,11 +8,14 @@ use App\DTO\ImportedInvoiceDTO;
 use App\DTO\InvoiceDTO;
 use App\DTO\InvoiceTransactionDTO;
 use App\Helpers\MaskHelper;
+use App\Services\Import\Invoice\Concerns\HasBrandDetection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class BradescoDriver implements InvoiceDriver
 {
+    use HasBrandDetection;
+
     const CARDNAME = 'Bradesco Visa';
 
     public function canParse(string $text): bool
@@ -50,7 +53,7 @@ class BradescoDriver implements InvoiceDriver
         );
         $card= new CardDTO(
             name: self::CARDNAME,
-            brand: 'Visa',
+            brand: $this->detectBrand($text) ?? 'Visa',
             lastFourDigits: substr($cardMatch[1] ?? '0000', -4),
             closingDay: $closingDate->day,
             dueDay: $dueDate->day,

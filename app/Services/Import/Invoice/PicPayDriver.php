@@ -2,119 +2,152 @@
 
 namespace App\Services\Import\Invoice;
 
+use App\DTO\BankDTO;
+use App\DTO\CardDTO;
 use App\DTO\ImportedInvoiceDTO;
+use App\DTO\InvoiceDTO;
 use App\DTO\InvoiceTransactionDTO;
-use App\Helpers\MaskHelper;
+use App\Services\Import\Invoice\Concerns\HasBrandDetection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class PicPayDriver implements InvoiceDriver
 {
-    const CARDNAME = 'PicPay Card';
+    use HasBrandDetection;
+
+    const CARDNAME = 'PicPay Mastercard';
 
     public function canParse(string $text): bool
     {
-        // Uso de case-insensitive para garantir a detecção
-        return (bool)preg_match('/PicPay\s*(Bank|Card)/i', $text);
+        return (bool)preg_match('/PicPay\s*Mastercard/i', $text) || (bool)preg_match('/PicPay\s*Bank/i', $text);
     }
 
     public function parse(string $text): ImportedInvoiceDTO
     {
-        // 1. Extração do Cartão (Nome e Final)
-        // O modificador 's' permite que o '.' inclua quebras de linha
-        preg_match('/Cartão\s+(.*?)\s+Final\s+(\d{4})/is', $text, $cardMatch);
-
-        // 2. Extração do Vencimento (Aceita 'Vencimento:', 'Vencimento ' etc)
-        preg_match('/Vencimento\s*:?\s*(\d{2}\/\d{2}\/\d{4})/i', $text, $dueMatch);
-
-        // 3. Extração do Fechamento (Geralmente aparece como "fechamento em" ou perto do vencimento)
-        preg_match('/fechamento\s+em\s+(\d{2}\/\d{2})/i', $text, $closeMatch);
-
-        // 4. Extração do Valor Total
-        preg_match('/Pagamento\s+fatura\s+R\$\s?([\d\.]+,\d{2})/is', $text, $totalMatch);
-
-        // 5. Extração do Limite (PicPay costuma exibir como "Limite total")
-        preg_match('/Limite\s+total\s+R\$\s?([\d\.]+,\d{2})/i', $text, $limitMatch);
-
-        if (preg_match('/Picpay\s*Card\s*final\s*(\d{4})/i', $text, $matches)) {
-            $lastFour = $matches[1];
-        } // Fallback: Procura apenas por "final" seguido de 4 dígitos em qualquer lugar
-        elseif (preg_match('/final\s+(\d{4})/i', $text, $matches)) {
-            $lastFour = $matches[1];
-        } else {
-            $lastFour = '0000'; // Valor padrão caso não encontre
-        }
-
-        if (preg_match('/Limite disponível para cada tipo de operação\*\s*Total\s*R\$\s*([\d\.]+,\d{2})/is', $text, $matches)) {
-            $limit = $this->parseMoney($matches[1]);
-        } else {
-            // Caso a frase de cima falhe, tentamos uma busca mais direta apenas pelo Total R$
-            // que apareça logo após a seção de limites
-            preg_match('/Total\s*R\$\s*([\d\.]+,\d{2})/is', $text, $matches);
-            $limit = isset($matches[1]) ? $this->parseMoney($matches[1]) : 0.00;
-        }
-
-        if (preg_match('/Total parcelado - próximas faturas\*\s*Valor consolidado das parcelas futuras\s*R\$\s*([\d\.]+,\d{2})/is', $text, $matches)) {
-            $used = $this->parseMoney($matches[1]);
-        } else {
-            // Caso a frase de cima falhe, tentamos uma busca mais direta apenas pelo Total R$
-            // que apareça logo após a seção de limites
-            preg_match('/Total\s*R\$\s*([\d\.]+,\d{2})/is', $text, $matches);
-            $used = isset($matches[1]) ? $this->parseMoney($matches[1]) : 0.00;
-        }
+        // Metadata extraction
+        preg_match('/Vencimento:\s+(\d{2}\/\d{2}\/\d{4})/i', $text, $dueMatch);
+        preg_match('/Fechamento:\s+(\d{2}\/\d{2}\/\d{4})/i', $text, $closeMatch);
+        preg_match('/Total da sua fatura\s*R\$\s*([\d\.]+,\d{2})/i', $text, $totalMatch);
+        preg_match('/Picpay Card final (\d{4})/i', $text, $cardMatch);
+        
+        // Limits
+        preg_match('/Limite total\s*([\d\.]+,\d{2})/i', $text, $limitMatch);
+        preg_match('/Limite utilizado\s*([\d\.]+,\d{2})/i', $text, $usageMatch);
+        preg_match('/Limite disponível\s*([\d\.]+,\d{2})/i', $text, $availableMatch);
 
         $dueDate = isset($dueMatch[1]) ? Carbon::createFromFormat('d/m/Y', $dueMatch[1]) : now();
+        $closingDate = isset($closeMatch[1]) ? Carbon::createFromFormat('d/m/Y', $closeMatch[1]) : $dueDate->copy()->subDays(6);
+        $totalAmount = $this->parseMoney($totalMatch[1] ?? '0,00');
+
+        // Limits parsing
+        $limit = $this->parseMoney($limitMatch[1] ?? '0,00');
+        $used = isset($usageMatch[1]) ? $this->parseMoney($usageMatch[1]) : null;
+        $availableLimit = isset($availableMatch[1]) ? $this->parseMoney($availableMatch[1]) : null;
+
+        if ($used === null && $availableLimit !== null && $limit > 0) {
+            $used = max(0, $limit - $availableLimit);
+        }
+
+        $transactions = $this->parseTransactions($text);
+
+        // Validation
+        $calculatedTotal = $transactions->reduce(function ($carry, $t) {
+            return $t->isIncome ? $carry - $t->amount : $carry + $t->amount;
+        }, 0);
 
         return new ImportedInvoiceDTO(
-            name          : self::CARDNAME,
-            brand         : null,
-            lastFourDigits: $lastFour,
-            closingDay    : isset($closeMatch[1]) ? Carbon::createFromFormat('d/m', $closeMatch[1])->day : 5,
-            dueDay        : $dueDate->day,
-            limit         : $limit,
-            used          : $used,
-            dueDateInvoice: $dueDate,
-            bankName      : 'PicPay',
-            bankCnpj      : '09.516.419/0001-75',
-            transactions  : $this->parseTransactions($text),
-            totalAmount   : $this->parseMoney($totalMatch[1] ?? '0,00')
+            invoice: new InvoiceDTO(
+                dueDateInvoice: $dueDate->format('Y-m-d'),
+                totalAmount: $totalAmount
+            ),
+            bank: new BankDTO(
+                name: 'PicPay',
+                cnpj: '09.516.419/0001-75'
+            ),
+            card: new CardDTO(
+                name: self::CARDNAME,
+                brand: $this->detectBrand($text) ?? 'Mastercard',
+                lastFourDigits: $cardMatch[1] ?? '0000',
+                closingDay: $closingDate->day,
+                dueDay: $dueDate->day,
+                limit: $limit,
+                used: $used,
+                availableLimit: $availableLimit
+            ),
+            transactions: $transactions,
+            totalAmount: $totalAmount,
+            isValidSum: abs($totalAmount - (float)$calculatedTotal) < 0.05
         );
     }
 
     private function parseTransactions(string $text): Collection
     {
-        // Regex para capturar: DATA (12/10) | DESCRIÇÃO | VALOR (1.234,56)
-        // O padrão [^0-9\r\n]+ evita que a descrição "atropele" o valor
-        $pattern = '/(\d{2}\/\d{2})(.*?)\t\s*(-?[\d\.]+,\d{2})/i';
-
+        $transactions = collect();
+        
+        // PicPay PDF structure: Data Establishment Valor (R$)
+        // Patterns for different sections
+        $pattern = '/(\d{2}\/\d{4}|\d{2}\/\d{2})\s+(.*?)\s+(-?[\d\.]+,\d{2})/i';
+        
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
 
-        return collect($matches)->map(function ($t) {
-            $description = trim($t[2]);
-            $amount = $this->parseMoney($t[3]);
+        $blacklist = [
+            'pagamento de fatura', 'total da fatura', 'pagamento mínimo', 'limite total', 'limite utilizado', 
+            'limite disponível', 'vencimento', 'fechamento', 'subtotal', 'total geral',
+            'valor consolidado', 'total próximas faturas', 'total financiado', 'total a pagar'
+        ];
 
-            // Lógica de detecção de parcelas na descrição (Ex: 01/10)
-            preg_match('/(\d{2})\/(\d{2})/', $description, $parcelas);
+        foreach ($matches as $match) {
+            $dateStr = $match[1];
+            $description = trim($match[2]);
+            $amountStr = $match[3];
 
-            $strInstallment = isset($parcelas[1]) ? "{$parcelas[1]}/{$parcelas[2]}" : null;
+            // Filter noise
+            $lowerDesc = strtolower($description);
+            $isNoise = false;
+            foreach ($blacklist as $item) {
+                if (str_contains($lowerDesc, $item)) {
+                    $isNoise = true;
+                    break;
+                }
+            }
+            if ($isNoise) continue;
 
-            return new InvoiceTransactionDTO(
-                date                : Carbon::createFromFormat('d/m', $t[1])->setYear(now()->year),
-                description         : $description,
-                amount              : $amount,
-                isParcelado         : !empty($parcelas),
-                parcelaAtual        : isset($parcelas[1]) ? (int)$parcelas[1] : 1,
-                parcelaTotal        : isset($parcelas[2]) ? (int)$parcelas[2] : 1,
-                firstInstallmentDate: null, // Opcional: calcular baseado na parcela atual
-                isIncome            : $amount < 0 || str_contains(strtolower($description), 'pagamento')
-            );
-        });
+            // Date parsing (PicPay uses DD/MM or DD/MM/YYYY in some rows)
+            try {
+                if (strlen($dateStr) === 5) {
+                    $date = Carbon::createFromFormat('d/m', $dateStr);
+                } else {
+                    $date = Carbon::createFromFormat('d/m/Y', $dateStr);
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+
+            $amount = $this->parseMoney($amountStr);
+            $isIncome = $amount < 0 || str_contains($lowerDesc, 'pagamento de fatura') || str_contains($lowerDesc, 'créditos e estornos');
+
+            // Installment detection: "TATPARC06/12" or similar
+            preg_match('/(\d{2})\/(\d{2})/', $description, $installMatch);
+
+            $transactions->push(new InvoiceTransactionDTO(
+                date: $date,
+                description: $description,
+                amount: abs($amount),
+                isParcelado: !empty($installMatch),
+                parcelaAtual: isset($installMatch[1]) ? (int)$installMatch[1] : 1,
+                parcelaTotal: isset($installMatch[2]) ? (int)$installMatch[2] : 1,
+                firstInstallmentDate: null,
+                isIncome: $isIncome
+            ));
+        }
+
+        return $transactions;
     }
 
-    private function parseMoney(?string $val): int|string
+    private function parseMoney(string $val): float
     {
-        return $val;
-        // if (!$val) return 0;
-        // return MaskHelper::covertStrToInt($val);
+        $val = str_replace('.', '', $val);
+        $val = str_replace(',', '.', $val);
+        return (float)$val;
     }
 }

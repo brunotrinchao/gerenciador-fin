@@ -1,10 +1,12 @@
 {
-  "turn_count": 5,
-  "last_session_id": "032337a7-3bec-4b39-8dcd-210c96be1695",
-  "last_event_key": "032337a7-3bec-4b39-8dcd-210c96be1695:transcript:abc4e6196747c72cdd448e7239310eed3e89d8686b819c153eb51e22f07dc97a",
-  "last_transcript_hash": "abc4e6196747c72cdd448e7239310eed3e89d8686b819c153eb51e22f07dc97a",
+  "turn_count": 2,
+  "last_session_id": "4daa6571-0295-44b6-9672-8007b11a68f8",
+  "last_event_key": "4daa6571-0295-44b6-9672-8007b11a68f8:transcript:5b19fef25766483b6a63792c9c1ea98e7d4361d01b383c0df6ed379385ca89a5",
+  "last_transcript_hash": "5b19fef25766483b6a63792c9c1ea98e7d4361d01b383c0df6ed379385ca89a5",
   "last_model": "gemini-3-flash-preview",
-  "last_turn_total_tokens": 81605,
-  "last_session_total_tokens": 1402183,
-  "updated_at": "2026-04-07T19:07:37.382Z"
+  "last_turn_total_tokens": 51698,
+  "last_session_total_tokens": 1334871,
+  "cwd_mode": "parent-leaf",
+  "last_cwd_label": "brunotrinchao/Gerenciador Financeiro - Code",
+  "updated_at": "2026-04-15T16:04:33.120Z"
 }
