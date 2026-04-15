@@ -40,6 +40,7 @@ class CalendarController extends Controller
                     'status'      => $tx->status->value,
                     'category'    => $tx->category?->name,
                     'account'     => $tx->bankAccount?->name,
+                    'payment_code' => $tx->payment_code,
                 ];
             });
 
@@ -120,7 +121,7 @@ class CalendarController extends Controller
             ->sum('amount');
 
         return Inertia::render('Calendar', [
-            'events'  => $events,
+            'events'  => (object) $events,
             'year'    => $year,
             'month'   => $month,
             'summary' => [
