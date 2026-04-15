@@ -339,13 +339,9 @@ export default function Dashboard({
                     <Deferred data="expensesByCategory" fallback={<ChartSkeleton />}>
                         <div
                             data-tutorial="dash-pie-chart"
-                            className="rounded-xl p-5 flex flex-col h-full"
-                            style={{
-                                backgroundColor: 'var(--color-surface)',
-                                border: '1px solid var(--color-border)',
-                            }}
+                            className="premium-card p-6 flex flex-col h-full"
                         >
-                            <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--color-foreground)' }}>
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">
                                 Despesas por Categoria (Mês Atual)
                             </h3>
                             {expensesByCategory?.length > 0 ? (
@@ -379,13 +375,9 @@ export default function Dashboard({
                     <Deferred data="cashFlow" fallback={<ChartSkeleton />}>
                         <div
                             data-tutorial="dash-bar-chart"
-                            className="rounded-xl p-5 h-full"
-                            style={{
-                                backgroundColor: 'var(--color-surface)',
-                                border: '1px solid var(--color-border)',
-                            }}
+                            className="premium-card p-6 h-full"
                         >
-                            <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--color-foreground)' }}>
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">
                                 Fluxo de Caixa (Últimos 6 Meses)
                             </h3>
                             {cashFlow?.length > 0 ? (
@@ -423,13 +415,9 @@ export default function Dashboard({
                 }>
                     <div
                         data-tutorial="dash-payments-list"
-                        className="rounded-xl p-5"
-                        style={{
-                            backgroundColor: 'var(--color-surface)',
-                            border: '1px solid var(--color-border)',
-                        }}
+                        className="premium-card p-6"
                     >
-                        <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--color-foreground)' }}>
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">
                             Próximos Pagamentos (7 dias)
                         </h3>
                         {upcomingPayments?.length > 0 ? (
@@ -487,6 +475,7 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
     clickable?: boolean;
 }
 
+// StatCard modernizado
 const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
     label,
     value,
@@ -500,40 +489,40 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
     return (
         <div
             ref={ref}
-            className={`rounded-[var(--md-shape-md)] p-5 transition-all duration-200 ${clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:border-[var(--color-accent)]' : ''}`}
-            style={{
-                backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-            }}
+            className={`premium-card p-6 transition-all duration-300 group ${
+                clickable ? 'cursor-pointer interactive-scale' : ''
+            }`}
             {...props}
         >
-            <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground opacity-80 group-hover:opacity-100 transition-opacity">
                     {label}
                 </span>
                 <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: 'var(--color-surface-2)' }}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center glass group-hover:scale-110 transition-transform shadow-premium"
                 >
-                    <Icon size={15} style={{ color: 'var(--color-accent)' }} />
+                    <Icon size={18} className="text-primary" />
                 </div>
             </div>
-            <p className="text-xl font-bold mb-1 font-finance" style={{ color: 'var(--color-foreground)' }}>
-                {isCount ? value : formatCurrency(value)}
-            </p>
-            <p
-                className="text-xs"
-                style={{
-                    color:
-                        positive === true
-                            ? 'var(--color-accent)'
-                            : positive === false
-                            ? 'var(--color-danger)'
-                            : 'var(--color-muted)',
-                }}
-            >
-                {trend}
-            </p>
+            
+            <div className="space-y-1">
+                <h2 className="text-2xl font-bold font-finance tracking-tight text-foreground">
+                    {isCount ? value : formatCurrency(value)}
+                </h2>
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                    <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full glass border-0 ${
+                            positive === true
+                                ? 'bg-emerald-500/10 text-emerald-400'
+                                : positive === false
+                                ? 'bg-red-500/10 text-red-400'
+                                : 'bg-slate-500/10 text-slate-400'
+                        }`}
+                    >
+                        {trend}
+                    </span>
+                </div>
+            </div>
         </div>
     );
 });

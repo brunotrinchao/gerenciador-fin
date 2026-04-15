@@ -44,7 +44,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
     return (
         <TutorialProvider>
-        <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+        <div className="flex h-screen overflow-hidden bg-mesh">
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -135,18 +135,22 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
             {/* Flash notification toast */}
             {notification && (
                 <div
-                    className={`fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium max-w-sm animate-fade-in cursor-pointer backdrop-blur-md ${
+                    className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-premium border text-sm font-medium max-w-sm animate-scale-in cursor-pointer glass-morphism ${
                         notification.type === 'success'
-                            ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-100'
-                            : 'bg-red-950/90 border-red-500/50 text-red-100'
+                            ? 'border-emerald-500/30 text-emerald-400'
+                            : 'border-red-500/30 text-red-400'
                     }`}
                     onClick={() => setNotification(null)}
                 >
-                    {notification.type === 'success'
-                        ? <CheckCircle size={16} className="flex-shrink-0" />
-                        : <AlertCircle size={16} className="flex-shrink-0" />
-                    }
-                    <span>{notification.message}</span>
+                    <div className={`p-2 rounded-full ${
+                        notification.type === 'success' ? 'bg-emerald-500/10' : 'bg-red-500/10'
+                    }`}>
+                        {notification.type === 'success'
+                            ? <CheckCircle size={18} className="flex-shrink-0" />
+                            : <AlertCircle size={18} className="flex-shrink-0" />
+                        }
+                    </div>
+                    <span className="flex-1">{notification.message}</span>
                 </div>
             )}
         </div>
