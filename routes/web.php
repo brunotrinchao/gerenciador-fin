@@ -151,6 +151,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/auth/google/calendar', [GoogleCalendarController::class, 'connect'])->name('google.calendar.connect');
     Route::get('/auth/google/calendar/callback', [GoogleCalendarController::class, 'callback'])->name('google.calendar.callback');
     Route::delete('/settings/google-calendar', [GoogleCalendarController::class, 'disconnect'])->name('google.calendar.disconnect');
+    Route::post('/settings/google-calendar/clear-events', [GoogleCalendarController::class, 'clearEvents'])->name('google.calendar.clear-events');
 
     // AI Analysis
     Route::get('/ai-analysis', [AIAnalysisController::class, 'index'])->name('ai-analysis.index');

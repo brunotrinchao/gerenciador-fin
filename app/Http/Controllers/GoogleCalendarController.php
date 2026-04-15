@@ -89,31 +89,7 @@ class GoogleCalendarController extends Controller
         $userId       = auth()->id();
 
         if ($removeEvents && $user->google_calendar_enabled) {
-            // Deletar SINCRONAMENTE antes de apagar o token, pois sem ele os jobs async falhariam
-
-            Transaction::byUser($userId)
-                ->whereNotNull('google_event_id')
-                ->get(['id', 'google_event_id'])
-                ->each(function (Transaction $t) use ($user, $calendarService) {
-                    $calendarService->deleteEvent($user, $t->google_event_id);
-                    $t->withoutEvents(fn () => $t->update(['google_event_id' => null]));
-                });
-
-            Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId))
-                ->whereNotNull('google_event_id')
-                ->get(['id', 'google_event_id'])
-                ->each(function (Installment $i) use ($user, $calendarService) {
-                    $calendarService->deleteEvent($user, $i->google_event_id);
-                    $i->withoutEvents(fn () => $i->update(['google_event_id' => null]));
-                });
-
-            CreditCardStatement::where('user_id', $userId)
-                ->whereNotNull('google_event_id')
-                ->get(['id', 'google_event_id'])
-                ->each(function (CreditCardStatement $s) use ($user, $calendarService) {
-                    $calendarService->deleteEvent($user, $s->google_event_id);
-                    $s->update(['google_event_id' => null]);
-                });
+            $this->performClearEvents($userId, $user, $calendarService);
         }
 
         $user->update([
@@ -126,5 +102,63 @@ class GoogleCalendarController extends Controller
             : 'Google Calendar desconectado com sucesso.';
 
         return redirect()->route('settings.index')->with('success', $message);
+    }
+
+    /**
+     * Limpa todos os eventos da agenda sem desconectar.
+     */
+    public function clearEvents(GoogleCalendarService $calendarService): RedirectResponse
+    {
+        $user   = auth()->user();
+        $userId = auth()->id();
+
+        if (! $user->google_calendar_enabled) {
+            return redirect()->route('settings.index')
+                ->with('error', 'Google Calendar não está habilitado.');
+        }
+
+        try {
+            $this->performClearEvents($userId, $user, $calendarService);
+
+            return redirect()->route('settings.index')
+                ->with('success', 'Eventos removidos da sua Google Agenda com sucesso.');
+        } catch (\Throwable $e) {
+            Log::error('GoogleCalendarController: falha ao limpar eventos', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('settings.index')
+                ->with('error', 'Falha ao limpar eventos: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Executa a limpeza física dos eventos no Google e lógica no BD.
+     */
+    private function performClearEvents(int $userId, $user, GoogleCalendarService $calendarService): void
+    {
+        Transaction::byUser($userId)
+            ->whereNotNull('google_event_id')
+            ->get(['id', 'google_event_id'])
+            ->each(function (Transaction $t) use ($user, $calendarService) {
+                $calendarService->deleteEvent($user, $t->google_event_id);
+                $t->withoutEvents(fn () => $t->update(['google_event_id' => null]));
+            });
+
+        Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId))
+            ->whereNotNull('google_event_id')
+            ->get(['id', 'google_event_id'])
+            ->each(function (Installment $i) use ($user, $calendarService) {
+                $calendarService->deleteEvent($user, $i->google_event_id);
+                $i->withoutEvents(fn () => $i->update(['google_event_id' => null]));
+            });
+
+        CreditCardStatement::where('user_id', $userId)
+            ->whereNotNull('google_event_id')
+            ->get(['id', 'google_event_id'])
+            ->each(function (CreditCardStatement $s) use ($user, $calendarService) {
+                $calendarService->deleteEvent($user, $s->google_event_id);
+                $s->update(['google_event_id' => null]);
+            });
     }
 }

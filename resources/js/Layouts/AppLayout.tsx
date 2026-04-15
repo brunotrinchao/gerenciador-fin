@@ -135,10 +135,10 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
             {/* Flash notification toast */}
             {notification && (
                 <div
-                    className={`fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border text-sm font-medium max-w-sm animate-fade-in cursor-pointer ${
+                    className={`fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium max-w-sm animate-fade-in cursor-pointer backdrop-blur-md ${
                         notification.type === 'success'
-                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                            : 'bg-red-500/10 border-red-500/30 text-red-300'
+                            ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-100'
+                            : 'bg-red-950/90 border-red-500/50 text-red-100'
                     }`}
                     onClick={() => setNotification(null)}
                 >

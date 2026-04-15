@@ -330,6 +330,87 @@ function DisconnectCalendarModal({ onClose }: { onClose: () => void }) {
     );
 }
 
+// ─── ClearCalendarEventsModal ────────────────────────────────────────────────
+
+function ClearCalendarEventsModal({ onClose }: { onClose: () => void }) {
+    const [loading, setLoading] = useState(false);
+
+    const handleClear = () => {
+        setLoading(true);
+        router.post(route('google.calendar.clear-events'), {}, {
+            onFinish: () => {
+                setLoading(false);
+                onClose();
+            },
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={loading ? undefined : onClose} />
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                            <CalendarX size={16} className="text-blue-400" />
+                        </div>
+                        <h2 className="text-white font-semibold text-base">Limpar Eventos da Agenda</h2>
+                    </div>
+                    {!loading && (
+                        <button
+                            onClick={onClose}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        >
+                            <X size={18} />
+                        </button>
+                    )}
+                </div>
+
+                <div className="px-6 py-5 flex flex-col gap-4">
+                    <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle size={16} className="text-blue-400 flex-shrink-0" />
+                            <p className="text-blue-400 text-sm font-semibold">Ação de Limpeza</p>
+                        </div>
+                        <p className="text-gray-400 text-sm leading-relaxed">
+                            Esta ação removerá todos os eventos do <strong className="text-white">Gerenciador Financeiro</strong> da sua Google Agenda. 
+                            A conta permanecerá conectada para novos lançamentos.
+                        </p>
+                    </div>
+
+                    {loading && (
+                        <div className="flex items-center justify-center gap-2 py-2 text-gray-400 text-sm">
+                            <Loader2 size={16} className="animate-spin" />
+                            Limpando eventos...
+                        </div>
+                    )}
+
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={loading}
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-40"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleClear}
+                            disabled={loading}
+                            className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                        >
+                            Confirmar Limpeza
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -340,8 +421,9 @@ interface Props {
 }
 
 export default function SettingsIndex({ googleCalendar }: Props) {
-    const [showClearModal, setShowClearModal] = useState(false);
+    const [showClearModal, setShowClearModal]           = useState(false);
     const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+    const [showClearEventsModal, setShowClearEventsModal] = useState(false);
 
     return (
         <AppLayout title="Configurações">
@@ -397,7 +479,15 @@ export default function SettingsIndex({ googleCalendar }: Props) {
                             </div>
                         )}
 
-                        <div className="flex justify-end">
+                        <div className="flex items-center justify-end gap-3">
+                            {googleCalendar.enabled && (
+                                <button
+                                    onClick={() => setShowClearEventsModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-sm font-medium transition-colors"
+                                >
+                                    <CalendarX size={14} /> Limpar Eventos
+                                </button>
+                            )}
                             {googleCalendar.enabled ? (
                                 <button
                                     onClick={() => setShowDisconnectModal(true)}
@@ -443,6 +533,7 @@ export default function SettingsIndex({ googleCalendar }: Props) {
 
             {showClearModal && <ClearDataModal onClose={() => setShowClearModal(false)} />}
             {showDisconnectModal && <DisconnectCalendarModal onClose={() => setShowDisconnectModal(false)} />}
+            {showClearEventsModal && <ClearCalendarEventsModal onClose={() => setShowClearEventsModal(false)} />}
         </AppLayout>
     );
 }
