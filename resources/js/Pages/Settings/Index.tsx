@@ -11,23 +11,48 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
     const [confirm, setConfirm]     = useState('');
     const [completedSteps, setCompletedSteps] = useState<string[]>([]);
     const [animatingSteps, setAnimatingSteps] = useState<string[]>([]);
+    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
     const CONFIRM_WORD = 'CONFIRMAR';
+
+    const OPTIONS = [
+        { id: 'statements', label: 'Faturas' },
+        { id: 'transactions', label: 'Transações / Parcelas' },
+        { id: 'investments', label: 'Investimentos' },
+        { id: 'budgets', label: 'Orçamentos' },
+        { id: 'accounts', label: 'Contas Bancárias' },
+        { id: 'cards', label: 'Cartões' },
+        { id: 'categories', label: 'Categorias' },
+    ];
+
+    const toggleOption = (id: string) => {
+        setSelectedOptions(prev => 
+            prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+        );
+    };
+
+    const toggleAll = () => {
+        if (selectedOptions.length === OPTIONS.length || selectedOptions.includes('everything')) {
+            setSelectedOptions([]);
+        } else {
+            setSelectedOptions(['everything', ...OPTIONS.map(o => o.id)]);
+        }
+    };
 
     const handleClear = async () => {
         setStep('running');
 
         // Simula progresso enquanto aguarda a resposta do servidor
         const placeholders = [
-            'Removendo transações...',
-            'Removendo faturas...',
-            'Removendo investimentos...',
-            'Removendo cartões e contas...',
+            'Analisando dados selecionados...',
+            'Processando remoção...',
+            'Limpando registros...',
+            'Sincronizando mudanças...',
             'Finalizando...',
         ];
 
         for (let i = 0; i < placeholders.length; i++) {
-            await new Promise<void>((resolve) => setTimeout(resolve, 600 * (i + 1)));
+            await new Promise<void>((resolve) => setTimeout(resolve, 400 * (i + 1)));
             setAnimatingSteps((prev) => [...prev, placeholders[i]]);
         }
 
@@ -35,6 +60,7 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
             const response = await axios.delete(route('settings.clear-data'), {
                 headers: { 'X-CSRF-TOKEN': csrfToken },
+                data: { options: selectedOptions }
             });
             const { steps } = response.data as { steps: string[]; completed: boolean };
 
@@ -48,10 +74,12 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
         }
     };
 
+    const allSelected = selectedOptions.includes('everything') || selectedOptions.length === OPTIONS.length;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={step === 'running' ? undefined : onClose} />
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
+            <div className="relative z-10 w-full max-w-lg bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
@@ -81,13 +109,51 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                                     <p className="text-red-400 text-sm font-semibold">Ação irreversível</p>
                                 </div>
                                 <p className="text-gray-400 text-sm leading-relaxed">
-                                    Isso irá remover <strong className="text-white">permanentemente</strong> todas as suas transações,
-                                    parcelamentos, faturas, investimentos, cartões e contas bancárias.
-                                    Perfis e membros não serão afetados.
+                                    Escolha os dados que deseja remover. Eles serão excluídos <strong className="text-white">permanentemente</strong>.
                                 </p>
                             </div>
 
-                            <div className="flex flex-col gap-2">
+                            {/* Checklist */}
+                            <div className="flex flex-col gap-3">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">O que deseja limpar?</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={toggleAll}
+                                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all text-sm font-medium ${
+                                            allSelected 
+                                            ? 'bg-red-500/10 border-red-500/40 text-red-400' 
+                                            : 'bg-[var(--color-surface-2)] border-[var(--color-border)] text-gray-400 hover:border-gray-500'
+                                        }`}
+                                    >
+                                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${allSelected ? 'bg-red-500 border-red-500' : 'border-gray-600'}`}>
+                                            {allSelected && <CheckCircle size={10} className="text-white" />}
+                                        </div>
+                                        TUDO
+                                    </button>
+
+                                    {OPTIONS.map(opt => {
+                                        const isSelected = selectedOptions.includes(opt.id) || selectedOptions.includes('everything');
+                                        return (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => toggleOption(opt.id)}
+                                                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all text-sm font-medium ${
+                                                    isSelected 
+                                                    ? 'bg-white/5 border-white/20 text-white' 
+                                                    : 'bg-[var(--color-surface-2)] border-[var(--color-border)] text-gray-400 hover:border-gray-500'
+                                                }`}
+                                            >
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected ? 'bg-white border-white' : 'border-gray-600'}`}>
+                                                    {isSelected && <CheckCircle size={10} className="text-surface" />}
+                                                </div>
+                                                {opt.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 pt-2 border-t border-[var(--color-border)]">
                                 <label className="text-sm text-gray-400">
                                     Digite <span className="text-white font-mono font-semibold">{CONFIRM_WORD}</span> para confirmar
                                 </label>
@@ -109,10 +175,10 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                                 </button>
                                 <button
                                     onClick={handleClear}
-                                    disabled={confirm !== CONFIRM_WORD}
+                                    disabled={confirm !== CONFIRM_WORD || selectedOptions.length === 0}
                                     className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
                                 >
-                                    Limpar tudo
+                                    Limpar selecionados
                                 </button>
                             </div>
                         </>
@@ -143,7 +209,7 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                                 <CheckCircle size={20} className="text-[#22c55e] flex-shrink-0" />
                                 <p className="text-white font-medium">Limpeza concluída!</p>
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                                 {completedSteps.map((s, i) => (
                                     <div key={i} className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e] flex-shrink-0" />
