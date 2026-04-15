@@ -25,12 +25,21 @@ class InterDriver implements InvoiceDriver
 
     public function parse(string $text): ImportedInvoiceDTO
     {
-        preg_match('/Data de Vencimento\s*(\d{2}\/\d{2}\/\d{4})/i', $text, $dueMatch);
-        preg_match('/Data de corte:\s*(\d{2}\/\d{2}\/\d{4})/i', $text, $closeMatch);
-        preg_match('/CARTÃO\s*(\d{4}\*\*\*\*\d{4})/i', $text, $cardMatch);
-        preg_match('/Limite de crédito total\s*R\$\s*([\d\.]+,\d{2})/i', $text, $limitMatch);
-        preg_match('/Total da sua fatura\s*R\$\s*([\d\.]+,\d{2})/i', $text, $totalMatch);
-        preg_match('/Utilizado:\s*R\$\s*([\d\.]+,\d{2})/i', $text, $usageMatch);
+        // Normalize line endings
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+
+        // Extract Summary Data with flexible regexes
+        preg_match('/(?:Data de Vencimento|VENCIMENTO)[\s\r\n]*(\d{2}\/\d{2}\/\d{4})/i', $text, $dueMatch);
+        preg_match('/(?:Data de corte|DATA DOCUMENTO|fechamento de sua fatura):?[\s\r\n]*(\d{2}\/\d{2}\/\d{4})/i', $text, $closeMatch);
+        preg_match('/CARTÃO[\s\r\n]*(\d{4}\*\*\*\*\d{4})/i', $text, $cardMatch);
+        
+        // Limits and Usage
+        preg_match('/Limite de crédito total[\s\r\n]*R\$\s*([\d\.]+,\d{2})/i', $text, $limitMatch);
+        preg_match('/Utilizado:[\s\r\n]*R\$\s*([\d\.]+,\d{2})/i', $text, $usageMatch);
+        preg_match('/Disponível:[\s\r\n]*R\$\s*([\d\.]+,\d{2})/i', $text, $availableMatch);
+        
+        // Total Amount (various possible labels)
+        preg_match('/(?:Total da sua fatura|VALOR DO DOCUMENTO|VALOR COBRADO|Fatura atual)[\s\r\n]*(?:R\$)?\s*([\d\.]+,\d{2})/i', $text, $totalMatch);
 
         $dueDate = isset($dueMatch[1]) ? Carbon::createFromFormat('d/m/Y', $dueMatch[1]) : now();
         $closingDate = isset($closeMatch[1]) ? Carbon::createFromFormat('d/m/Y', $closeMatch[1]) : $dueDate->copy()->subDays(7);
@@ -41,21 +50,23 @@ class InterDriver implements InvoiceDriver
             $lastFour = substr($cardMatch[1], -4);
         }
 
-        $transactions = $this->parseTransactions($text);
+        $transactions = $this->parseTransactions($text, $dueDate);
 
         $calculatedTotal = $transactions->reduce(function ($carry, $t) {
             return $t->isIncome ? $carry - $t->amount : $carry + $t->amount;
         }, 0);
 
-        $invoice= new InvoiceDTO(
+        $invoice = new InvoiceDTO(
             dueDateInvoice: $dueDate,
             totalAmount: $totalAmount,
         );
-        $bank= new BankDTO(
+        
+        $bank = new BankDTO(
             name: 'Banco Inter',
             cnpj: null,
         );
-        $card= new CardDTO(
+        
+        $card = new CardDTO(
             name: self::CARDNAME,
             brand: $this->detectBrand($text) ?? 'Mastercard',
             lastFourDigits: $lastFour,
@@ -63,41 +74,61 @@ class InterDriver implements InvoiceDriver
             dueDay: $dueDate->day,
             limit: $this->parseMoney($limitMatch[1] ?? '0,00'),
             used: $this->parseMoney($usageMatch[1] ?? '0,00'),
+            availableLimit: isset($availableMatch[1]) ? $this->parseMoney($availableMatch[1]) : null,
         );
 
         return new ImportedInvoiceDTO($invoice, $bank, $card, $transactions, $totalAmount, abs($totalAmount - (float)$calculatedTotal) < 0.15);
     }
 
-    private function parseTransactions(string $text): Collection
+    private function parseTransactions(string $text, Carbon $invoiceDate): Collection
     {
-        // Padrão: DATA(DD de mmm. YYYY) DESCRIÇÃO (Pode ter parcelas) BENEFICIÁRIO (Ignorado) VALOR
-        // Ex: 14 de jan. 2026 CINTIA BINA DA SILVA (Parcela 02 de 03) - R$ 56,63
-        $pattern = '/(\d{2} de [a-z]+\.? \d{4})\s+(.*?)\s+(?:-)\s+(?:\+|\-)?\s*R\$\s*([\d\.]+,\d{2})/i';
+        // 1. Cut the text to avoid "Próxima fatura" section
+        $parts = preg_split('/Essas são as compras parceladas/i', $text);
+        $parsingText = $parts[0];
 
-        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+        // 2. Pattern: DATA DESCRIÇÃO [BENEFICIÁRIO] VALOR
+        // Handling multi-line description by using [\s\S]*? and looking for the separator
+        // Fixed: simplified regex for better reliability with Smalot output
+        $pattern = '/(\d{2} de [a-z]{3}\.? \d{4})\s+([\s\S]*?)\s+-\s+(?:\+|\-)?\s*R\$\s*([\d\.]+,\d{2})/i';
 
-        return collect($matches)->filter(function ($t) {
-            return !str_contains(strtolower($t[2]), 'pagto debito automatico');
-        })->map(function ($t) {
+        preg_match_all($pattern, $parsingText, $matches, PREG_SET_ORDER);
+
+        return collect($matches)->map(function ($t) use ($invoiceDate) {
             $descriptionRaw = trim($t[2]);
             
-            // Extrai parcelas: (Parcela XX de YY)
+            // Remove internal newlines/tabs from description
+            $descriptionRaw = preg_replace('/\s+/', ' ', $descriptionRaw);
+            
+            // Blacklist: Payment of invoice and similar
+            $blacklist = ['pagto debito automatico', 'pagamento de fatura', 'pagamento efetuado'];
+            foreach ($blacklist as $term) {
+                if (str_contains(strtolower($descriptionRaw), $term)) {
+                    return null;
+                }
+            }
+            
+            // Extract installment info: (Parcela XX de YY)
             preg_match('/\(Parcela\s+(\d+)\s+de\s+(\d+)\)/i', $descriptionRaw, $parcelas);
             
-            $description = trim(preg_replace('/\s+/', ' ', $descriptionRaw));
             $amount = $this->parseMoney($t[3]);
+            $isIncome = str_contains($t[0], '+') || str_contains(strtolower($descriptionRaw), 'pagamento');
+
+            // Normalize transaction date to invoice month/year
+            // This ensures it falls into the correct monthly balance in the app
+            $originalDate = $this->parseInterDate($t[1]);
+            $normalizedDate = $originalDate->copy()->year($invoiceDate->year)->month($invoiceDate->month);
 
             return new InvoiceTransactionDTO(
-                date: $this->parseInterDate($t[1]),
-                description: $description,
+                date: $normalizedDate,
+                description: trim($descriptionRaw),
                 amount: abs($amount),
                 isParcelado: !empty($parcelas),
                 parcelaAtual: isset($parcelas[1]) ? (int)$parcelas[1] : 1,
                 parcelaTotal: isset($parcelas[2]) ? (int)$parcelas[2] : 1,
                 firstInstallmentDate: null,
-                isIncome: str_contains($t[0], '+') || str_contains(strtolower($description), 'pagamento')
+                isIncome: $isIncome
             );
-        });
+        })->filter()->values();
     }
 
     private function parseInterDate(string $dateStr): \Illuminate\Support\Carbon

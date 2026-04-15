@@ -28,29 +28,36 @@ class MercadoPagoDriver implements InvoiceDriver
         preg_match('/(?:Vence em|Vencimento:)\s*(\d{2}\/\d{2}\/\d{4})/i', $text, $dueMatch);
         preg_match('/Fechamento da fatura\s*(\d{2}\/\d{2}\/\d{4})/i', $text, $closeMatch);
         preg_match('/Cartão Visa \[\*{12}(\d{4})\]/i', $text, $cardMatch);
-        preg_match('/Limite total\s*R\$\s*([\d\.]+,\d{2})/i', $text, $limitMatch);
+        
+        // Summary regexes with newline tolerance and multiple labels
         preg_match('/Total a pagar\s*R\$\s*([\d\.]+,\d{2})/i', $text, $totalMatch);
+        if (!$totalMatch) {
+            preg_match('/Resumo da fatura[\s\S]*?Total[\s\S]*?R\$\s*([\d\.]+,\d{2})/i', $text, $totalMatch);
+        }
+        
+        preg_match('/Limite total\s*R\$\s*([\d\.]+,\d{2})/i', $text, $limitMatch);
         preg_match('/Limite utilizado\s*R\$\s*([\d\.]+,\d{2})/i', $text, $usageMatch);
+        preg_match('/Limite disponível\s*R\$\s*([\d\.]+,\d{2})/i', $text, $availableMatch);
 
         $dueDate = isset($dueMatch[1]) ? Carbon::createFromFormat('d/m/Y', $dueMatch[1]) : now();
         $closingDate = isset($closeMatch[1]) ? Carbon::createFromFormat('d/m/Y', $closeMatch[1]) : $dueDate->copy()->subDays(5);
         $totalAmount = $this->parseMoney($totalMatch[1] ?? '0,00');
 
-        $transactions = $this->parseTransactions($text);
+        $transactions = $this->parseTransactions($text, $dueDate);
 
         $calculatedTotal = $transactions->reduce(function ($carry, $t) {
             return $t->isIncome ? $carry - $t->amount : $carry + $t->amount;
         }, 0);
 
-        $invoice= new InvoiceDTO(
+        $invoice = new InvoiceDTO(
             dueDateInvoice: $dueDate,
             totalAmount: $totalAmount,
         );
-        $bank= new BankDTO(
+        $bank = new BankDTO(
             name: 'Mercado Pago',
             cnpj: null,
         );
-        $card= new CardDTO(
+        $card = new CardDTO(
             name: self::CARDNAME,
             brand: $this->detectBrand($text) ?? 'Visa',
             lastFourDigits: substr($cardMatch[1] ?? '0000', -4),
@@ -58,48 +65,61 @@ class MercadoPagoDriver implements InvoiceDriver
             dueDay: $dueDate->day,
             limit: $this->parseMoney($limitMatch[1] ?? '0,00'),
             used: $this->parseMoney($usageMatch[1] ?? '0,00'),
+            availableLimit: isset($availableMatch[1]) ? $this->parseMoney($availableMatch[1]) : null,
         );
 
         return new ImportedInvoiceDTO($invoice, $bank, $card, $transactions, $totalAmount, abs($totalAmount - (float)$calculatedTotal) < 0.15);
     }
 
-    private function parseTransactions(string $text): Collection
+    private function parseTransactions(string $text, Carbon $dueDate): Collection
     {
-        // Dividimos o texto por seções de cartão para ignorar o "Movimentações na fatura" (pagamento anterior)
-        $sections = preg_split('/Cartão Visa \[/i', $text);
-        
-        // Removemos a primeira parte (que contém o cabeçalho e pagamentos anteriores)
-        array_shift($sections);
+        // Boundary: Stop before future installments or other irrelevant sections
+        $parts = preg_split('/Lançamentos futuros|Opções de parcelamento|Parcele a fatura/i', $text);
+        $relevantText = $parts[0];
+
+        // Dividimos o texto por seções de cartão
+        $sections = preg_split('/Cartão Visa \[/i', $relevantText);
+        array_shift($sections); // Remove head
         
         $allTransactions = collect();
+        // Regex adjusted to handle dates stuck to descriptions
         $pattern = '/(\d{2}\/\d{2})(.*?)(?:Parcela\s+(\d+)\s+de\s+(\d+))?\s*R\$\s*([\d\.]*,\d{2})/i';
         $blacklist = [
             'emitido em', 'vence em', 'limite total', 'total a pagar', 'saque total', 
             'pagamento mínimo', 'fatura de', 'consumos de', 'vencimento:', 
             'detalhes de consumo', 'próximo fechamento', 'parcele a fatura', 
-            'opções de parcelamento', '1 + ', 'entrada para efetivar'
+            'opções de parcelamento', '1 + ', 'entrada para efetivar', 'total r\$'
         ];
 
         foreach ($sections as $section) {
             preg_match_all($pattern, $section, $matches, PREG_SET_ORDER);
 
             foreach ($matches as $t) {
-                $desc = strtolower($t[2]);
+                $descriptionRaw = trim($t[2]);
+                $descLower = strtolower($descriptionRaw);
+                
                 $skip = false;
                 foreach ($blacklist as $item) {
-                    if (str_contains($desc, $item)) {
+                    if (str_contains($descLower, $item)) {
                         $skip = true;
                         break;
                     }
                 }
-                if ($skip || str_contains($desc, 'pagamento da fatura')) continue;
+                if ($skip || str_contains($descLower, 'pagamento da fatura') || str_contains($descLower, 'pagamento de fatura')) {
+                    continue;
+                }
 
-                $description = trim(preg_replace('/\s+/', ' ', $t[2]));
+                $description = trim(preg_replace('/\s+/', ' ', $descriptionRaw));
                 $amount = $this->parseMoney($t[5]);
-                $date = Carbon::createFromFormat('d/m', $t[1]);
-
-                if ($date->month > now()->month) {
-                    $date->subYear();
+                
+                // Normalizamos a data para o mês/ano da fatura (conforme regra de negócio)
+                $date = $dueDate->copy()->startOfMonth();
+                // Tenta preservar o dia original se possível, mas garante o mês/ano do vencimento
+                try {
+                    $originalDay = (int)substr($t[1], 0, 2);
+                    $date->day($originalDay);
+                } catch (\Exception $e) {
+                    // Fallback to 1st of month if day is invalid
                 }
 
                 $allTransactions->push(new InvoiceTransactionDTO(

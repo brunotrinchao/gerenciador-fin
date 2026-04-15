@@ -30,41 +30,43 @@ class BradescoDriver implements InvoiceDriver
         preg_match('/Número do Cartão\s*\d{4}\s*XXXX\s*XXXX\s*(\d{4})/i', $text, $cardMatch);
         preg_match('/Limite de compras\s*R\$\s*([\d\.]+,\d{2})/i', $text, $limitMatch);
         preg_match('/Total da fatura\s*R\$\s*([\d\.]+,\d{2})/i', $text, $totalMatch);
+        
+        // Match used and available from the summary table
         preg_match('/Total Utilizado\s*Disponível em.*?Compras\s*R\$\s*[\d\.]+,\d{2}\s*R\$\s*([\d\.]+,\d{2})\s*R\$\s*([\d\.]+,\d{2})/is', $text, $usageMatch);
 
         $dueDate = isset($dueMatch[1]) ? Carbon::createFromFormat('d/m/Y', $dueMatch[1]) : now();
         $closingDate = isset($closeMatch[1]) ? Carbon::createFromFormat('d/m/Y', $closeMatch[1])->subMonth() : $dueDate->copy()->subDays(10);
         $totalAmount = $this->parseMoney($totalMatch[1] ?? '0,00');
 
-        $transactions = $this->parseTransactions($text);
+        $transactions = $this->parseTransactions($text, $dueDate);
         
         $calculatedTotal = $transactions->reduce(function ($carry, $t) {
             return $t->isIncome ? $carry - $t->amount : $carry + $t->amount;
         }, 0);
 
-      
-        $invoice= new InvoiceDTO(
+        $invoice = new InvoiceDTO(
             dueDateInvoice: $dueDate,
             totalAmount: $totalAmount,
         );
-        $bank= new BankDTO(
+        $bank = new BankDTO(
             name: 'Bradesco',
             cnpj: null,
         );
-        $card= new CardDTO(
+        $card = new CardDTO(
             name: self::CARDNAME,
             brand: $this->detectBrand($text) ?? 'Visa',
             lastFourDigits: substr($cardMatch[1] ?? '0000', -4),
             closingDay: $closingDate->day,
             dueDay: $dueDate->day,
             limit: $this->parseMoney($limitMatch[1] ?? '0,00'),
-            used: $this->parseMoney($usageMatch[1] ?? '0,00'),
+            used: isset($usageMatch[1]) ? $this->parseMoney($usageMatch[1]) : $this->parseMoney($totalMatch[1] ?? '0,00'),
+            availableLimit: isset($usageMatch[2]) ? $this->parseMoney($usageMatch[2]) : null,
         );
 
         return new ImportedInvoiceDTO($invoice, $bank, $card, $transactions, $totalAmount, abs($totalAmount - (float)$calculatedTotal) < 0.15);
     }
 
-    private function parseTransactions(string $text): Collection
+    private function parseTransactions(string $text, Carbon $dueDate): Collection
     {
         // Normalização agressiva: junta linhas que não começam com data
         $normalizedText = preg_replace('/\n(?!\d{2}\/\d{2})/', ' ', $text);
@@ -88,6 +90,7 @@ class BradescoDriver implements InvoiceDriver
                 // Filtros de segurança aprimorados
                 if (str_contains($descLower, 'saldo anterior') || 
                     str_contains($descLower, 'pagto. por deb em c/c') ||
+                    str_contains($descLower, 'pagto por debito em c/c') ||
                     str_contains($descLower, 'total da fatura') ||
                     str_contains($descLower, 'total para') ||
                     str_contains($descLower, 'total do cartão') ||
@@ -97,6 +100,7 @@ class BradescoDriver implements InvoiceDriver
                     str_contains($descLower, 'limite de saque') ||
                     str_contains($descLower, 'emitido em') ||
                     str_contains($descLower, 'compras r$') ||
+                    str_contains($descLower, 'disponível em') ||
                     strlen($descriptionRaw) < 5) {
                     continue;
                 }
@@ -105,14 +109,19 @@ class BradescoDriver implements InvoiceDriver
                 
                 $description = trim(preg_replace('/\s+/', ' ', $descriptionRaw));
                 $amount = $this->parseMoney($t[3]);
-                $date = Carbon::createFromFormat('d/m', $t[1]);
+                
+                // Normalizamos a data para o mês/ano da fatura (conforme regra de negócio)
+                $date = $dueDate->copy()->startOfMonth();
+                try {
+                    $originalDay = (int)substr($t[1], 0, 2);
+                    $date->day($originalDay);
+                } catch (\Exception $e) {
+                    // Fallback to 1st of month
+                }
+
                 $parcelaAtual = isset($parcelas[1]) ? (int)$parcelas[1] : 1;
                 $parcelaTotal = isset($parcelas[2]) ? (int)$parcelas[2] : 1;
                 $firstInstallmentDate = $date->copy()->subMonths($parcelaAtual - 1);
-
-                if ($date->month > now()->month) {
-                    $date->subYear();
-                }
 
                 $allTransactions->push(new InvoiceTransactionDTO(
                     date: $date,
