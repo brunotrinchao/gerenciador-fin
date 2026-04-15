@@ -13,7 +13,8 @@ class InstallmentObserver
     public function created(Installment $installment): void
     {
         $user = $installment->group?->user;
-        if ($user && $user->google_calendar_enabled && $installment->status === TransactionStatus::Pending) {
+        $isEligible = in_array($installment->status, [TransactionStatus::Pending, TransactionStatus::Scheduled]);
+        if ($user && $user->google_calendar_enabled && $isEligible) {
             CreateCalendarEvent::dispatch(Installment::class, $installment->id, $user->id);
         }
     }
@@ -26,7 +27,9 @@ class InstallmentObserver
         }
 
         // Se a parcela for paga ou cancelada, remove da agenda
-        if ($installment->wasChanged('status') && $installment->status !== TransactionStatus::Pending) {
+        $isEligible = in_array($installment->status, [TransactionStatus::Pending, TransactionStatus::Scheduled]);
+
+        if ($installment->wasChanged('status') && ! $isEligible) {
             if (! empty($installment->google_event_id)) {
                 DeleteCalendarEvent::dispatch($installment->google_event_id, $user->id);
                 $installment->withoutEvents(fn () => $installment->update(['google_event_id' => null]));
@@ -34,8 +37,8 @@ class InstallmentObserver
             return;
         }
 
-        // Se voltar a ser pendente (ex: estorno), recria na agenda
-        if ($installment->wasChanged('status') && $installment->status === TransactionStatus::Pending) {
+        // Se voltar a ser pendente ou agendada (ex: estorno), recria na agenda
+        if ($installment->wasChanged('status') && $isEligible) {
             if (empty($installment->google_event_id)) {
                 CreateCalendarEvent::dispatch(Installment::class, $installment->id, $user->id);
                 return;

@@ -24,7 +24,7 @@ class CalendarSyncController extends Controller
 
         // Transações pendentes simples
         Transaction::byUser($userId)
-            ->where('status', TransactionStatus::Pending)
+            ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Scheduled])
             ->whereNull('google_event_id')
             ->whereNull('installment_group_id')
             ->whereNotIn('type', ['credit_card', 'transfer'])
@@ -35,7 +35,7 @@ class CalendarSyncController extends Controller
 
         // Parcelas pendentes (não de cartão de crédito)
         Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId)->whereNull('credit_card_id'))
-            ->where('status', TransactionStatus::Pending)
+            ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Scheduled])
             ->whereNull('google_event_id')
             ->each(function (Installment $i) use ($userId, &$count) {
                 CreateCalendarEvent::dispatch(Installment::class, $i->id, $userId);
