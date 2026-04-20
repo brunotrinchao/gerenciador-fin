@@ -19,7 +19,9 @@ import {
     Tag, 
     Landmark,
     PlusCircle,
-    Info
+    Info,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -316,6 +318,16 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
         });
     };
 
+    const navigateMonth = (direction: number) => {
+        let newMonth = Number(month) + direction;
+        let newYear = Number(year);
+        if (newMonth < 1) { newMonth = 12; newYear -= 1; }
+        if (newMonth > 12) { newMonth = 1; newYear += 1; }
+        router.get(route('calendar.index'), { year: newYear, month: newMonth }, {
+            preserveScroll: true, replace: true
+        });
+    };
+
     const handleDatesSet = (arg: { view: { currentStart: Date } }) => {
         const d = arg.view.currentStart;
         const newYear = d.getFullYear();
@@ -405,8 +417,8 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                     </div>
                 </div>
 
-                {/* Calendar Container */}
-                <div className="p-6 rounded-3xl shadow-xl transition-all border-[var(--color-border)]" 
+                {/* Desktop Calendar Container */}
+                <div className="hidden sm:block p-6 rounded-3xl shadow-xl transition-all border-[var(--color-border)]" 
                      style={{ backgroundColor: 'var(--color-surface)' }}>
                     <FullCalendar
                         ref={calendarRef}
@@ -419,7 +431,6 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                         eventContent={(info) => <EventContent info={info} />}
                         eventClick={handleEventClick}
                         datesSet={handleDatesSet}
-                        dateClick={isMobile ? (info => setSelectedDate(info.dateStr)) : undefined}
                         headerToolbar={{ 
                             left: 'prev', 
                             center: 'title', 
@@ -431,47 +442,82 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                     />
                 </div>
 
-                {/* Mobile Daily List */}
-                {isMobile && selectedDate && (
-                    <div className="rounded-3xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300 border-[var(--color-border)]" 
-                         style={{ backgroundColor: 'var(--color-surface)' }}>
-                        <div className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
-                            <div className="flex items-center gap-2">
-                                <Info size={16} className="text-[var(--color-accent)]" />
-                                <h3 className="font-black text-sm uppercase tracking-tighter">
-                                    {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
-                                </h3>
-                            </div>
-                            <button onClick={() => setSelectedDate(null)} className="p-1 hover:bg-[var(--color-surface-2)] rounded-full text-gray-500">
-                                <X size={18} />
-                            </button>
-                        </div>
-                        <div className="space-y-3">
-                            {(events[selectedDate] || []).length === 0 ? (
-                                <div className="text-center py-10">
-                                    <p className="text-xs font-bold opacity-30 uppercase tracking-widest">Sem atividades previstas</p>
-                                </div>
-                            ) : (
-                                (events[selectedDate] || []).map(ev => (
-                                    <div key={ev.id} onClick={() => setSelectedEvent(ev)} 
-                                         className="flex items-center justify-between p-4 rounded-2xl bg-[var(--color-surface-2)] border-[var(--color-border)] active:scale-95 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" 
-                                                 style={{ backgroundColor: bgByEvent(ev) }}>
-                                                {ev.subtype === 'income' ? <TrendingUp size={18} color={colorByEvent(ev)} /> : <TrendingDown size={18} color={colorByEvent(ev)} />}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-bold truncate pr-2" style={{ color: 'var(--color-foreground)' }}>{ev.description}</p>
-                                                <p className="text-[10px] font-bold opacity-40 uppercase tracking-wider">{typeLabel(ev)}</p>
-                                            </div>
-                                        </div>
-                                        <p className="text-sm font-black text-right" style={{ color: colorByEvent(ev) }}>{formatCurrency(ev.amount)}</p>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                {/* Mobile View - List grouped by day */}
+                <div className="sm:hidden flex flex-col gap-4">
+                    {/* Month Navigator */}
+                    <div className="flex items-center justify-between p-4 rounded-3xl border border-[var(--color-border)] shadow-md" style={{ backgroundColor: 'var(--color-surface)' }}>
+                        <button onClick={() => navigateMonth(-1)} className="p-2 hover:bg-[var(--color-surface-2)] rounded-full transition-colors">
+                            <ChevronLeft size={20} style={{ color: 'var(--color-foreground)' }} />
+                        </button>
+                        <span className="font-black text-sm uppercase tracking-widest text-center" style={{ color: 'var(--color-foreground)' }}>
+                            {new Date(year, month - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button onClick={() => navigateMonth(1)} className="p-2 hover:bg-[var(--color-surface-2)] rounded-full transition-colors">
+                            <ChevronRight size={20} style={{ color: 'var(--color-foreground)' }} />
+                        </button>
                     </div>
-                )}
+
+                    {/* Day list */}
+                    {Object.keys(events).length > 0 ? (
+                        Object.keys(events).sort().filter(date => {
+                            const dayEvents = events[date].filter((ev) => {
+                                if (typeFilter === 'all') return true;
+                                if (typeFilter === 'invoice') return ev.type === 'invoice';
+                                if (typeFilter === 'installment') return ev.type === 'installment';
+                                if (typeFilter === 'income') return ev.subtype === 'income';
+                                if (typeFilter === 'expense') return ev.type === 'transaction' && ev.subtype !== 'income';
+                                return true;
+                            });
+                            return dayEvents.length > 0;
+                        }).map(date => {
+                            const dayEvents = events[date].filter((ev) => {
+                                if (typeFilter === 'all') return true;
+                                if (typeFilter === 'invoice') return ev.type === 'invoice';
+                                if (typeFilter === 'installment') return ev.type === 'installment';
+                                if (typeFilter === 'income') return ev.subtype === 'income';
+                                if (typeFilter === 'expense') return ev.type === 'transaction' && ev.subtype !== 'income';
+                                return true;
+                            });
+
+                            return (
+                                <div key={date} className="rounded-3xl p-5 space-y-4 border border-[var(--color-border)] shadow-sm" style={{ backgroundColor: 'var(--color-surface)' }}>
+                                    <div className="flex items-center gap-2 pb-2 border-b border-[var(--color-border)]">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
+                                        <h3 className="font-black text-xs uppercase tracking-tighter" style={{ color: 'var(--color-foreground)' }}>
+                                            {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', weekday: 'short' })}
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {dayEvents.map(ev => {
+                                            const paid = isPaidStatus(ev);
+                                            return (
+                                                <div key={ev.id} onClick={() => setSelectedEvent(ev)} 
+                                                     className={`flex items-center justify-between p-4 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-border)] active:scale-95 transition-all ${paid ? 'opacity-50' : ''}`}>
+                                                    <div className="flex items-center gap-4 min-w-0">
+                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm" 
+                                                             style={{ backgroundColor: bgByEvent(ev) }}>
+                                                            {ev.subtype === 'income' ? <TrendingUp size={18} color={colorByEvent(ev)} /> : <TrendingDown size={18} color={colorByEvent(ev)} />}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className={`text-sm font-bold truncate pr-2 ${paid ? 'line-through decoration-1' : ''}`} style={{ color: 'var(--color-foreground)' }}>{ev.description}</p>
+                                                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-wider">{typeLabel(ev)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <p className={`text-sm font-black text-right shrink-0 ${paid ? 'line-through decoration-1' : ''}`} style={{ color: colorByEvent(ev) }}>{formatCurrency(ev.amount)}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="text-center py-16 rounded-3xl border border-[var(--color-border)] opacity-40" style={{ backgroundColor: 'var(--color-surface)' }}>
+                            <p className="text-xs font-black uppercase tracking-widest">Sem atividades planejadas</p>
+                        </div>
+                    )}
+                </div>
+
             </div>
 
             {/* Event Details Modal */}
