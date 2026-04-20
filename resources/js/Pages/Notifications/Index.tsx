@@ -74,7 +74,7 @@ export default function NotificationsIndex({ notifications }: Props) {
                     {hasUnread && (
                         <button
                             onClick={handleMarkAllRead}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] text-sm transition-colors flex-shrink-0"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] text-sm transition-colors flex-shrink-0"
                         >
                             <CheckCheck size={14} />
                             Marcar todas como lidas
@@ -83,8 +83,8 @@ export default function NotificationsIndex({ notifications }: Props) {
                 </div>
 
                 {notifications.length === 0 ? (
-                    <div data-tutorial="notif-list" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div data-tutorial="notif-list" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <Bell size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">
@@ -99,7 +99,7 @@ export default function NotificationsIndex({ notifications }: Props) {
                         {notifications.map((notification) => (
                             <div
                                 key={notification.id}
-                                className="flex items-start gap-4 p-4 rounded-2xl border border-[var(--color-border)] transition-colors"
+                                className="flex items-start gap-4 p-4 rounded-2xl border border-[border-[var(--color-border)]] transition-colors"
                                 style={{
                                     backgroundColor: notification.read_at === null
                                         ? 'color-mix(in srgb, var(--md-color-primary) 6%, var(--color-surface))'
@@ -134,7 +134,7 @@ export default function NotificationsIndex({ notifications }: Props) {
                                     <button
                                         data-tutorial="notif-mark-read"
                                         onClick={() => handleMarkRead(notification.id)}
-                                        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors text-[var(--md-color-on-surface-variant)] hover:bg-[var(--color-surface-2)] hover:text-[var(--md-color-on-surface)]"
+                                        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors text-[var(--md-color-on-surface-variant)] hover:bg-[bg-[var(--color-surface-2)]] hover:text-[var(--md-color-on-surface)]"
                                         title="Marcar como lida"
                                     >
                                         <Check size={16} />

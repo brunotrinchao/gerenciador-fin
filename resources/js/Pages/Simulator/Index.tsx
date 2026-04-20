@@ -200,7 +200,7 @@ export default function SimulatorIndex({ presets }: Props) {
                             <button
                                 key={p.id}
                                 onClick={() => applyPreset(p)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] text-sm transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] text-sm transition-colors"
                             >
                                 {p.label}
                             </button>
@@ -229,7 +229,7 @@ export default function SimulatorIndex({ presets }: Props) {
                         </div>
 
                         {/* Período */}
-                        <div data-tutorial="sim-period" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex flex-col gap-3">
+                        <div data-tutorial="sim-period" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 flex flex-col gap-3">
                             <label className="text-sm text-[var(--md-color-on-surface-variant)]">
                                 Período (meses): <span className="font-semibold text-[var(--md-color-on-surface)]">{months}</span>
                             </label>
@@ -272,7 +272,7 @@ export default function SimulatorIndex({ presets }: Props) {
                         {result ? (
                             <div className="flex flex-col gap-4">
                                 {/* Gráfico */}
-                                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                     <h3 className="font-medium mb-3 text-[var(--md-color-on-surface)]">Evolução Patrimonial</h3>
                                     <ResponsiveContainer width="100%" height={250}>
                                         <LineChart data={chartData}>
@@ -307,12 +307,12 @@ export default function SimulatorIndex({ presets }: Props) {
                                 </div>
 
                                 {/* Comparativo */}
-                                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-                                    <div className="px-5 py-4 border-b border-[var(--color-border)]">
+                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
+                                    <div className="px-5 py-4 border-b border-[border-[var(--color-border)]]">
                                         <h3 className="font-medium text-[var(--md-color-on-surface)]">Comparativo Final</h3>
                                     </div>
                                     <table className="w-full text-sm">
-                                        <thead className="border-b border-[var(--color-border)]">
+                                        <thead className="border-b border-[border-[var(--color-border)]]">
                                             <tr className="text-[var(--md-color-on-surface-variant)] text-xs uppercase tracking-wide">
                                                 <th className="text-left px-5 py-3">Métrica</th>
                                                 <th className="text-right px-5 py-3" style={{ color: '#3b82f6' }}>
@@ -341,7 +341,7 @@ export default function SimulatorIndex({ presets }: Props) {
                                                     b: result.scenario_b.total_return,
                                                 },
                                             ].map(({ label, a, b }) => (
-                                                <tr key={label} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-surface-2)]/40">
+                                                <tr key={label} className="border-b border-[border-[var(--color-border)]]/50 hover:bg-[bg-[var(--color-surface-2)]]/40">
                                                     <td className="px-5 py-3 text-[var(--md-color-on-surface-variant)]">{label}</td>
                                                     <td
                                                         className={`text-right px-5 py-3 font-medium font-finance ${a >= b ? '' : 'text-[var(--md-color-on-surface-variant)]'}`}
@@ -369,8 +369,8 @@ export default function SimulatorIndex({ presets }: Props) {
                                 )}
                             </div>
                         ) : (
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                                     <TrendingUp size={24} className="text-[var(--md-color-on-surface-variant)]" />
                                 </div>
                                 <div className="text-center">

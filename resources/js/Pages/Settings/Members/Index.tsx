@@ -66,7 +66,7 @@ function InviteModal({ roles, onClose }: { roles: Role[]; onClose: () => void })
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/60 " onClick={onClose} />
             <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl">
                 <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
                     <h2 className="text-white font-semibold text-lg">Convidar Membro</h2>

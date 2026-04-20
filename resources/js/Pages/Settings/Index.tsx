@@ -78,11 +78,11 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={step === 'running' ? undefined : onClose} />
-            <div className="relative z-10 w-full max-w-lg bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
+            <div className="absolute inset-0 bg-black/70 " onClick={step === 'running' ? undefined : onClose} />
+            <div className="relative z-10 w-full max-w-lg bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
                             <Trash2 size={16} className="text-red-400" />
@@ -92,7 +92,7 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                     {step !== 'running' && (
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                         >
                             <X size={18} />
                         </button>
@@ -139,7 +139,7 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                                                 onClick={() => toggleOption(opt.id)}
                                                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all text-sm font-medium ${
                                                     isSelected 
-                                                    ? 'bg-white/5 border-white/20 text-white' 
+                                                    ? 'var(--color-surface-2) var(--color-border) text-white' 
                                                     : 'bg-[var(--color-surface-2)] border-[var(--color-border)] text-gray-400 hover:border-gray-500'
                                                 }`}
                                             >
@@ -153,7 +153,7 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-2 pt-2 border-t border-[var(--color-border)]">
+                            <div className="flex flex-col gap-2 pt-2 border-t border-[border-[var(--color-border)]]">
                                 <label className="text-sm text-gray-400">
                                     Digite <span className="text-white font-mono font-semibold">{CONFIRM_WORD}</span> para confirmar
                                 </label>
@@ -162,14 +162,14 @@ function ClearDataModal({ onClose }: { onClose: () => void }) {
                                     value={confirm}
                                     onChange={(e) => setConfirm(e.target.value.toUpperCase())}
                                     placeholder={CONFIRM_WORD}
-                                    className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm font-mono focus:outline-none focus:border-red-500 transition-colors"
+                                    className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm font-mono focus:outline-none focus:border-red-500 transition-colors"
                                 />
                             </div>
 
                             <div className="flex gap-3">
                                 <button
                                     onClick={onClose}
-                                    className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                                    className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white text-sm font-medium transition-colors"
                                 >
                                     Cancelar
                                 </button>
@@ -249,11 +249,11 @@ function DisconnectCalendarModal({ onClose }: { onClose: () => void }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={loading ? undefined : onClose} />
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
+            <div className="absolute inset-0 bg-black/60 " onClick={loading ? undefined : onClose} />
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
                             <CalendarX size={16} className="text-red-400" />
@@ -263,7 +263,7 @@ function DisconnectCalendarModal({ onClose }: { onClose: () => void }) {
                     {!loading && (
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                         >
                             <X size={18} />
                         </button>
@@ -278,7 +278,7 @@ function DisconnectCalendarModal({ onClose }: { onClose: () => void }) {
                         type="button"
                         onClick={() => handleDisconnect(false)}
                         disabled={loading}
-                        className="w-full text-left flex items-start gap-4 px-4 py-4 rounded-xl border border-[var(--color-border)] hover:border-gray-500 hover:bg-[var(--color-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full text-left flex items-start gap-4 px-4 py-4 rounded-xl border border-[border-[var(--color-border)]] hover:border-gray-500 hover:bg-[bg-[var(--color-surface-2)]] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                             <X size={14} className="text-yellow-400" />
@@ -320,7 +320,7 @@ function DisconnectCalendarModal({ onClose }: { onClose: () => void }) {
                         type="button"
                         onClick={onClose}
                         disabled={loading}
-                        className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-40"
+                        className="w-full px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-40"
                     >
                         Cancelar
                     </button>
@@ -347,11 +347,11 @@ function ClearCalendarEventsModal({ onClose }: { onClose: () => void }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={loading ? undefined : onClose} />
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl overflow-hidden">
+            <div className="absolute inset-0 bg-black/60 " onClick={loading ? undefined : onClose} />
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
                             <CalendarX size={16} className="text-blue-400" />
@@ -361,7 +361,7 @@ function ClearCalendarEventsModal({ onClose }: { onClose: () => void }) {
                     {!loading && (
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                         >
                             <X size={18} />
                         </button>
@@ -392,7 +392,7 @@ function ClearCalendarEventsModal({ onClose }: { onClose: () => void }) {
                             type="button"
                             onClick={onClose}
                             disabled={loading}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-40"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-40"
                         >
                             Cancelar
                         </button>
@@ -435,8 +435,8 @@ export default function SettingsIndex({ googleCalendar }: Props) {
                 </div>
 
                 {/* Google Calendar */}
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-                    <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center gap-2">
+                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
+                    <div className="px-5 py-4 border-b border-[border-[var(--color-border)]] flex items-center gap-2">
                         <Calendar size={16} className="text-blue-400" />
                         <h2 className="text-white font-semibold text-sm">Google Calendar</h2>
                     </div>
@@ -465,7 +465,7 @@ export default function SettingsIndex({ googleCalendar }: Props) {
                         </div>
 
                         {googleCalendar.enabled && (
-                            <div className="bg-[var(--color-surface-2)] rounded-xl px-4 py-3 text-xs text-gray-400 leading-relaxed flex flex-col gap-1">
+                            <div className="bg-[bg-[var(--color-surface-2)]] rounded-xl px-4 py-3 text-xs text-gray-400 leading-relaxed flex flex-col gap-1">
                                 <p className="text-white text-xs font-medium mb-1">O que é sincronizado:</p>
                                 <div className="grid grid-cols-2 gap-1">
                                     <span>✓ Transações pendentes</span>

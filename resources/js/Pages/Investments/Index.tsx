@@ -165,19 +165,19 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-lg bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
+            <div className="relative z-10 w-full max-w-lg bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-surface)] z-10">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]] sticky top-0 bg-[var(--color-surface)] z-10">
                     <h2 className="text-white font-semibold text-lg">
                         {isEditing ? 'Editar Investimento' : 'Novo Investimento'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -195,7 +195,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                             onChange={(e) => set('name', e.target.value)}
                             required
                             placeholder="Ex: Tesouro Selic 2026"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                     </div>
 
@@ -208,7 +208,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                             value={form.type}
                             onChange={(e) => set('type', e.target.value as InvestmentType)}
                             required
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             <option value="">Selecione o tipo...</option>
                             {Object.entries(investmentTypeLabels).map(([value, label]) => (
@@ -227,7 +227,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                             value={form.institution}
                             onChange={(e) => set('institution', e.target.value)}
                             placeholder="Ex: Nubank, XP, BTG..."
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                     </div>
 
@@ -237,7 +237,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                         <select
                             value={form.bank_account_id}
                             onChange={(e) => set('bank_account_id', e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             <option value="">Nenhuma</option>
                             {accounts.map((a) => (
@@ -257,7 +257,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                             <CurrencyInput
                                 value={form.invested_amount}
                                 onChange={(v) => set('invested_amount', v)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -265,7 +265,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                             <CurrencyInput
                                 value={form.current_amount}
                                 onChange={(v) => set('current_amount', v)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                         </div>
                     </div>
@@ -281,7 +281,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                                 value={form.yield_rate}
                                 onChange={(e) => set('yield_rate', e.target.value)}
                                 placeholder="Ex: 12.5"
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                         </div>
                         <div className="flex flex-col gap-1.5">
@@ -294,7 +294,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                                         e.target.value as InvestmentFormData['yield_type']
                                     )
                                 }
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Selecionar...</option>
                                 <option value="prefixado">Prefixado</option>
@@ -324,7 +324,7 @@ function InvestmentModal({ editing, accounts, onClose }: InvestmentModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -388,16 +388,16 @@ function SnapshotModal({ investment, onClose }: SnapshotModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl modal-content">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <h2 className="text-white font-semibold text-lg">Atualizar Valor</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -423,13 +423,13 @@ function SnapshotModal({ investment, onClose }: SnapshotModalProps) {
                         <CurrencyInput
                             value={form.amount}
                             onChange={(v) => set('amount', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                     </div>
 
                     {/* Preview */}
                     {yieldAmount !== null && yieldPct !== null && (
-                        <div className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-4 py-3 flex items-center justify-between">
+                        <div className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-4 py-3 flex items-center justify-between">
                             <p className="text-gray-400 text-sm">Rendimento</p>
                             <div className="text-right">
                                 <p
@@ -455,7 +455,7 @@ function SnapshotModal({ investment, onClose }: SnapshotModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -514,16 +514,16 @@ function RedeemModal({ investment, accounts, onClose }: RedeemModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl modal-content">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <h2 className="text-white font-semibold text-lg">Resgatar Investimento</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -542,7 +542,7 @@ function RedeemModal({ investment, accounts, onClose }: RedeemModalProps) {
                         <CurrencyInput
                             value={form.amount}
                             onChange={(v) => set('amount', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                     </div>
 
@@ -554,7 +554,7 @@ function RedeemModal({ investment, accounts, onClose }: RedeemModalProps) {
                             value={form.bank_account_id}
                             onChange={(e) => set('bank_account_id', e.target.value)}
                             required
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             <option value="">Selecione a conta...</option>
                             {accounts.map((a) => (
@@ -576,7 +576,7 @@ function RedeemModal({ investment, accounts, onClose }: RedeemModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -619,11 +619,11 @@ function DeleteConfirmModal({ investment, onClose }: DeleteConfirmModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-white font-semibold text-lg">Excluir investimento</h2>
                     <p className="text-gray-400 text-sm">
@@ -638,7 +638,7 @@ function DeleteConfirmModal({ investment, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -681,7 +681,7 @@ function InvestmentCard({
     const status = statusConfig[investment.status];
 
     return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex flex-col gap-4">
+        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 flex flex-col gap-4">
             {/* Top row */}
             <div className="flex items-start justify-between gap-3">
                 <div>
@@ -693,7 +693,7 @@ function InvestmentCard({
                     )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-surface-2)] text-gray-300">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[bg-[var(--color-surface-2)]] text-gray-300">
                         {investmentTypeLabels[investment.type]}
                     </span>
                     <span
@@ -771,12 +771,12 @@ function InvestmentCard({
             )}
 
             {/* Actions */}
-            <div className="flex items-center gap-1.5 pt-1 border-t border-[var(--color-border)]">
+            <div className="flex items-center gap-1.5 pt-1 border-t border-[border-[var(--color-border)]]">
                 <button
                     data-tutorial="inv-snapshot-btn"
                     onClick={() => onSnapshot(investment)}
                     title="Snapshot"
-                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors text-xs font-medium"
                 >
                     <Camera size={13} />
                     Snapshot
@@ -793,7 +793,7 @@ function InvestmentCard({
                 <button
                     onClick={() => onEdit(investment)}
                     title="Editar"
-                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors text-xs font-medium"
                 >
                     <Pencil size={13} />
                     Editar
@@ -891,9 +891,9 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
 
                 {/* Summary cards */}
                 <div data-tutorial="inv-summary" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                                 <Wallet size={16} className="text-gray-400" />
                             </div>
                             <p className="text-gray-400 text-sm">Total Investido</p>
@@ -903,9 +903,9 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                         </p>
                     </div>
 
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                                 <TrendingUp size={16} className="text-gray-400" />
                             </div>
                             <p className="text-gray-400 text-sm">Valor Atual</p>
@@ -915,7 +915,7 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
                         </p>
                     </div>
 
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
                             <div
                                 className={`w-8 h-8 rounded-xl flex items-center justify-center ${
@@ -950,8 +950,8 @@ export default function InvestmentsIndex({ investments, accounts, summary }: Pro
 
                 {/* Grid */}
                 {investments.length === 0 ? (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <TrendingUp size={24} className="text-gray-500" />
                         </div>
                         <div className="text-center">

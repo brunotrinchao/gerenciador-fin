@@ -125,7 +125,7 @@ function InstallmentRow({ installment, accounts }: { installment: Installment; a
 
     return (
         <>
-            <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[var(--color-surface-2)]/40 transition-colors">
+            <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[bg-[var(--color-surface-2)]]/40 transition-colors">
                 <div className="flex items-center gap-3">
                     <div
                         className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -184,14 +184,14 @@ function InstallmentRow({ installment, accounts }: { installment: Installment; a
 
             {showBankModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowBankModal(false)} />
-                    <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
+                    <div className="absolute inset-0 bg-black/60 " onClick={() => setShowBankModal(false)} />
+                    <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
                         <h3 className="text-white font-semibold">Pagar parcela</h3>
                         <p className="text-gray-400 text-sm">Selecione a conta bancária para débito:</p>
                         <select
                             value={selectedBankId}
                             onChange={(e) => setSelectedBankId(e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] w-full"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] w-full"
                         >
                             <option value="">Sem débito em conta</option>
                             {accounts.map((a) => (
@@ -201,7 +201,7 @@ function InstallmentRow({ installment, accounts }: { installment: Installment; a
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowBankModal(false)}
-                                className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 text-sm"
+                                className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 text-sm"
                             >
                                 Cancelar
                             </button>
@@ -251,7 +251,7 @@ function FilterBar({ creditCards, filters }: {
                     if (v !== 'credit_card') setCreditCardId('');
                     apply(v, v !== 'credit_card' ? '' : creditCardId, sort);
                 }}
-                className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-[#22c55e] transition-colors"
+                className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-[#22c55e] transition-colors"
             >
                 <option value="">Todos os tipos</option>
                 <option value="credit_card">Cartão de Crédito</option>
@@ -266,7 +266,7 @@ function FilterBar({ creditCards, filters }: {
                         setCreditCardId(v);
                         apply(type, v, sort);
                     }}
-                    className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-[#22c55e] transition-colors"
+                    className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-[#22c55e] transition-colors"
                 >
                     <option value="">Todos os cartões</option>
                     {creditCards.map((c) => (
@@ -282,7 +282,7 @@ function FilterBar({ creditCards, filters }: {
                     setSort(v);
                     apply(type, creditCardId, v);
                 }}
-                className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-[#22c55e] transition-colors"
+                className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-[#22c55e] transition-colors"
             >
                 <option value="created_desc">Mais recente</option>
                 <option value="progress_asc">Próximo de finalizar</option>
@@ -315,7 +315,7 @@ function GroupCard({ group, accounts, onCancel }: GroupCardProps) {
         .slice(0, 2);
 
     return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
             <div className="p-5 flex flex-col gap-4">
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-3">
@@ -371,7 +371,7 @@ function GroupCard({ group, accounts, onCancel }: GroupCardProps) {
                         </p>
                         <p className="text-xs text-gray-500">{progress.toFixed(0)}%</p>
                     </div>
-                    <div className="w-full h-1.5 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-[bg-[var(--color-surface-2)]] rounded-full overflow-hidden">
                         <div
                             className={`h-full rounded-full transition-all ${
                                 group.status === 'completed'
@@ -438,7 +438,7 @@ function GroupCard({ group, accounts, onCancel }: GroupCardProps) {
                 {installments.length > 0 && (
                     <button
                         onClick={() => setExpanded((v) => !v)}
-                        className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors py-1 border-t border-[var(--color-border)]"
+                        className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors py-1 border-t border-[border-[var(--color-border)]]"
                     >
                         {expanded ? (
                             <>
@@ -457,7 +457,7 @@ function GroupCard({ group, accounts, onCancel }: GroupCardProps) {
 
             {/* Expanded installments list */}
             {expanded && installments.length > 0 && (
-                <div className="border-t border-[var(--color-border)] px-3 py-2 flex flex-col">
+                <div className="border-t border-[border-[var(--color-border)]] px-3 py-2 flex flex-col">
                     {installments
                         .sort((a, b) => a.number - b.number)
                         .map((installment) => (
@@ -494,11 +494,11 @@ function CancelConfirmModal({ group, onClose }: CancelConfirmModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-white font-semibold text-lg">Cancelar parcelamento</h2>
                     <p className="text-gray-400 text-sm">
@@ -515,7 +515,7 @@ function CancelConfirmModal({ group, onClose }: CancelConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={cancelling}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Voltar
                     </button>
@@ -574,17 +574,17 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-surface)] z-10">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]] sticky top-0 bg-[var(--color-surface)] z-10">
                     <h2 className="text-white font-semibold text-lg">Novo Parcelamento</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -601,7 +601,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                             value={data.description}
                             onChange={(e) => setData('description', e.target.value)}
                             placeholder="Ex: iPhone 15 Pro"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.description && (
                             <p className="text-red-400 text-xs">{errors.description}</p>
@@ -616,7 +616,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                         <CurrencyInput
                             value={data.total_amount}
                             onChange={(v) => setData('total_amount', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.total_amount && (
                             <p className="text-red-400 text-xs">{errors.total_amount}</p>
@@ -635,7 +635,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                             value={data.total_installments}
                             onChange={(e) => setData('total_installments', e.target.value)}
                             placeholder="Ex: 12"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.total_installments && (
                             <p className="text-red-400 text-xs">{errors.total_installments}</p>
@@ -702,7 +702,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                             <select
                                 value={data.credit_card_id}
                                 onChange={(e) => setData('credit_card_id', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Selecionar cartão</option>
                                 {creditCards.map((c) => (
@@ -724,7 +724,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                             <select
                                 value={data.bank_account_id}
                                 onChange={(e) => setData('bank_account_id', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Selecionar conta</option>
                                 {accounts.map((a) => (
@@ -745,7 +745,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                         <select
                             value={data.category_id}
                             onChange={(e) => setData('category_id', e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             <option value="">Sem categoria</option>
                             {categories.map((cat) => (
@@ -764,7 +764,7 @@ function NewInstallmentModal({ accounts, creditCards, categories, onClose }: New
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -856,7 +856,7 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
 
                 {/* Summary */}
                 <div data-tutorial="inst-remaining" className="grid grid-cols-2 gap-4">
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
                                 <Layers size={16} className="text-red-400" />
@@ -867,7 +867,7 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                         <p className="text-gray-500 text-xs mt-1">Soma dos valores restantes</p>
                     </div>
 
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
                                 <Layers size={16} className="text-[#22c55e]" />
@@ -883,8 +883,8 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
 
                 {/* Groups list */}
                 {groups.length === 0 ? (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <Layers size={24} className="text-gray-500" />
                         </div>
                         <div className="text-center">
@@ -907,7 +907,7 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                         <FilterBar accounts={accounts} creditCards={creditCards} filters={filters} />
 
                         {groups.length === 0 ? (
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-8 text-center">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-8 text-center">
                                 <p className="text-gray-400 text-sm">Nenhum parcelamento encontrado para este filtro.</p>
                             </div>
                         ) : (
@@ -930,14 +930,14 @@ export default function InstallmentsIndex({ groups, accounts, creditCards, categ
                             <h2 className="text-white font-semibold text-lg">Parcelas de Faturas Importadas</h2>
                         </div>
 
-                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-                            <div className="divide-y divide-[var(--color-border)]">
+                        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
+                            <div className="divide-y divide-[border-[var(--color-border)]]">
                                 {importedInstallments.map((item) => {
                                     const pattern = parseInstallmentPattern(item.description);
                                     return (
                                         <div
                                             key={item.id}
-                                            className="flex items-center justify-between px-5 py-3 hover:bg-[var(--color-surface-2)]/30 transition-colors"
+                                            className="flex items-center justify-between px-5 py-3 hover:bg-[bg-[var(--color-surface-2)]]/30 transition-colors"
                                         >
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm text-white font-medium truncate">

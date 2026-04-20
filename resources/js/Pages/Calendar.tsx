@@ -87,6 +87,33 @@ function markAsPaidUrl(ev: CalendarEvent): string {
 }
 
 // ─────────────────────────────────────────────
+// EventContent — customização do item no calendário
+// ─────────────────────────────────────────────
+
+function EventContent({ info }: { info: any }) {
+    const ev = info.event.extendedProps as CalendarEvent;
+    const paid = isPaidStatus(ev);
+    const color = colorByEvent(ev);
+
+    const Icon = useMemo(() => {
+        if (ev.subtype === 'income')   return TrendingUp;
+        if (ev.type === 'invoice')     return CreditCard;
+        if (ev.type === 'installment') return Layers;
+        return TrendingDown;
+    }, [ev.type, ev.subtype]);
+
+    return (
+        <div className={`flex items-center gap-1 px-1 py-0.5 w-full overflow-hidden text-[10px] leading-tight transition-opacity ${paid ? 'opacity-60' : ''}`}>
+            <Icon size={10} style={{ color, flexShrink: 0 }} />
+            <div className={`flex gap-1 truncate ${paid ? 'line-through decoration-1' : ''}`}>
+                <span className="font-bold whitespace-nowrap">{formatCurrency(ev.amount)}</span>
+                <span className="opacity-80 truncate">{ev.description}</span>
+            </div>
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────
 // Modals
 // ─────────────────────────────────────────────
 
@@ -104,7 +131,7 @@ function DetailModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/60 " onClick={onClose} />
             <div className="relative z-10 w-full max-w-sm rounded-3xl shadow-2xl p-6 overflow-hidden" 
                  style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                 
@@ -116,7 +143,7 @@ function DetailModal({
                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1 block" style={{ color: 'var(--color-foreground)' }}>{typeLabel(ev)}</span>
                         <h3 className="text-xl font-bold font-display" style={{ color: 'var(--color-foreground)' }}>{ev.description}</h3>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400">
+                    <button onClick={onClose} className="p-2 hover:bg-[var(--color-surface-2)] rounded-full transition-colors text-gray-400">
                         <X size={20} />
                     </button>
                 </div>
@@ -133,7 +160,7 @@ function DetailModal({
                 <div className="space-y-4 mb-8">
                     {ev.category && (
                         <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--color-muted)' }}>
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--color-surface-2)]">
                                 <Tag size={14} />
                             </div>
                             <span>{ev.category}</span>
@@ -141,7 +168,7 @@ function DetailModal({
                     )}
                     {ev.account && (
                         <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--color-muted)' }}>
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--color-surface-2)]">
                                 <Landmark size={14} />
                             </div>
                             <span>{ev.account}</span>
@@ -158,7 +185,7 @@ function DetailModal({
                             <CheckCircle2 size={16} /> Marcar como Pago
                         </button>
                     )}
-                    <button onClick={onClose} className="flex-1 py-3 rounded-2xl text-sm font-bold border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-white/5 transition-colors">
+                    <button onClick={onClose} className="flex-1 py-3 rounded-2xl text-sm font-bold border border-[border-[var(--color-border)]] text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors">
                         Fechar
                     </button>
                 </div>
@@ -179,7 +206,8 @@ function Legend() {
         { label: 'Fatura',  color: '#a855f7' },
     ];
     return (
-        <div className="flex items-center gap-4 flex-wrap bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+        <div className="flex items-center gap-4 flex-wrap px-4 py-2 rounded-2xl border"
+             style={{ backgroundColor: 'var(--color-surface-2)', borderColor: 'var(--color-border)' }}>
             {items.map((it) => (
                 <div key={it.label} className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: it.color }} />
@@ -228,7 +256,7 @@ function BoletoImporter() {
             <button 
                 onClick={() => inputRef.current?.click()}
                 disabled={loading}
-                className="flex items-center gap-2.5 px-4 py-2 rounded-2xl text-xs font-bold border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-white/5 transition-all active:scale-95"
+                className="flex items-center gap-2.5 px-4 py-2 rounded-2xl text-xs font-bold border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-all active:scale-95"
             >
                 {loading ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
                 {loading ? 'Processando...' : 'Importar Boleto'}
@@ -254,7 +282,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
         return Object.entries(events).flatMap(([date, evs]) =>
             evs.map((ev) => ({
                 id: `${ev.type}-${ev.id}`,
-                title: `${formatCurrency(ev.amount).replace('R$', '')} ${ev.description}`,
+                title: ev.description,
                 date,
                 backgroundColor: bgByEvent(ev),
                 borderColor: colorByEvent(ev),
@@ -334,7 +362,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                             className={`px-5 py-2 rounded-2xl text-xs font-black tracking-wide uppercase transition-all flex-shrink-0 ${
                                 typeFilter === f.key 
                                     ? 'bg-[var(--color-accent)] text-black border-transparent shadow-lg shadow-[var(--color-accent)]/10' 
-                                    : 'bg-white/5 border border-white/5 text-gray-500 hover:text-white'
+                                    : 'bg-[var(--color-surface-2)] border border-[var(--color-border)] text-gray-500 hover:text-white'
                             }`}
                         >
                             {f.label}
@@ -344,7 +372,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
 
                 {/* Summary Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="relative overflow-hidden group rounded-3xl p-6 transition-all border border-white/5 hover:border-red-500/20" 
+                    <div className="relative overflow-hidden group rounded-3xl p-6 transition-all border-[var(--color-border)] hover:border-red-500/20" 
                          style={{ backgroundColor: 'var(--color-surface)' }}>
                         <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <TrendingDown size={140} color="#ef4444" />
@@ -360,7 +388,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                         </div>
                     </div>
                     
-                    <div className="relative overflow-hidden group rounded-3xl p-6 transition-all border border-white/5 hover:border-emerald-500/20" 
+                    <div className="relative overflow-hidden group rounded-3xl p-6 transition-all border-[var(--color-border)] hover:border-emerald-500/20" 
                          style={{ backgroundColor: 'var(--color-surface)' }}>
                         <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <TrendingUp size={140} color="#22c55e" />
@@ -378,7 +406,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                 </div>
 
                 {/* Calendar Container */}
-                <div className="p-6 rounded-3xl shadow-xl transition-all border border-white/5" 
+                <div className="p-6 rounded-3xl shadow-xl transition-all border-[var(--color-border)]" 
                      style={{ backgroundColor: 'var(--color-surface)' }}>
                     <FullCalendar
                         ref={calendarRef}
@@ -388,6 +416,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                         locale="pt-br"
                         locales={[ptBrLocale]}
                         events={filteredFcEvents}
+                        eventContent={(info) => <EventContent info={info} />}
                         eventClick={handleEventClick}
                         datesSet={handleDatesSet}
                         dateClick={isMobile ? (info => setSelectedDate(info.dateStr)) : undefined}
@@ -404,16 +433,16 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
 
                 {/* Mobile Daily List */}
                 {isMobile && selectedDate && (
-                    <div className="rounded-3xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/5" 
+                    <div className="rounded-3xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300 border-[var(--color-border)]" 
                          style={{ backgroundColor: 'var(--color-surface)' }}>
-                        <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                        <div className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
                             <div className="flex items-center gap-2">
                                 <Info size={16} className="text-[var(--color-accent)]" />
                                 <h3 className="font-black text-sm uppercase tracking-tighter">
                                     {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
                                 </h3>
                             </div>
-                            <button onClick={() => setSelectedDate(null)} className="p-1 hover:bg-white/5 rounded-full text-gray-500">
+                            <button onClick={() => setSelectedDate(null)} className="p-1 hover:bg-[var(--color-surface-2)] rounded-full text-gray-500">
                                 <X size={18} />
                             </button>
                         </div>
@@ -425,7 +454,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                             ) : (
                                 (events[selectedDate] || []).map(ev => (
                                     <div key={ev.id} onClick={() => setSelectedEvent(ev)} 
-                                         className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 active:scale-95 transition-all">
+                                         className="flex items-center justify-between p-4 rounded-2xl bg-[var(--color-surface-2)] border-[var(--color-border)] active:scale-95 transition-all">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" 
                                                  style={{ backgroundColor: bgByEvent(ev) }}>

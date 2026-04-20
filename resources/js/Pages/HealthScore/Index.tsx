@@ -57,7 +57,7 @@ export default function HealthScoreIndex({ score }: Props) {
                 </div>
 
                 {/* Score principal */}
-                <div data-tutorial="hs-score" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-8 flex items-center justify-center gap-8">
+                <div data-tutorial="hs-score" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-8 flex items-center justify-center gap-8">
                     <div className="text-center">
                         <div className="text-8xl font-black font-display" style={getScoreStyle(score.total)}>
                             {score.total}
@@ -75,7 +75,7 @@ export default function HealthScoreIndex({ score }: Props) {
                 {/* Componentes */}
                 <div data-tutorial="hs-components" className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {Object.entries(score.components).map(([key, comp]) => (
-                        <div key={key} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                        <div key={key} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                             <div className="flex justify-between items-start mb-2">
                                 <span className="text-sm font-medium text-[var(--md-color-on-surface)]">{comp.label}</span>
                                 <span className="text-sm font-bold text-[var(--md-color-on-surface)]">{comp.score}/{comp.max}</span>

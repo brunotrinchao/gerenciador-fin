@@ -61,7 +61,7 @@ interface AccountCardProps {
 
 function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
     return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex flex-col gap-4">
+        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 flex flex-col gap-4">
             <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <BankIcon bankName={account.bank_name} size={36} />
@@ -76,7 +76,7 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => onEdit(account)}
-                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                         title="Editar"
                     >
                         <Pencil size={15} />
@@ -115,7 +115,7 @@ function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
                 </div>
 
                 <div className="flex flex-col items-end gap-1.5">
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--color-surface-2)] text-[var(--md-color-on-surface-variant)]">
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[bg-[var(--color-surface-2)]] text-[var(--md-color-on-surface-variant)]">
                         {accountTypeLabels[account.account_type]}
                     </span>
                     <span
@@ -175,19 +175,19 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl modal-content">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">
                         {isEditing ? 'Editar Conta' : 'Nova Conta'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -205,7 +205,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             placeholder="Ex: Conta Principal"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.name && (
                             <p className="text-[var(--md-color-error)] text-xs">{errors.name}</p>
@@ -220,7 +220,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                         <select
                             value={data.account_type}
                             onChange={(e) => setData('account_type', e.target.value as AccountType)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             {(Object.entries(accountTypeLabels) as [AccountType, string][]).map(
                                 ([value, label]) => (
@@ -257,7 +257,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                         <CurrencyInput
                             value={data.initial_balance}
                             onChange={(v) => setData('initial_balance', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.initial_balance && (
                             <p className="text-[var(--md-color-error)] text-xs">{errors.initial_balance}</p>
@@ -271,7 +271,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                             <CurrencyInput
                                 value={data.current_balance}
                                 onChange={(v) => setData('current_balance', v)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.current_balance && (
                                 <p className="text-[var(--md-color-error)] text-xs">{errors.current_balance}</p>
@@ -285,7 +285,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                         <CurrencyInput
                             value={data.overdraft_limit}
                             onChange={(v) => setData('overdraft_limit', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         <p className="text-[var(--md-color-on-surface-variant)] text-xs">Se o saldo ficar negativo, usa este limite.</p>
                         {errors.overdraft_limit && <p className="text-[var(--md-color-error)] text-xs">{errors.overdraft_limit}</p>}
@@ -349,7 +349,7 @@ function AccountFormModal({ editingAccount, onClose }: AccountFormModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -392,11 +392,11 @@ function DeleteConfirmModal({ account, onClose }: DeleteConfirmModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">Excluir conta</h2>
                     <p className="text-[var(--md-color-on-surface-variant)] text-sm">
@@ -411,7 +411,7 @@ function DeleteConfirmModal({ account, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -532,7 +532,7 @@ export default function BankAccountsIndex({ accounts }: Props) {
                 )}
 
                 {/* Saldo consolidado */}
-                <div data-tutorial="ba-total" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
+                <div data-tutorial="ba-total" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center">
                             <Wallet size={18} className="text-[#22c55e]" />
@@ -560,8 +560,8 @@ export default function BankAccountsIndex({ accounts }: Props) {
 
                 {/* Lista de contas */}
                 {accounts.length === 0 ? (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <Wallet size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">

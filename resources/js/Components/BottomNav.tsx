@@ -1,12 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, ArrowLeftRight, Receipt, TrendingUp, CreditCard } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Receipt, CreditCard, Plus } from 'lucide-react';
 
 const items = [
-    { label: 'Dashboard',    href: '/',             icon: LayoutDashboard },
+    { label: 'Início',       href: '/',             icon: LayoutDashboard },
     { label: 'Transações',   href: '/transactions', icon: ArrowLeftRight },
+    { label: 'Nova',         href: '/transactions', icon: Plus, isAction: true },
     { label: 'Faturas',      href: '/invoices',     icon: Receipt },
     { label: 'Cartões',      href: '/credit-cards', icon: CreditCard },
-    { label: 'Investimentos', href: '/investments',  icon: TrendingUp },
 ];
 
 export default function BottomNav() {
@@ -19,7 +19,7 @@ export default function BottomNav() {
 
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 lg:hidden z-40 flex items-center justify-around px-1"
+            className="fixed bottom-0 left-0 right-0 lg:hidden z-40 flex items-center justify-around px-2"
             style={{
                 backgroundColor: 'var(--color-surface)',
                 borderTop: '1px solid var(--color-border)',
@@ -29,10 +29,28 @@ export default function BottomNav() {
         >
             {items.map((item) => {
                 const Icon = item.icon;
+                
+                if (item.isAction) {
+                    return (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            className="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform active:scale-95 border-4"
+                            style={{
+                                backgroundColor: 'var(--md-color-primary-container)',
+                                color: 'var(--md-color-on-primary-container)',
+                                borderColor: 'var(--color-background)'
+                            }}
+                        >
+                            <Icon size={26} />
+                        </Link>
+                    );
+                }
+
                 const active = isActive(item.href);
                 return (
                     <Link
-                        key={item.href}
+                        key={item.label}
                         href={item.href}
                         className="flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-[44px] px-2 py-1 rounded-xl transition-colors relative"
                         style={{

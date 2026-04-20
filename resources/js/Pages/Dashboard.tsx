@@ -143,7 +143,7 @@ export default function Dashboard({
                                     {bankAccounts?.map((account) => (
                                         <div
                                             key={account.id}
-                                            className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]"
+                                            className="flex items-center justify-between p-4 rounded-xl border border-[border-[var(--color-border)]] bg-[bg-[var(--color-surface-2)]]"
                                         >
                                             <div className="flex flex-col gap-0.5 min-w-0">
                                                 <span className="text-sm font-semibold text-[var(--color-foreground)] truncate">
@@ -151,7 +151,7 @@ export default function Dashboard({
                                                 </span>
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     {account.account_type && (
-                                                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-muted)]">
+                                                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[border-[var(--color-border)]] text-[var(--color-muted)]">
                                                             {ACCOUNT_TYPE_LABELS[account.account_type] ?? account.account_type}
                                                         </span>
                                                     )}
@@ -173,7 +173,7 @@ export default function Dashboard({
                                         </p>
                                     )}
                                     {bankAccounts?.length > 0 && (
-                                        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[var(--color-border)]">
+                                        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[border-[var(--color-border)]]">
                                             <span className="text-xs font-semibold text-[var(--color-muted)]">Total</span>
                                             <span className="text-sm font-bold text-[var(--color-foreground)]">
                                                 {formatCurrency(bankAccounts.reduce((s, a) => s + Number(a.current_balance), 0))}
@@ -208,7 +208,7 @@ export default function Dashboard({
                                     {(detailedDebt || []).map((card) => (
                                         <div
                                             key={card.id}
-                                            className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]"
+                                            className="flex items-center justify-between p-4 rounded-xl border border-[border-[var(--color-border)]] bg-[bg-[var(--color-surface-2)]]"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div
@@ -230,7 +230,7 @@ export default function Dashboard({
                                                             </span>
                                                         )}
                                                         {card.brand && (
-                                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-muted)]">
+                                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-[border-[var(--color-border)]] text-[var(--color-muted)]">
                                                                 {card.brand}
                                                             </span>
                                                         )}
@@ -248,7 +248,7 @@ export default function Dashboard({
                                         </p>
                                     )}
                                     {detailedDebt?.length > 0 && (
-                                        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[var(--color-border)]">
+                                        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[border-[var(--color-border)]]">
                                             <span className="text-xs font-semibold text-[var(--color-muted)]">Total em aberto</span>
                                             <span className="text-sm font-bold text-[var(--color-danger)]">
                                                 {formatCurrency(detailedDebt.reduce((s, c) => s + c.pending_amount, 0))}
@@ -300,7 +300,7 @@ export default function Dashboard({
                                                 {longUpcomingPayments.map((payment) => (
                                                     <li
                                                         key={payment.id}
-                                                        className="flex items-center justify-between rounded-lg px-4 py-3 bg-[var(--color-surface-2)]"
+                                                        className="flex items-center justify-between rounded-lg px-4 py-3 bg-[bg-[var(--color-surface-2)]]"
                                                     >
                                                         <div className="flex flex-col">
                                                             <div className="flex items-center gap-1.5">

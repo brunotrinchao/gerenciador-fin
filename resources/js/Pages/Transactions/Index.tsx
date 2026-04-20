@@ -177,7 +177,7 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
     };
 
     return (
-        <div className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-surface-2)] transition-colors border-b border-[var(--color-border)] last:border-0">
+        <div className="flex items-center gap-3 px-4 py-3 hover:bg-[bg-[var(--color-surface-2)]] transition-colors border-b border-[border-[var(--color-border)]] last:border-0">
             {/* Icon */}
             <div className="flex-shrink-0">
                 <TypeIcon />
@@ -246,7 +246,7 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
                 )}
                 <button
                     onClick={() => onEdit(transaction)}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     title="Editar"
                 >
                     <Pencil size={15} />
@@ -301,7 +301,7 @@ function StatementRow({ statement, onClick }: StatementRowProps) {
 
     return (
         <div
-            className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-surface-2)] transition-colors border-b border-[var(--color-border)] last:border-0 cursor-pointer"
+            className="flex items-center gap-3 px-4 py-3 hover:bg-[bg-[var(--color-surface-2)]] transition-colors border-b border-[border-[var(--color-border)]] last:border-0 cursor-pointer"
             onClick={() => onClick(statement)}
         >
             {/* Icon */}
@@ -387,7 +387,7 @@ function InstallmentRow({ installment, onClick, onEdit, onDelete }: InstallmentR
 
     return (
         <div
-            className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-surface-2)] transition-colors border-b border-[var(--color-border)] last:border-0 cursor-pointer"
+            className="flex items-center gap-3 px-4 py-3 hover:bg-[bg-[var(--color-surface-2)]] transition-colors border-b border-[border-[var(--color-border)]] last:border-0 cursor-pointer"
             onClick={() => onClick(installment)}
         >
             <div className="flex-shrink-0">
@@ -460,7 +460,7 @@ function InstallmentRow({ installment, onClick, onEdit, onDelete }: InstallmentR
                 )}
                 <button
                     onClick={handleEdit}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     title="Editar"
                 >
                     <Pencil size={15} />
@@ -526,8 +526,8 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
 
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-                <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
+                <div className="absolute inset-0 bg-black/60 " onClick={onClose} />
+                <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
                     {/* Header */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -536,7 +536,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                         >
                             <X size={18} />
                         </button>
@@ -611,7 +611,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Fechar
                         </button>
@@ -649,7 +649,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                                 onEdit(t);
                                 onClose();
                             }}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             <Pencil size={14} />
                             Editar
@@ -660,7 +660,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                                 onDelete(t);
                                 onClose();
                             }}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-red-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/5 text-sm font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-red-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/5 text-sm font-medium transition-colors"
                         >
                             <Trash2 size={14} />
                             Excluir
@@ -681,8 +681,8 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
 
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-                <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
+                <div className="absolute inset-0 bg-black/60 " onClick={onClose} />
+                <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
                     {/* Header */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -691,7 +691,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                         >
                             <X size={18} />
                         </button>
@@ -747,7 +747,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Fechar
                         </button>
@@ -790,7 +790,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                                     console.warn('No transaction linked to installment', inst);
                                 }
                             }}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             <Pencil size={14} />
                             Editar
@@ -804,7 +804,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                                     onClose();
                                 }
                             }}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-red-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/5 text-sm font-medium transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-red-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/5 text-sm font-medium transition-colors"
                         >
                             <Trash2 size={14} />
                             Excluir
@@ -821,8 +821,8 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
+            <div className="absolute inset-0 bg-black/60 " onClick={onClose} />
+            <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -831,7 +831,7 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -893,14 +893,14 @@ function DetailModal({ item, onClose, onEdit, onDelete }: DetailModalProps) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                     >
                         Fechar
                     </button>
                     <button
                         type="button"
                         onClick={handleViewInvoice}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                     >
                         <ExternalLink size={14} />
                         Ver Fatura
@@ -1032,19 +1032,19 @@ function TransactionFormModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-lg mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl max-h-[90vh] flex flex-col modal-content">
+            <div className="relative z-10 w-full max-w-lg mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl max-h-[90vh] flex flex-col modal-content">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)] flex-shrink-0">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]] flex-shrink-0">
                     <h2 className="text-white font-semibold text-lg">
                         {isEditing ? 'Editar Transação' : 'Nova Transação'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -1065,7 +1065,7 @@ function TransactionFormModal({
                             onChange={(e) =>
                                 setData('type', e.target.value as TransactionType)
                             }
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             <option value="income">Receita</option>
                             <option value="expense">Despesa</option>
@@ -1087,7 +1087,7 @@ function TransactionFormModal({
                             value={data.description}
                             onChange={(e) => setData('description', e.target.value)}
                             placeholder="Ex: Supermercado, Salário..."
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.description && (
                             <p className="text-red-400 text-xs">{errors.description}</p>
@@ -1103,7 +1103,7 @@ function TransactionFormModal({
                             <CurrencyInput
                                 value={data.amount}
                                 onChange={(v) => setData('amount', v)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.amount && (
                                 <p className="text-red-400 text-xs">{errors.amount}</p>
@@ -1138,7 +1138,7 @@ function TransactionFormModal({
                                     value={data.total_installments}
                                     onChange={(e) => setData('total_installments', e.target.value)}
                                     placeholder="Número de parcelas (ex: 10)"
-                                    className="flex-1 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                    className="flex-1 bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                                 />
                                 {data.total_installments && parseInt(data.total_installments) > 1 && (
                                     <div className="text-xs text-gray-500">
@@ -1160,20 +1160,20 @@ function TransactionFormModal({
                                     type="checkbox"
                                     checked={data.is_recurring}
                                     onChange={(e) => setData('is_recurring', e.target.checked)}
-                                    className="w-4 h-4 rounded border-[var(--color-border)] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
+                                    className="w-4 h-4 rounded border-[border-[var(--color-border)]] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
                                 />
                                 <span className="text-sm text-gray-400">Transação recorrente</span>
                             </label>
 
                             {data.is_recurring && (
-                                <div className="flex flex-col gap-3 pl-6 border-l-2 border-[var(--color-border)]">
+                                <div className="flex flex-col gap-3 pl-6 border-l-2 border-[border-[var(--color-border)]]">
                                     {/* Frequência */}
                                     <div className="flex flex-col gap-1.5">
                                         <label className="text-sm text-gray-400">Frequência</label>
                                         <select
                                             value={data.recurrence_rule}
                                             onChange={(e) => setData('recurrence_rule', e.target.value)}
-                                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                                         >
                                             <option value="weekly">Semanal</option>
                                             <option value="biweekly">Quinzenal</option>
@@ -1198,7 +1198,7 @@ function TransactionFormModal({
                                                         setData('recurrence_end_date', '');
                                                         setData('recurrence_occurrences', '');
                                                     }}
-                                                    className="w-4 h-4 border-[var(--color-border)] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
+                                                    className="w-4 h-4 border-[border-[var(--color-border)]] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
                                                 />
                                                 <span className="text-sm text-gray-300">Sem fim</span>
                                             </label>
@@ -1211,7 +1211,7 @@ function TransactionFormModal({
                                                         setData('recurrence_end_date', data.date || new Date().toISOString().split('T')[0]);
                                                         setData('recurrence_occurrences', '');
                                                     }}
-                                                    className="w-4 h-4 border-[var(--color-border)] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
+                                                    className="w-4 h-4 border-[border-[var(--color-border)]] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
                                                 />
                                                 <span className="text-sm text-gray-300">Até a data</span>
                                             </label>
@@ -1233,7 +1233,7 @@ function TransactionFormModal({
                                                         setData('recurrence_end_date', '');
                                                         setData('recurrence_occurrences', '12');
                                                     }}
-                                                    className="w-4 h-4 border-[var(--color-border)] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
+                                                    className="w-4 h-4 border-[border-[var(--color-border)]] bg-[var(--color-input-bg)] text-[#22c55e] focus:ring-[#22c55e]"
                                                 />
                                                 <span className="text-sm text-gray-300">Nº de ocorrências</span>
                                             </label>
@@ -1245,7 +1245,7 @@ function TransactionFormModal({
                                                     value={data.recurrence_occurrences}
                                                     onChange={(e) => setData('recurrence_occurrences', e.target.value)}
                                                     placeholder="Ex: 12"
-                                                    className="ml-6 w-32 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                                    className="ml-6 w-32 bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                                                 />
                                             )}
                                         </div>
@@ -1264,7 +1264,7 @@ function TransactionFormModal({
                                 onChange={(e) =>
                                     setData('status', e.target.value as TransactionStatus)
                                 }
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="pending">Pendente</option>
                                 <option value="paid">Pago</option>
@@ -1288,7 +1288,7 @@ function TransactionFormModal({
                                 onChange={(e) =>
                                     setData('bank_account_id', e.target.value)
                                 }
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Selecione a conta</option>
                                 {accounts.map((a) => (
@@ -1316,7 +1316,7 @@ function TransactionFormModal({
                                 onChange={(e) =>
                                     setData('credit_card_id', e.target.value)
                                 }
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Selecione o cartão</option>
                                 {creditCards.map((c) => (
@@ -1344,7 +1344,7 @@ function TransactionFormModal({
                                 onChange={(e) =>
                                     setData('transfer_to_account_id', e.target.value)
                                 }
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Selecione a conta destino</option>
                                 {accounts
@@ -1370,7 +1370,7 @@ function TransactionFormModal({
                             <select
                                 value={data.category_id}
                                 onChange={(e) => setData('category_id', e.target.value)}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Sem categoria</option>
                                 {filteredCategories.map((c) => (
@@ -1393,7 +1393,7 @@ function TransactionFormModal({
                             onChange={(e) => setData('notes', e.target.value)}
                             placeholder="Observações opcionais..."
                             rows={2}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors resize-none"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors resize-none"
                         />
                     </div>
 
@@ -1402,7 +1402,7 @@ function TransactionFormModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -1455,10 +1455,10 @@ function RecurrenceScopeModal({ transaction, action, onSelect, onClose }: Recurr
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
-            <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-white font-semibold text-lg">{title}</h2>
                     <p className="text-gray-400 text-sm">
@@ -1473,7 +1473,7 @@ function RecurrenceScopeModal({ transaction, action, onSelect, onClose }: Recurr
                             key={opt.value}
                             type="button"
                             onClick={() => onSelect(opt.value)}
-                            className="w-full text-left px-4 py-3 rounded-lg border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 hover:bg-[var(--color-surface-2)] text-sm font-medium transition-colors"
+                            className="w-full text-left px-4 py-3 rounded-lg border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 hover:bg-[bg-[var(--color-surface-2)]] text-sm font-medium transition-colors"
                         >
                             {opt.label}
                         </button>
@@ -1483,7 +1483,7 @@ function RecurrenceScopeModal({ transaction, action, onSelect, onClose }: Recurr
                 <button
                     type="button"
                     onClick={onClose}
-                    className="w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                    className="w-full px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                 >
                     Cancelar
                 </button>
@@ -1517,11 +1517,11 @@ function DeleteConfirmModal({ transaction, onClose }: DeleteConfirmModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm mx-4 sm:mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-white font-semibold text-lg">Excluir transação</h2>
                     <p className="text-gray-400 text-sm">
@@ -1539,7 +1539,7 @@ function DeleteConfirmModal({ transaction, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -1578,7 +1578,7 @@ function Pagination({ pagination, filters }: PaginationProps) {
     };
 
     return (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--color-border)]">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-[border-[var(--color-border)]]">
             <p className="text-gray-500 text-xs">
                 Página {pagination.current_page} de {pagination.last_page}
                 {pagination.total > 0 && (
@@ -1590,7 +1590,7 @@ function Pagination({ pagination, filters }: PaginationProps) {
                 <button
                     onClick={() => goToPage(pagination.current_page - 1)}
                     disabled={pagination.current_page === 1}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                     <ChevronLeft size={15} />
                     Anterior
@@ -1598,7 +1598,7 @@ function Pagination({ pagination, filters }: PaginationProps) {
                 <button
                     onClick={() => goToPage(pagination.current_page + 1)}
                     disabled={pagination.current_page === pagination.last_page}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                     Próximo
                     <ChevronRight size={15} />
@@ -1653,11 +1653,11 @@ function CalendarSyncModal({ items, onClose }: CalendarSyncModalProps) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative z-10 w-full max-w-md mx-auto bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl flex flex-col max-h-[80vh]">
+            <div className="absolute inset-0 bg-black/60 " onClick={onClose} />
+            <div className="relative z-10 w-full max-w-md mx-auto bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl flex flex-col max-h-[80vh]">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[border-[var(--color-border)]]">
                     <div className="flex items-center gap-3">
                         <CalendarPlus size={20} className="text-blue-400" />
                         <div>
@@ -1669,7 +1669,7 @@ function CalendarSyncModal({ items, onClose }: CalendarSyncModalProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -1688,7 +1688,7 @@ function CalendarSyncModal({ items, onClose }: CalendarSyncModalProps) {
                                     {groupItems.map((item) => (
                                         <div
                                             key={`${item.type}-${item.id}`}
-                                            className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[var(--color-surface-2)]"
+                                            className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[bg-[var(--color-surface-2)]]"
                                         >
                                             <div className="flex-shrink-0">{typeIcon(item.type)}</div>
                                             <div className="flex-1 min-w-0">
@@ -1706,11 +1706,11 @@ function CalendarSyncModal({ items, onClose }: CalendarSyncModalProps) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex gap-3 px-6 py-4 border-t border-[var(--color-border)]">
+                <div className="flex gap-3 px-6 py-4 border-t border-[border-[var(--color-border)]]">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                     >
                         Fechar
                     </button>
@@ -1924,7 +1924,7 @@ export default function TransactionsIndex({
                             <button
                                 onClick={() => boletoInputRef.current?.click()}
                                 disabled={boletoLoading}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {boletoLoading ? (
                                     <Loader2 size={16} className="animate-spin" />
@@ -1980,7 +1980,7 @@ export default function TransactionsIndex({
                             <select
                                 defaultValue={filters.type ?? ''}
                                 onChange={(e) => applyFilter({ type: e.target.value })}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Todos os tipos</option>
                                 <option value="income">Receita</option>
@@ -1992,7 +1992,7 @@ export default function TransactionsIndex({
                             <select
                                 defaultValue={filters.status ?? ''}
                                 onChange={(e) => applyFilter({ status: e.target.value })}
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             >
                                 <option value="">Todos os status</option>
                                 <option value="pending">Pendente</option>
@@ -2013,7 +2013,7 @@ export default function TransactionsIndex({
                                     }
                                 }}
                                 onBlur={(e) => applyFilter({ search: e.target.value })}
-                                className="flex-1 min-w-[160px] bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="flex-1 min-w-[160px] bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                         </div>
                     }
@@ -2031,10 +2031,10 @@ export default function TransactionsIndex({
                 )}
 
                 {/* Transaction list */}
-                <div data-tutorial="tx-list" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                <div data-tutorial="tx-list" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
                     {transactions.data.length === 0 && statements.length === 0 && installments.length === 0 ? (
                         <div className="flex flex-col items-center gap-4 py-16 px-6">
-                            <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                                 <Wallet size={24} className="text-gray-500" />
                             </div>
                             <div className="text-center">
@@ -2056,7 +2056,7 @@ export default function TransactionsIndex({
                     ) : (
                         <>
                             {/* Table header (desktop) */}
-                            <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-4 py-2.5 border-b border-[var(--color-border)] bg-[var(--color-input-bg)]">
+                            <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-4 py-2.5 border-b border-[border-[var(--color-border)]] bg-[var(--color-input-bg)]">
                                 <div className="w-5" />
                                 <p className="text-gray-500 text-xs font-medium">Descrição</p>
                                 <p className="text-gray-500 text-xs font-medium text-right min-w-[100px]">

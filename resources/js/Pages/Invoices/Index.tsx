@@ -102,7 +102,7 @@ function StatementCard({ statement, onDelete, onPay, onDetail }: StatementCardPr
 
     return (
         <div
-            className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col cursor-pointer"
+            className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden flex flex-col cursor-pointer"
             onClick={() => onDetail(statement)}
         >
             {/* Card top accent */}
@@ -138,7 +138,7 @@ function StatementCard({ statement, onDelete, onPay, onDetail }: StatementCardPr
 
                 {/* Progress */}
                 <div>
-                    <div className="w-full h-1.5 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-[bg-[var(--color-surface-2)]] rounded-full overflow-hidden">
                         <div
                             className="h-full bg-[#22c55e] rounded-full transition-all"
                             style={{ width: `${paidPercent}%` }}
@@ -164,11 +164,11 @@ function StatementCard({ statement, onDelete, onPay, onDetail }: StatementCardPr
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-1 border-t border-[var(--color-border)]">
+                <div className="flex items-center gap-2 pt-1 border-t border-[border-[var(--color-border)]]">
                     <Link
                         href={route('imports.index')}
                         onClick={(e) => e.stopPropagation()}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors text-xs font-medium"
                     >
                         <Upload size={12} />
                         Importar
@@ -215,17 +215,17 @@ function StatementDetailModal({ statement, onClose, onPay, onDelete, onEdit }: S
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/60 "
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl">
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <h2 className="text-white font-semibold text-lg">Detalhes da Fatura</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -274,7 +274,7 @@ function StatementDetailModal({ statement, onClose, onPay, onDelete, onEdit }: S
                         )}
                     </div>
 
-                    <hr className="border-[var(--color-border)]" />
+                    <hr className="border-[border-[var(--color-border)]]" />
 
                     {/* Actions */}
                     <div className="flex gap-3">
@@ -303,7 +303,7 @@ function StatementDetailModal({ statement, onClose, onPay, onDelete, onEdit }: S
                         <button
                             type="button"
                             onClick={() => onEdit(statement)}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-semibold transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-semibold transition-colors"
                         >
                             Editar
                         </button>
@@ -352,17 +352,17 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl modal-content">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <h2 className="text-white font-semibold text-lg">Nova Fatura</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -378,7 +378,7 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
                         <select
                             value={data.credit_card_id}
                             onChange={(e) => setData('credit_card_id', e.target.value)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         >
                             <option value="">Selecionar cartão</option>
                             {creditCards.map((c) => (
@@ -426,7 +426,7 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
                         <CurrencyInput
                             value={data.total_amount}
                             onChange={(v) => setData('total_amount', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.total_amount && (
                             <p className="text-red-400 text-xs">{errors.total_amount}</p>
@@ -438,7 +438,7 @@ function NewStatementModal({ creditCards, onClose }: NewStatementModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -485,16 +485,16 @@ function EditStatementModal({ statement, onClose }: EditStatementModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl modal-content">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl modal-content">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]]">
                     <h2 className="text-white font-semibold text-lg">Editar Fatura</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -525,7 +525,7 @@ function EditStatementModal({ statement, onClose }: EditStatementModalProps) {
                         <CurrencyInput
                             value={data.total_amount}
                             onChange={(v) => setData('total_amount', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.total_amount && (
                             <p className="text-red-400 text-xs">{errors.total_amount}</p>
@@ -537,7 +537,7 @@ function EditStatementModal({ statement, onClose }: EditStatementModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -584,11 +584,11 @@ function PayConfirmModal({ statement, bankAccounts, onClose }: PayConfirmModalPr
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-white font-semibold text-lg">Confirmar pagamento</h2>
                     <p className="text-gray-400 text-sm">
@@ -605,7 +605,7 @@ function PayConfirmModal({ statement, bankAccounts, onClose }: PayConfirmModalPr
                     <select
                         value={bankAccountId}
                         onChange={(e) => setBankAccountId(e.target.value)}
-                        className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors w-full"
+                        className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors w-full"
                     >
                         <option value="">Sem débito em conta</option>
                         {bankAccounts.map((a) => (
@@ -619,7 +619,7 @@ function PayConfirmModal({ statement, bankAccounts, onClose }: PayConfirmModalPr
                         type="button"
                         onClick={onClose}
                         disabled={paying}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -662,11 +662,11 @@ function DeleteConfirmModal({ statement, onClose }: DeleteConfirmModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-white font-semibold text-lg">Excluir fatura</h2>
                     <p className="text-gray-400 text-sm">
@@ -684,7 +684,7 @@ function DeleteConfirmModal({ statement, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-gray-400 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -789,7 +789,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                 <select
                                     value={selectedCardId || ''}
                                     onChange={(e) => setSelectedCardId(e.target.value ? Number(e.target.value) : null)}
-                                    className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                    className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                                 >
                                     <option value="">Todos os Cartões</option>
                                     {creditCards.map((card) => (
@@ -801,7 +801,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                             )}
                             <div data-tutorial="inv-month-filter" className="flex items-center gap-2">
                                 {/* Toggle Mês / Ano */}
-                                <div className="flex items-center rounded-lg border border-[var(--color-border)] overflow-hidden">
+                                <div className="flex items-center rounded-lg border border-[border-[var(--color-border)]] overflow-hidden">
                                     <button
                                         onClick={() => switchView('month')}
                                         className={`px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -829,7 +829,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => navigateMonth(-1)}
-                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                                             aria-label="Mês anterior"
                                         >
                                             <ChevronLeft size={16} />
@@ -839,7 +839,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                         </span>
                                         <button
                                             onClick={() => navigateMonth(1)}
-                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                                             aria-label="Próximo mês"
                                         >
                                             <ChevronRight size={16} />
@@ -849,7 +849,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => navigateYear(-1)}
-                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                                             aria-label="Ano anterior"
                                         >
                                             <ChevronLeft size={16} />
@@ -859,7 +859,7 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
                                         </span>
                                         <button
                                             onClick={() => navigateYear(1)}
-                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-surface-2)] transition-colors"
+                                            className="p-1.5 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                                             aria-label="Próximo ano"
                                         >
                                             <ChevronRight size={16} />
@@ -873,8 +873,8 @@ export default function InvoicesIndex({ statements, creditCards, bankAccounts, f
 
                 {/* Grid */}
                 {filteredStatements.length === 0 ? (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <FileText size={24} className="text-gray-500" />
                         </div>
                         <div className="text-center">

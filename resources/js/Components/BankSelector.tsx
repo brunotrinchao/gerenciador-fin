@@ -91,11 +91,11 @@ export function BankSelector({
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
-                className="w-full flex items-center justify-between bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                className="w-full flex items-center justify-between bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
             >
                 {selected ? (
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-500 font-mono bg-[var(--color-surface-2)] px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-gray-500 font-mono bg-[bg-[var(--color-surface-2)]] px-1.5 py-0.5 rounded">
                             {selected.code}
                         </span>
                         <span className="text-white">{selected.label}</span>
@@ -119,9 +119,9 @@ export function BankSelector({
 
             {/* Dropdown */}
             {open && (
-                <div className="absolute z-50 mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden">
+                <div className="absolute z-50 mt-1 w-full bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-xl shadow-xl overflow-hidden">
                     {/* Search */}
-                    <div className="px-3 py-2 border-b border-[var(--color-border)] flex items-center gap-2">
+                    <div className="px-3 py-2 border-b border-[border-[var(--color-border)]] flex items-center gap-2">
                         <Search size={13} className="text-gray-500 flex-shrink-0" />
                         <input
                             autoFocus
@@ -147,7 +147,7 @@ export function BankSelector({
                                         bank.value === value ? 'bg-[#22c55e]/10 text-[#22c55e]' : 'text-white'
                                     }`}
                                 >
-                                    <span className="text-[10px] text-gray-500 font-mono bg-[var(--color-surface-2)] px-1.5 py-0.5 rounded w-8 text-center flex-shrink-0">
+                                    <span className="text-[10px] text-gray-500 font-mono bg-[bg-[var(--color-surface-2)]] px-1.5 py-0.5 rounded w-8 text-center flex-shrink-0">
                                         {bank.code}
                                     </span>
                                     {bank.label}

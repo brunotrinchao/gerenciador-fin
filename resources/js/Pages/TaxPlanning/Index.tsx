@@ -170,8 +170,8 @@ export default function TaxPlanningIndex({ taxEventsByYear, bankAccounts, curren
 
                 {/* Empty state */}
                 {years.length === 0 && (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <Plus size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">
@@ -208,7 +208,7 @@ export default function TaxPlanningIndex({ taxEventsByYear, bankAccounts, curren
             {/* Form Modal */}
             {showFormModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-semibold text-[var(--md-color-on-surface)]">
                                 {editingEvent ? 'Editar Imposto' : 'Novo Imposto'}
@@ -385,7 +385,7 @@ function TaxEventRow({
     onDelete: (event: TaxEvent) => void;
 }) {
     return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-between gap-3 px-5 py-3">
+        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl flex items-center justify-between gap-3 px-5 py-3">
             <div className="flex items-center gap-3 min-w-0">
                 {/* Type badge */}
                 <span

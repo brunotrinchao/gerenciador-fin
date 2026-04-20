@@ -31,7 +31,7 @@ export function PageHeader({ title, subtitle, actions, filters, states, onStartT
             )}
 
             {filters && (
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-center gap-4 flex-wrap">
+                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-center gap-4 flex-wrap">
                     {filters}
                 </div>
             )}
@@ -48,7 +48,7 @@ interface PageHeaderStateProps {
 
 export function PageHeaderState({ title, value, colorClass = "text-[var(--md-color-on-surface)]", subtitle }: PageHeaderStateProps) {
     return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 flex flex-col gap-1">
+        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 flex flex-col gap-1">
             <p className="text-xs text-[var(--md-color-on-surface-variant)] uppercase tracking-wide">{title}</p>
             <p className={`text-2xl font-bold ${colorClass}`}>{value}</p>
             {subtitle && <p className="text-xs text-[var(--color-muted)] mt-0.5">{subtitle}</p>}

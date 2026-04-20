@@ -94,7 +94,7 @@ function ChartTooltip({ active, payload, label }: any) {
     payload.forEach((p: any) => { data[p.dataKey] = p.value; });
 
     return (
-        <div className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-xl p-3 text-xs min-w-[180px]">
+        <div className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-xl p-3 text-xs min-w-[180px]">
             <p className="text-gray-300 font-semibold mb-2">{label}</p>
             {data.income !== undefined && (
                 <div className="flex justify-between gap-4 text-[#22c55e]">
@@ -116,7 +116,7 @@ function ChartTooltip({ active, payload, label }: any) {
                     <span>Cartão</span><span>{fmt(data.credit_card)}</span>
                 </div>
             )}
-            <div className="border-t border-[var(--color-border)] mt-2 pt-2">
+            <div className="border-t border-[border-[var(--color-border)]] mt-2 pt-2">
                 <div className="flex justify-between gap-4 text-blue-400 font-semibold">
                     <span>Saldo</span><span>{fmt(data.balance)}</span>
                 </div>
@@ -161,7 +161,7 @@ export default function Projection({
                             <button
                                 data-tutorial="proj-export"
                                 onClick={() => exportCSV(projection)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
                             >
                                 <Download size={15} />
                                 CSV
@@ -203,7 +203,7 @@ export default function Projection({
                                 <select
                                     value={months}
                                     onChange={(e) => router.get(route('projection.index'), { months: e.target.value }, { preserveState: false })}
-                                    className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                    className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                                 >
                                     <option value="3">3 meses</option>
                                     <option value="6">6 meses</option>
@@ -216,7 +216,7 @@ export default function Projection({
                 />
 
                 {/* Chart */}
-                <div data-tutorial="proj-chart" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                <div data-tutorial="proj-chart" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                     <h2 className="text-sm font-semibold text-gray-300 mb-4">Fluxo de Caixa Mensal</h2>
                     <ResponsiveContainer width="100%" height={320}>
                         <ComposedChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
@@ -270,14 +270,14 @@ export default function Projection({
                 </div>
 
                 {/* Monthly breakdown table */}
-                <div data-tutorial="proj-table" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-                    <div className="px-5 py-3 border-b border-[var(--color-border)]">
+                <div data-tutorial="proj-table" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
+                    <div className="px-5 py-3 border-b border-[border-[var(--color-border)]]">
                         <h2 className="text-sm font-semibold text-gray-300">Detalhamento Mensal</h2>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="border-b border-[var(--color-border)]">
+                                <tr className="border-b border-[border-[var(--color-border)]]">
                                     {[
                                         { label: 'Mês', title: '' },
                                         { label: 'Entradas', title: 'Receitas' },
@@ -297,7 +297,7 @@ export default function Projection({
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[var(--color-border)]">
+                            <tbody className="divide-y divide-[border-[var(--color-border)]]">
                                 {projection.map((row) => (
                                     <tr key={row.month_key} className="hover:bg-[var(--color-input-bg)] transition-colors">
                                         <td className="px-5 py-3 text-sm font-medium text-white whitespace-nowrap">

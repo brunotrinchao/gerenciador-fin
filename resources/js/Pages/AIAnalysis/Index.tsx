@@ -75,7 +75,7 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
                 )}
 
                 {/* Controls */}
-                <div data-tutorial="ai-controls" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                <div data-tutorial="ai-controls" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                     <div className="flex flex-wrap gap-4 items-end">
                         <div className="flex flex-col gap-1">
                             <label className="text-sm text-[var(--md-color-on-surface-variant)]">Mês</label>
@@ -134,7 +134,7 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
                 {analysis && (
                     <div className="flex flex-col gap-4">
                         {parseAnalysis(analysis).map((section, i) => (
-                            <div key={i} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                            <div key={i} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                 <h3 className="font-semibold text-lg mb-2 flex items-center gap-2 text-[var(--md-color-on-surface)]">
                                     <Sparkles className="h-4 w-4" style={{ color: 'var(--md-color-primary)' }} />
                                     {section.title}
@@ -147,8 +147,8 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
 
                 {/* Empty state */}
                 {!analysis && !loading && (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <Sparkles size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">

@@ -71,7 +71,7 @@ function BrandLogo({ brand }: { brand: string | null }) {
     }
     if (brand === 'amex') {
         return (
-            <span className="text-white font-bold text-[10px] tracking-widest border border-white/50 px-1.5 py-0.5 rounded">
+            <span className="text-white font-bold text-[10px] tracking-widest border-[var(--color-border)]0 px-1.5 py-0.5 rounded">
                 AMEX
             </span>
         );
@@ -98,7 +98,7 @@ interface CreditCardCardProps {
 
 function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
     return (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col">
+        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden flex flex-col">
             {/* Cartão visual — proporção 1.586:1 */}
             <div
                 className="relative p-5 flex flex-col justify-between"
@@ -174,10 +174,10 @@ function CreditCardCard({ card, onEdit, onDelete }: CreditCardCardProps) {
                 )}
 
                 {/* Ações */}
-                <div className="flex items-center gap-2 pt-1 border-t border-[var(--color-border)]">
+                <div className="flex items-center gap-2 pt-1 border-t border-[border-[var(--color-border)]]">
                     <button
                         onClick={() => onEdit(card)}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors text-xs font-medium"
                     >
                         <Pencil size={13} />
                         Editar
@@ -236,19 +236,19 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
+            <div className="relative z-10 w-full max-w-md bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto modal-content">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-surface)] z-10">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-[border-[var(--color-border)]] sticky top-0 bg-[var(--color-surface)] z-10">
                     <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">
                         {isEditing ? 'Editar Cartão' : 'Novo Cartão'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[var(--color-surface-2)] transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:bg-[bg-[var(--color-surface-2)]] transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -266,7 +266,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             placeholder="Ex: Nubank Roxinho"
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.name && (
                             <p className="text-[var(--md-color-error)] text-xs">{errors.name}</p>
@@ -293,7 +293,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                         <CurrencyInput
                             value={data.credit_limit}
                             onChange={(v) => setData('credit_limit', v)}
-                            className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                            className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                         />
                         {errors.credit_limit && (
                             <p className="text-[var(--md-color-error)] text-xs">{errors.credit_limit}</p>
@@ -313,7 +313,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                                 value={data.closing_day}
                                 onChange={(e) => setData('closing_day', e.target.value)}
                                 placeholder="Ex: 20"
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.closing_day && (
                                 <p className="text-[var(--md-color-error)] text-xs">{errors.closing_day}</p>
@@ -331,7 +331,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                                 value={data.due_day}
                                 onChange={(e) => setData('due_day', e.target.value)}
                                 placeholder="Ex: 27"
-                                className="bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
+                                className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2.5 text-[var(--md-color-on-surface)] placeholder-gray-600 text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
                             />
                             {errors.due_day && (
                                 <p className="text-[var(--md-color-error)] text-xs">{errors.due_day}</p>
@@ -406,7 +406,7 @@ function CardFormModal({ editingCard, onClose }: CardFormModalProps) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors"
                         >
                             Cancelar
                         </button>
@@ -449,11 +449,11 @@ function DeleteConfirmModal({ card, onClose }: DeleteConfirmModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-overlay"
+                className="absolute inset-0 bg-black/60  modal-overlay"
                 onClick={onClose}
             />
 
-            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
+            <div className="relative z-10 w-full max-w-sm bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl shadow-xl p-6 flex flex-col gap-5 modal-content">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-[var(--md-color-on-surface)] font-semibold text-lg">Excluir cartão</h2>
                     <p className="text-[var(--md-color-on-surface-variant)] text-sm">
@@ -468,7 +468,7 @@ function DeleteConfirmModal({ card, onClose }: DeleteConfirmModalProps) {
                         type="button"
                         onClick={onClose}
                         disabled={deleting}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-on-surface)] hover:border-gray-500 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancelar
                     </button>
@@ -567,9 +567,9 @@ export default function CreditCardsIndex({ cards }: Props) {
                         <div className="flex flex-col gap-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 {/* Limite Total */}
-                                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                                             <CreditCardIcon size={16} className="text-[var(--md-color-on-surface-variant)]" />
                                         </div>
                                         <p className="text-[var(--md-color-on-surface-variant)] text-sm">Limite Total</p>
@@ -581,7 +581,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                                 </div>
 
                                 {/* Disponível */}
-                                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
                                             <CreditCardIcon size={16} className="text-[#22c55e]" />
@@ -595,7 +595,7 @@ export default function CreditCardsIndex({ cards }: Props) {
                                 </div>
 
                                 {/* Utilizado */}
-                                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
                                             <CreditCardIcon size={16} className="text-[var(--md-color-error)]" />
@@ -610,12 +610,12 @@ export default function CreditCardsIndex({ cards }: Props) {
                             </div>
 
                             {/* Barra de uso geral */}
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl px-5 py-4">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl px-5 py-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <p className="text-[var(--md-color-on-surface-variant)] text-xs">Uso geral dos cartões</p>
                                     <p className="text-[var(--md-color-on-surface-variant)] text-xs">{usagePercent.toFixed(1)}% utilizado</p>
                                 </div>
-                                <div className="w-full h-2 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
+                                <div className="w-full h-2 bg-[bg-[var(--color-surface-2)]] rounded-full overflow-hidden">
                                     <div
                                         className="h-full rounded-full transition-all"
                                         style={{
@@ -631,8 +631,8 @@ export default function CreditCardsIndex({ cards }: Props) {
 
                 {/* Cards grid */}
                 {cards.length === 0 ? (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <CreditCardIcon size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">

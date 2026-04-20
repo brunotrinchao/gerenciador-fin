@@ -95,7 +95,7 @@ export default function ReportsIndex({
                 </div>
 
                 {/* Tabs */}
-                <div data-tutorial="rep-tabs" className="flex items-center gap-2 flex-wrap border-b border-[var(--color-border)] pb-0">
+                <div data-tutorial="rep-tabs" className="flex items-center gap-2 flex-wrap border-b border-[border-[var(--color-border)]] pb-0">
                     {TABS.map(({ id, label, icon: Icon }) => (
                         <button
                             key={id}
@@ -119,12 +119,12 @@ export default function ReportsIndex({
                             <button
                                 data-tutorial="rep-export"
                                 onClick={() => exportCSV(cashFlow as unknown as Record<string, unknown>[], 'fluxo-de-caixa.csv')}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white text-sm transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-gray-300 hover:text-white text-sm transition-colors"
                             >
                                 <Download size={14} /> Exportar CSV
                             </button>
                         </div>
-                        <div data-tutorial="rep-charts" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                        <div data-tutorial="rep-charts" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                             <ResponsiveContainer width="100%" height={320}>
                                 <BarChart data={cashFlow}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -138,9 +138,9 @@ export default function ReportsIndex({
                             </ResponsiveContainer>
                         </div>
                         {/* Tabela */}
-                        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
                             <table className="w-full text-sm">
-                                <thead className="border-b border-[var(--color-border)]">
+                                <thead className="border-b border-[border-[var(--color-border)]]">
                                     <tr className="text-gray-400 text-xs uppercase tracking-wide">
                                         <th className="text-left px-5 py-3">Mês</th>
                                         <th className="text-right px-5 py-3">Entradas</th>
@@ -150,7 +150,7 @@ export default function ReportsIndex({
                                 </thead>
                                 <tbody>
                                     {cashFlow.map((m) => (
-                                        <tr key={m.month_key} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-surface-2)]/40">
+                                        <tr key={m.month_key} className="border-b border-[border-[var(--color-border)]]/50 hover:bg-[bg-[var(--color-surface-2)]]/40">
                                             <td className="px-5 py-3 text-white font-medium">{m.month}</td>
                                             <td className="px-5 py-3 text-right text-[#22c55e]">{fmt(m.income)}</td>
                                             <td className="px-5 py-3 text-right text-red-400">{fmt(m.expense)}</td>
@@ -169,13 +169,13 @@ export default function ReportsIndex({
                         <div className="flex justify-end">
                             <button
                                 onClick={() => exportCSV(expensesByCategory as unknown as Record<string, unknown>[], 'despesas-por-categoria.csv')}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-gray-300 hover:text-white text-sm transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-gray-300 hover:text-white text-sm transition-colors"
                             >
                                 <Download size={14} /> Exportar CSV
                             </button>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                 <p className="text-gray-400 text-sm mb-4">Distribuição do mês atual</p>
                                 <ResponsiveContainer width="100%" height={280}>
                                     <PieChart>
@@ -197,9 +197,9 @@ export default function ReportsIndex({
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
                                 <table className="w-full text-sm">
-                                    <thead className="border-b border-[var(--color-border)]">
+                                    <thead className="border-b border-[border-[var(--color-border)]]">
                                         <tr className="text-gray-400 text-xs uppercase tracking-wide">
                                             <th className="text-left px-5 py-3">Categoria</th>
                                             <th className="text-right px-5 py-3">Valor</th>
@@ -210,7 +210,7 @@ export default function ReportsIndex({
                                         {expensesByCategory.map((c, i) => {
                                             const total = expensesByCategory.reduce((s, x) => s + x.value, 0);
                                             return (
-                                                <tr key={i} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-surface-2)]/40">
+                                                <tr key={i} className="border-b border-[border-[var(--color-border)]]/50 hover:bg-[bg-[var(--color-surface-2)]]/40">
                                                     <td className="px-5 py-3 flex items-center gap-2">
                                                         <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                                                         <span className="text-white">{c.name}</span>
@@ -231,19 +231,19 @@ export default function ReportsIndex({
                 {activeTab === 'fixed' && (
                     <div className="flex flex-col gap-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-6">
                                 <p className="text-gray-400 text-sm mb-1">Despesas Fixas</p>
                                 <p className="text-white font-bold text-2xl">{fmt(fixedExpenses)}</p>
                                 <p className="text-gray-500 text-xs mt-1">Transações recorrentes pagas no mês</p>
                             </div>
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-6">
                                 <p className="text-gray-400 text-sm mb-1">Despesas Variáveis</p>
                                 <p className="text-orange-400 font-bold text-2xl">{fmt(variableExpenses)}</p>
                                 <p className="text-gray-500 text-xs mt-1">Transações não recorrentes do mês</p>
                             </div>
                         </div>
                         {(fixedExpenses + variableExpenses) > 0 && (
-                            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5">
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
                                 <ResponsiveContainer width="100%" height={260}>
                                     <PieChart>
                                         <Pie
@@ -278,7 +278,7 @@ export default function ReportsIndex({
                             { label: 'Dívidas (Cartão)',   value: netWorth.debt,         color: 'text-red-400' },
                             { label: 'Patrimônio Líquido', value: netWorth.total,        color: netWorth.total >= 0 ? 'text-[#22c55e]' : 'text-red-400' },
                         ].map(({ label, value, color }) => (
-                            <div key={label} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6">
+                            <div key={label} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-6">
                                 <p className="text-gray-400 text-sm mb-1">{label}</p>
                                 <p className={`font-bold text-2xl ${color}`}>{fmt(value)}</p>
                             </div>

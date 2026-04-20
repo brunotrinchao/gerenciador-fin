@@ -67,8 +67,8 @@ export default function RecurrencesIndex({ recurrences }: Props) {
                 </div>
 
                 {recurrences.length === 0 ? (
-                    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-12 flex flex-col items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-12 flex flex-col items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
                             <RefreshCw size={24} className="text-[var(--md-color-on-surface-variant)]" />
                         </div>
                         <div className="text-center">
@@ -79,9 +79,9 @@ export default function RecurrencesIndex({ recurrences }: Props) {
                         </div>
                     </div>
                 ) : (
-                    <div data-tutorial="rec-list" className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+                    <div data-tutorial="rec-list" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
                         <table className="w-full text-sm">
-                            <thead className="border-b border-[var(--color-border)]">
+                            <thead className="border-b border-[border-[var(--color-border)]]">
                                 <tr className="text-[var(--md-color-on-surface-variant)] text-xs uppercase tracking-wide">
                                     <th className="text-left px-5 py-3">Descrição</th>
                                     <th className="text-left px-5 py-3">Valor</th>
@@ -95,7 +95,7 @@ export default function RecurrencesIndex({ recurrences }: Props) {
                             </thead>
                             <tbody>
                                 {recurrences.map((rec) => (
-                                    <tr key={rec.id} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-surface-2)]/40">
+                                    <tr key={rec.id} className="border-b border-[border-[var(--color-border)]]/50 hover:bg-[bg-[var(--color-surface-2)]]/40">
                                         <td className="px-5 py-3 font-medium text-[var(--md-color-on-surface)]">{rec.description}</td>
                                         <td className="px-5 py-3 font-finance text-[var(--md-color-on-surface)]">
                                             R$ {Number(rec.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -124,7 +124,7 @@ export default function RecurrencesIndex({ recurrences }: Props) {
                                             {rec.status === 'pending' && (
                                                 <button
                                                     onClick={() => setConfirmCancelId(rec.id)}
-                                                    className="flex items-center gap-1 px-3 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-error)] text-xs transition-colors min-h-[44px]"
+                                                    className="flex items-center gap-1 px-3 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-[var(--md-color-on-surface-variant)] hover:text-[var(--md-color-error)] text-xs transition-colors min-h-[44px]"
                                                 >
                                                     <AlertCircle className="h-3 w-3" />
                                                     Cancelar série
