@@ -5,6 +5,7 @@ namespace App\Services\Import\Invoice;
 class InvoiceParserFactory
 {
     protected array $drivers = [
+        AtacadaoDriver::class,
         BoletoDriver::class,
         PicPayDriver::class,
         BradescoDriver::class,
