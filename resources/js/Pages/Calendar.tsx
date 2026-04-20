@@ -104,61 +104,62 @@ function DetailModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-            <div className="relative z-10 w-full max-w-sm rounded-[32px] shadow-premium p-8 overflow-hidden animate-scale-in glass-morphism border-white/10">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative z-10 w-full max-w-sm rounded-3xl shadow-2xl p-6 overflow-hidden" 
+                 style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                 
                 {/* Accent line */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 opacity-80" style={{ backgroundColor: color }} />
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
 
-                <div className="flex justify-between items-start mb-8 pt-2">
+                <div className="flex justify-between items-start mb-6 pt-2">
                     <div>
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1 block">{typeLabel(ev)}</span>
-                        <h3 className="text-2xl font-bold tracking-tight text-foreground">{ev.description}</h3>
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1 block" style={{ color: 'var(--color-foreground)' }}>{typeLabel(ev)}</span>
+                        <h3 className="text-xl font-bold font-display" style={{ color: 'var(--color-foreground)' }}>{ev.description}</h3>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-all text-muted-foreground hover:text-foreground">
-                        <X size={22} />
+                    <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400">
+                        <X size={20} />
                     </button>
                 </div>
 
-                <div className="mb-10">
-                    <p className="text-4xl font-bold font-finance tracking-tighter" style={{ color }}>{formatCurrency(ev.amount)}</p>
-                    <div className="flex items-center gap-2 mt-4">
-                         <span className={`text-[10px] px-3 py-1 rounded-full font-black tracking-tighter glass border-0 ${paid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                            {paid ? 'LIQUIDADO' : 'PENDENTE'}
+                <div className="mb-8">
+                    <p className="text-3xl font-bold font-display" style={{ color }}>{formatCurrency(ev.amount)}</p>
+                    <div className="flex items-center gap-2 mt-3">
+                         <span className={`text-[10px] px-2.5 py-1 rounded-full font-black tracking-tight ${paid ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                            {paid ? 'LIQUIDADO' : 'AGUARDANDO PAGAMENTO'}
                         </span>
                     </div>
                 </div>
 
-                <div className="space-y-4 mb-10">
+                <div className="space-y-4 mb-8">
                     {ev.category && (
-                        <div className="flex items-center gap-4 text-sm text-foreground/80">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center glass shadow-premium">
-                                <Tag size={16} className="text-primary" />
+                        <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--color-muted)' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5">
+                                <Tag size={14} />
                             </div>
-                            <span className="font-medium">{ev.category}</span>
+                            <span>{ev.category}</span>
                         </div>
                     )}
                     {ev.account && (
-                        <div className="flex items-center gap-4 text-sm text-foreground/80">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center glass shadow-premium">
-                                <Landmark size={16} className="text-primary" />
+                        <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--color-muted)' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5">
+                                <Landmark size={14} />
                             </div>
-                            <span className="font-medium">{ev.account}</span>
+                            <span>{ev.account}</span>
                         </div>
                     )}
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex gap-3">
                     {!paid && (
                         <button 
                             onClick={() => { onMarkPaid(ev); onClose(); }}
-                            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl text-sm font-bold bg-primary text-primary-foreground shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-[var(--color-accent)] text-black hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
-                            <CheckCircle2 size={18} /> Confirmar Pagamento
+                            <CheckCircle2 size={16} /> Marcar como Pago
                         </button>
                     )}
-                    <button onClick={onClose} className="w-full py-4 rounded-2xl text-sm font-bold glass border-white/10 text-foreground/70 hover:text-foreground hover:bg-white/10 transition-all">
-                        Fechar Detalhes
+                    <button onClick={onClose} className="flex-1 py-3 rounded-2xl text-sm font-bold border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-white/5 transition-colors">
+                        Fechar
                     </button>
                 </div>
             </div>
@@ -342,40 +343,43 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
                 </div>
 
                 {/* Summary Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="relative overflow-hidden group premium-card p-8 transition-all hover:border-red-500/30">
-                        <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity rotate-12">
-                            <TrendingDown size={180} color="#ef4444" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="relative overflow-hidden group rounded-3xl p-6 transition-all border border-white/5 hover:border-red-500/20" 
+                         style={{ backgroundColor: 'var(--color-surface)' }}>
+                        <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <TrendingDown size={140} color="#ef4444" />
                         </div>
-                        <div className="relative z-10 flex items-center gap-6">
-                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center glass shadow-premium group-hover:scale-110 transition-transform">
-                                <TrendingDown size={32} color="#ef4444" />
+                        <div className="relative z-10 flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-red-500/10 shadow-inner">
+                                <TrendingDown size={28} color="#ef4444" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Pendente no Mês</p>
-                                <p className="text-4xl font-bold tracking-tighter text-red-500 font-finance">{formatCurrency(summary.totalPending)}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1" style={{ color: 'var(--color-foreground)' }}>Pendente no Mês</p>
+                                <p className="text-3xl font-black font-display tracking-tight text-red-500">{formatCurrency(summary.totalPending)}</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="relative overflow-hidden group premium-card p-8 transition-all hover:border-emerald-500/30">
-                        <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity -rotate-12">
-                            <TrendingUp size={180} color="#22c55e" />
+                    <div className="relative overflow-hidden group rounded-3xl p-6 transition-all border border-white/5 hover:border-emerald-500/20" 
+                         style={{ backgroundColor: 'var(--color-surface)' }}>
+                        <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <TrendingUp size={140} color="#22c55e" />
                         </div>
-                        <div className="relative z-10 flex items-center gap-6">
-                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center glass shadow-premium group-hover:scale-110 transition-transform">
-                                <TrendingUp size={32} color="#22c55e" />
+                        <div className="relative z-10 flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-500/10 shadow-inner">
+                                <TrendingUp size={28} color="#22c55e" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Previsão de Receita</p>
-                                <p className="text-4xl font-bold tracking-tighter text-emerald-500 font-finance">{formatCurrency(summary.totalIncome)}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1" style={{ color: 'var(--color-foreground)' }}>Previsão de Receita</p>
+                                <p className="text-3xl font-black font-display tracking-tight text-emerald-500">{formatCurrency(summary.totalIncome)}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Calendar Container */}
-                <div className="premium-card p-8 shadow-premium animate-fade-in overflow-hidden">
+                <div className="p-6 rounded-3xl shadow-xl transition-all border border-white/5" 
+                     style={{ backgroundColor: 'var(--color-surface)' }}>
                     <FullCalendar
                         ref={calendarRef}
                         plugins={[dayGridPlugin, interactionPlugin]}

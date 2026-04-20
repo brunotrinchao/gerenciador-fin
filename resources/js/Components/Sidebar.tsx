@@ -202,18 +202,24 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
             {/* Mobile sidebar — fixed overlay */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-300 ease-in-out lg:hidden glass border-y-0 border-l-0 ${
+                className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-200 ease-in-out lg:hidden ${
                     mobileOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
+                style={{
+                    backgroundColor: 'var(--md-color-surface-container-low)',
+                    borderRight: '1px solid var(--color-border)',
+                }}
             >
                 {sidebarContent}
             </aside>
 
             {/* Desktop sidebar — static, collapsed/expanded */}
             <aside
-                className="hidden lg:flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out glass border-y-0 border-l-0 shadow-premium"
+                className="hidden lg:flex flex-col flex-shrink-0 transition-all duration-200 ease-in-out"
                 style={{
-                    width: collapsed ? '80px' : '280px',
+                    width: collapsed ? '64px' : '240px',
+                    backgroundColor: 'var(--md-color-surface-container-low)',
+                    borderRight: '1px solid var(--color-border)',
                 }}
             >
                 {sidebarContent}

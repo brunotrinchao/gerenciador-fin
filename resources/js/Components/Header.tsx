@@ -29,9 +29,10 @@ export default function Header({ title, onMenuToggle, user, unreadNotificationsC
 
     return (
         <header
-            className="flex items-center gap-4 px-6 flex-shrink-0 sticky top-0 z-40 glass border-x-0 border-t-0"
+            className="flex items-center gap-4 px-4 flex-shrink-0"
             style={{
                 height: 'var(--header-height)',
+                backgroundColor: 'var(--color-surface)',
             }}
         >
             {/* Menu toggle (mobile) */}
@@ -103,7 +104,11 @@ export default function Header({ title, onMenuToggle, user, unreadNotificationsC
                     {/* Dropdown */}
                     {open && (
                         <div
-                            className="absolute right-0 top-full mt-2 w-64 rounded-2xl shadow-premium z-50 py-2 animate-scale-in glass-morphism overflow-hidden"
+                            className="absolute right-0 top-full mt-1 w-56 rounded-xl shadow-xl z-50 py-1"
+                            style={{
+                                backgroundColor: 'var(--color-surface)',
+                                border: '1px solid var(--color-border)',
+                            }}
                         >
                             {/* User info */}
                             <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
