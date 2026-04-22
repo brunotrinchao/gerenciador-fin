@@ -85,11 +85,29 @@ class ReportController extends Controller
             ->sum('amount');
         $netWorth         = $totalBankBalance + $totalInvested - $totalDebt;
 
+        // ── 5. Faturas por Cartão ─────────────────────────────────
+        $cards = \App\Models\CreditCard::byUser($userId)->get();
+        $invoicesByCard = $cards->map(function ($card) {
+            return [
+                'card_name' => $card->name,
+                'bank_name' => $card->bank_name,
+                'color'     => $card->color ?? '#6b7280',
+                'limit'     => round((float) $card->credit_limit, 2),
+                'available' => round((float) $card->available_limit, 2),
+                'used'      => round((float) $card->credit_limit - (float) $card->available_limit, 2),
+                'pending'   => round((float) Transaction::byUser(Auth::id())
+                    ->where('credit_card_id', $card->id)
+                    ->where('status', TransactionStatus::Pending->value)
+                    ->sum('amount'), 2),
+            ];
+        })->sortByDesc('pending')->values();
+
         return Inertia::render('Reports/Index', [
             'cashFlow'           => $cashFlow->values(),
             'expensesByCategory' => $expensesByCategory,
             'fixedExpenses'      => round($fixedExpenses, 2),
             'variableExpenses'   => round($variableExpenses, 2),
+            'invoicesByCard'     => $invoicesByCard,
             'netWorth'           => [
                 'bank_balance' => round($totalBankBalance, 2),
                 'invested'     => round($totalInvested, 2),

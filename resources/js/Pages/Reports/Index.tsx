@@ -8,7 +8,8 @@ import {
     BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
-import { Download, TrendingUp, PieChart as PieIcon, Layers, Wallet } from 'lucide-react';
+import { Download, TrendingUp, PieChart as PieIcon, Layers, Wallet, CreditCard } from 'lucide-react';
+import { Progress } from '@/Components/ui/progress';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,11 +34,22 @@ interface NetWorth {
     total: number;
 }
 
+interface InvoiceByCard {
+    card_name: string;
+    bank_name: string;
+    color: string;
+    limit: number;
+    available: number;
+    used: number;
+    pending: number;
+}
+
 interface Props {
     cashFlow: CashFlowMonth[];
     expensesByCategory: CategoryExpense[];
     fixedExpenses: number;
     variableExpenses: number;
+    invoicesByCard: InvoiceByCard[];
     netWorth: NetWorth;
     currentMonth: string;
 }
@@ -67,6 +79,7 @@ const TABS = [
     { id: 'cashflow',   label: 'Fluxo de Caixa',        icon: TrendingUp },
     { id: 'categories', label: 'Despesas por Categoria', icon: PieIcon },
     { id: 'fixed',      label: 'Fixas vs Variáveis',     icon: Layers },
+    { id: 'cards',      label: 'Faturas por Cartão',    icon: CreditCard },
     { id: 'networth',   label: 'Patrimônio Líquido',     icon: Wallet },
 ] as const;
 
@@ -75,7 +88,7 @@ type TabId = typeof TABS[number]['id'];
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ReportsIndex({
-    cashFlow, expensesByCategory, fixedExpenses, variableExpenses, netWorth,
+    cashFlow, expensesByCategory, fixedExpenses, variableExpenses, invoicesByCard, netWorth,
 }: Props) {
     const [activeTab, setActiveTab] = useState<TabId>('cashflow');
     const { start } = useTutorial({ key: 'reports', steps: reportsSteps });
@@ -266,6 +279,58 @@ export default function ReportsIndex({
                                 </ResponsiveContainer>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* ── Faturas por Cartão ── */}
+                {activeTab === 'cards' && (
+                    <div className="flex flex-col gap-4">
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => exportCSV(invoicesByCard as unknown as Record<string, unknown>[], 'faturas-por-cartao.csv')}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-gray-300 hover:text-white text-sm transition-colors"
+                            >
+                                <Download size={14} /> Exportar CSV
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {invoicesByCard.map((card, i) => (
+                                <div key={i} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 flex flex-col gap-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: card.color }}>
+                                                <CreditCard size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-semibold leading-tight">{card.card_name}</p>
+                                                <p className="text-gray-500 text-xs">{card.bank_name}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-yellow-400 font-bold text-lg">{fmt(card.pending)}</p>
+                                            <p className="text-gray-500 text-[10px] uppercase font-medium">Fatura Pendente</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-gray-400">Limite Utilizado</span>
+                                            <span className="text-white font-medium">{((card.used / card.limit) * 100).toFixed(1)}%</span>
+                                        </div>
+                                        <Progress value={(card.used / card.limit) * 100} className="h-1.5 bg-gray-800" indicatorClassName="bg-yellow-500" />
+                                        <div className="flex justify-between text-[10px] text-gray-500 font-mono pt-1">
+                                            <span>USADO: {fmt(card.used)}</span>
+                                            <span>LIMITE: {fmt(card.limit)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2 border-t border-[border-[var(--color-border)]]/50 flex justify-between items-center">
+                                        <span className="text-[10px] text-gray-400 uppercase tracking-wider">Disponível</span>
+                                        <span className="text-[#22c55e] font-semibold text-sm">{fmt(card.available)}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
