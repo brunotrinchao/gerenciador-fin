@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head } from '@inertiajs/react';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
 import { healthScoreSteps } from '@/tutorials/steps/health-score';
 import { Progress } from '@/Components/ui/progress';
+import { Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 import type { HealthScore, HealthScoreComponent } from '@/types/models';
 
 interface Props {
@@ -12,7 +14,10 @@ interface Props {
 }
 
 export default function HealthScoreIndex({ score }: Props) {
-    // Cores via CSS variables M3 — funciona em dark e light mode
+    const [analysis, setAnalysis] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
     const getScoreStyle = (total: number): React.CSSProperties => {
         if (total >= 80) return { color: 'var(--md-color-primary)' };
         if (total >= 60) return { color: 'var(--md-color-tertiary)' };
@@ -33,8 +38,28 @@ export default function HealthScoreIndex({ score }: Props) {
         return 'progress-error';
     };
 
-    const lowestComponent = Object.values(score.components).sort((a, b) => a.score - b.score)[0];
+    const handleGenerateIA = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.post(route('ai-analysis.health'));
+            setAnalysis(response.data.analysis);
+        } catch {
+            setError('Falha ao gerar análise de saúde financeira.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    const parseAnalysis = (text: string) => {
+        const sections = text.split('##').filter(Boolean);
+        return sections.map((s) => {
+            const [title, ...content] = s.trim().split('\n');
+            return { title: title.trim(), content: content.join('\n').trim() };
+        });
+    };
+
+    const lowestComponent = Object.values(score.components).sort((a, b) => a.score - b.score)[0];
     const { start } = useTutorial({ key: 'health-score', steps: healthScoreSteps });
 
     return (
@@ -44,16 +69,27 @@ export default function HealthScoreIndex({ score }: Props) {
             <div className="w-full flex flex-col gap-6">
 
                 {/* Header */}
-                <div>
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-xl sm:text-2xl font-bold font-display text-[var(--md-color-on-surface)]">
-                            Score de Saúde Financeira
-                        </h1>
-                        <TutorialHelpButton onStart={start} />
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display text-[var(--md-color-on-surface)]">
+                                Score de Saúde Financeira
+                            </h1>
+                            <TutorialHelpButton onStart={start} />
+                        </div>
+                        <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
+                            Avaliação geral da sua situação financeira
+                        </p>
                     </div>
-                    <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
-                        Avaliação geral da sua situação financeira
-                    </p>
+
+                    <button
+                        onClick={handleGenerateIA}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition disabled:opacity-50"
+                    >
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                        Analisar com IA
+                    </button>
                 </div>
 
                 {/* Score principal */}
@@ -71,6 +107,29 @@ export default function HealthScoreIndex({ score }: Props) {
                         <div className="mt-1 text-sm text-[var(--md-color-on-surface-variant)]">Nota geral</div>
                     </div>
                 </div>
+
+                {/* Erro IA */}
+                {error && (
+                    <div className="alert-error p-4 rounded-2xl border flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        {error}
+                    </div>
+                )}
+
+                {/* Análise IA */}
+                {analysis && (
+                    <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                        {parseAnalysis(analysis).map((section, i) => (
+                            <div key={i} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 border-l-4 border-l-[#22c55e]">
+                                <h3 className="font-semibold text-lg mb-2 flex items-center gap-2 text-[var(--md-color-on-surface)]">
+                                    <Sparkles className="h-4 w-4 text-[#22c55e]" />
+                                    {section.title}
+                                </h3>
+                                <p className="text-[var(--md-color-on-surface-variant)] whitespace-pre-line text-sm leading-relaxed">{section.content}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Componentes */}
                 <div data-tutorial="hs-components" className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -94,7 +153,7 @@ export default function HealthScoreIndex({ score }: Props) {
                 </div>
 
                 {/* Dica */}
-                {lowestComponent && (
+                {lowestComponent && !analysis && (
                     <div data-tutorial="hs-tip" className="alert-warning p-4 rounded-2xl border">
                         <p className="text-sm font-medium">
                             Área para melhorar: <strong>{lowestComponent.label}</strong>
@@ -106,7 +165,7 @@ export default function HealthScoreIndex({ score }: Props) {
                 )}
 
                 <p className="text-xs text-[var(--md-color-on-surface-variant)] text-right">
-                    Calculado em {new Date(score.calculated_at).toLocaleString('pt-BR')}
+                    Calculado em {new Date(score.calculated_at).toLocaleString('pt_BR')}
                 </p>
             </div>
 

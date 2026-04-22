@@ -103,6 +103,33 @@ class CloudflareAiService
     }
 
     /**
+     * Gera análise profunda de saúde financeira.
+     */
+    public function analyzeFinancialHealth(array $healthData): string
+    {
+        try {
+            $systemPrompt = "Você é um consultor financeiro CFP (Certified Financial Planner). Analise os indicadores de saúde financeira e forneça um plano de ação estratégico.";
+            
+            $userPrompt = "Dados de Saúde Financeira:\n"
+                . "- Score Total: {$healthData['total']}/100 (Grau: {$healthData['grade']})\n"
+                . "- Taxa de Poupança: {$healthData['components']['savings_rate']['value']}{$healthData['components']['savings_rate']['unit']}\n"
+                . "- Uso de Crédito: {$healthData['components']['credit_utilization']['value']}{$healthData['components']['credit_utilization']['unit']}\n"
+                . "- Reserva de Emergência: {$healthData['components']['emergency_fund']['value']} {$healthData['components']['emergency_fund']['unit']}\n"
+                . "- Aderência ao Orçamento: {$healthData['components']['budget_adherence']['value']} {$healthData['components']['budget_adherence']['unit']}\n\n"
+                . "Forneça:\n"
+                . "## Diagnóstico\n[Análise técnica do estado atual]\n\n"
+                . "## Pontos Críticos\n[O que precisa de atenção imediata]\n\n"
+                . "## Plano de Ação\n[Passos práticos para melhorar o score]\n\n"
+                . "Seja profissional, motivador e use Markdown.";
+
+            return $this->prompt($systemPrompt, $userPrompt) ?? 'Não foi possível obter análise da IA.';
+        } catch (\Throwable $e) {
+            Log::error('CloudflareAiService::analyzeFinancialHealth falhou: ' . $e->getMessage());
+            return 'Serviço de IA temporariamente indisponível.';
+        }
+    }
+
+    /**
      * Categoriza múltiplas descrições de transações em lote.
      * Retorna mapa: ['descrição' => 'categoria']
      */

@@ -156,6 +156,7 @@ Route::middleware('auth')->group(function () {
     // AI Analysis
     Route::get('/ai-analysis', [AIAnalysisController::class, 'index'])->name('ai-analysis.index');
     Route::post('/ai-analysis/generate', [AIAnalysisController::class, 'generate'])->name('ai-analysis.generate');
+    Route::post('/ai-analysis/health', [AIAnalysisController::class, 'generateHealthAnalysis'])->name('ai-analysis.health');
 
     // Planejamento de Impostos
     Route::get('/tax-planning', [TaxPlanningController::class, 'index'])->name('tax-planning.index');

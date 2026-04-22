@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AI\CloudflareAiService;
+use App\Services\FinancialHealthScoreService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +36,18 @@ class AIAnalysisController extends Controller
             return response()->json(['analysis' => $analysis]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Falha ao gerar análise com Cloudflare AI. Tente novamente.'], 500);
+        }
+    }
+
+    public function generateHealthAnalysis(CloudflareAiService $ai, FinancialHealthScoreService $healthService): JsonResponse
+    {
+        try {
+            $healthData = $healthService->calculate(auth()->id());
+            $analysis   = $ai->analyzeFinancialHealth($healthData);
+            
+            return response()->json(['analysis' => $analysis]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Falha ao gerar análise de saúde financeira.'], 500);
         }
     }
 }
