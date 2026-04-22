@@ -7,6 +7,7 @@ use App\Enums\TransactionType;
 use App\Models\BankAccount;
 use App\Models\Investment;
 use App\Models\Transaction;
+use App\Models\CreditCard;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -85,9 +86,48 @@ class ReportController extends Controller
             ->sum('amount');
         $netWorth         = $totalBankBalance + $totalInvested - $totalDebt;
 
-        // ── 5. Faturas por Cartão ─────────────────────────────────
-        $cards = \App\Models\CreditCard::byUser($userId)->get();
-        $invoicesByCard = $cards->map(function ($card) {
+        // ── 5. Histórico e Projeção de Faturas (12 meses: -6 a +6) ──
+        $invoicesHistory = collect();
+        $allCards = CreditCard::byUser($userId)->get();
+        
+        for ($i = 6; $i >= -5; $i--) {
+            $month = $now->copy()->subMonths($i);
+            $monthKey = $month->format('Y-m');
+            
+            $total = 0;
+            foreach ($allCards as $card) {
+                // Simplificação: soma transações pendentes/pagas no mês/ano
+                $total += (float) Transaction::byUser($userId)
+                    ->where('credit_card_id', $card->id)
+                    ->whereYear('date', $month->year)
+                    ->whereMonth('date', $month->month)
+                    ->sum('amount');
+            }
+
+            $invoicesHistory->push([
+                'month' => $month->format('M/y'),
+                'total' => round($total, 2),
+                'type'  => $i > 0 ? 'Passado' : ($i == 0 ? 'Atual' : 'Projetado'),
+            ]);
+        }
+
+        // ── 6. Uso por Cartão (Pizza) ─────────────────────────────
+        $cardUsage = $allCards->map(function ($card) {
+            $spent = (float) Transaction::byUser(Auth::id())
+                ->where('credit_card_id', $card->id)
+                ->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year)
+                ->sum('amount');
+
+            return [
+                'name'  => $card->name,
+                'value' => round($spent, 2),
+                'color' => $card->color ?? '#6b7280',
+            ];
+        })->filter(fn($c) => $c['value'] > 0)->values();
+
+        // Faturas detalhadas p/ Cards
+        $invoicesByCard = $allCards->map(function ($card) {
             return [
                 'card_name' => $card->name,
                 'bank_name' => $card->bank_name,
@@ -108,6 +148,8 @@ class ReportController extends Controller
             'fixedExpenses'      => round($fixedExpenses, 2),
             'variableExpenses'   => round($variableExpenses, 2),
             'invoicesByCard'     => $invoicesByCard,
+            'invoicesHistory'    => $invoicesHistory->values(),
+            'cardUsage'          => $cardUsage,
             'netWorth'           => [
                 'bank_balance' => round($totalBankBalance, 2),
                 'invested'     => round($totalInvested, 2),

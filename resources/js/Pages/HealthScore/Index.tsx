@@ -165,7 +165,7 @@ export default function HealthScoreIndex({ score }: Props) {
                 )}
 
                 <p className="text-xs text-[var(--md-color-on-surface-variant)] text-right">
-                    Calculado em {new Date(score.calculated_at).toLocaleString('pt_BR')}
+                    Calculado em {new Date(score.calculated_at).toLocaleString('pt-BR')}
                 </p>
             </div>
 

@@ -35,17 +35,17 @@ class FinancialHealthScoreService
     private function scoreSavingsRate(int $userId): array
     {
         $income = Transaction::byUser($userId)
-            ->incomes()
+            ->whereIn('type', [TransactionType::Income->value, TransactionType::InvestmentOut->value])
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->where('status', TransactionStatus::Paid)
+            ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
         $expenses = Transaction::byUser($userId)
-            ->expenses()
+            ->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value, TransactionType::InvestmentIn->value])
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->where('status', TransactionStatus::Paid)
+            ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
         $rate  = $income > 0 ? (($income - $expenses) / $income) * 100 : 0;
@@ -70,7 +70,7 @@ class FinancialHealthScoreService
         $score       = $utilization <= 30 ? 20 : ($utilization <= 70 ? 10 : 0);
 
         return [
-            'score' => $score,
+            'score' => (float)$score,
             'label' => 'Uso do Crédito',
             'value' => round($utilization, 1),
             'unit'  => '%',
@@ -80,13 +80,13 @@ class FinancialHealthScoreService
 
     private function scoreEmergencyFund(int $userId): array
     {
-        $balance = BankAccount::byUser($userId)->sum('current_balance');
+        $balance = (float) BankAccount::byUser($userId)->sum('current_balance');
 
         $monthlyExpenses = Transaction::byUser($userId)
-            ->expenses()
+            ->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->where('status', TransactionStatus::Paid)
+            ->where('status', TransactionStatus::Paid->value)
             ->sum('amount');
 
         $months = $monthlyExpenses > 0 ? $balance / $monthlyExpenses : 0;
@@ -113,7 +113,7 @@ class FinancialHealthScoreService
 
         if ($budgets->isEmpty()) {
             return [
-                'score' => 10,
+                'score' => 10.0,
                 'label' => 'Aderência ao Orçamento',
                 'value' => 0,
                 'unit'  => 'sem orçamento',
@@ -127,8 +127,8 @@ class FinancialHealthScoreService
                 ->where('category_id', $budget->category_id)
                 ->whereMonth('date', now()->month)
                 ->whereYear('date', now()->year)
-                ->whereIn('type', [TransactionType::Expense, TransactionType::CreditCard])
-                ->whereIn('status', [TransactionStatus::Paid, TransactionStatus::Pending])
+                ->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])
+                ->whereIn('status', [TransactionStatus::Paid->value, TransactionStatus::Pending->value])
                 ->sum('amount');
 
             if ($spent <= $budget->amount) {
@@ -152,14 +152,14 @@ class FinancialHealthScoreService
         $hasInvestments = Investment::where('user_id', $userId)->exists();
 
         $recentInvestment = Transaction::where('user_id', $userId)
-            ->where('type', TransactionType::InvestmentIn)
+            ->where('type', TransactionType::InvestmentIn->value)
             ->where('date', '>=', now()->subDays(30))
             ->exists();
 
         $score = ($hasInvestments ? 10 : 0) + ($recentInvestment ? 10 : 0);
 
         return [
-            'score' => $score,
+            'score' => (float)$score,
             'label' => 'Hábito de Investimento',
             'value' => $hasInvestments ? 1 : 0,
             'unit'  => '',
