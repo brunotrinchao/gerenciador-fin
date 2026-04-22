@@ -12,16 +12,12 @@ use DateTime;
 
 class FinancialProjectionService
 {
-    /**
-     * Gera a projeção de fluxo de caixa para os próximos $months meses.
-     */
     public function generate(int $userId, int $months = 12): array
     {
         $today = Carbon::today();
         $startOfMonth = $today->copy()->startOfMonth();
         $endDate = $today->copy()->addMonths($months);
 
-        // Inicializa estrutura mensal
         $projection = [];
         for ($i = 0; $i < $months; $i++) {
             $month = $today->copy()->startOfMonth()->addMonths($i);
@@ -29,16 +25,17 @@ class FinancialProjectionService
 
             $projection[$key] = [
                 'month_key'    => $key,
-                'income'       => 0.0,
+                'income'       => 0.0, // Receita pura do mês
                 'expense'      => 0.0,
-                'installments' => 0.0, // Apenas parcelas SEM cartão
-                'credit_card'  => 0.0, // Faturas + Parcelas de cartão
-                'net'          => 0.0,
+                'installments' => 0.0,
+                'credit_card'  => 0.0,
+                'resultado'    => 0.0,
+                'entrada_total'=> 0.0, // Receita + Saldo Anterior
                 'balance'      => 0.0,
             ];
         }
 
-        // 1. Receitas e Despesas (Pago + Pendente)
+        // 1. Receitas e Despesas (Puro)
         Transaction::byUser($userId)
             ->whereIn('status', [TransactionStatus::Paid->value, TransactionStatus::Pending->value])
             ->whereIn('type', [TransactionType::Income->value, TransactionType::Expense->value])
@@ -56,7 +53,7 @@ class FinancialProjectionService
                 }
             });
 
-        // 2. Parcelas (Boleto/Cartão) (Pago + Pendente)
+        // 2. Parcelas
         Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId))
             ->with('group')
             ->whereIn('status', [TransactionStatus::Paid->value, TransactionStatus::Pending->value])
@@ -73,7 +70,7 @@ class FinancialProjectionService
                 }
             });
 
-        // 3. Faturas de Cartão (Pago + Pendente)
+        // 3. Cartão (Faturas)
         Transaction::byUser($userId)
             ->where('type', TransactionType::CreditCard->value)
             ->whereIn('status', [TransactionStatus::Paid->value, TransactionStatus::Pending->value])
@@ -93,12 +90,12 @@ class FinancialProjectionService
                 }
             });
 
-        // ─── CÁLCULO DO SALDO ACUMULADO ───
+        // ─── LÓGICA ACUMULATIVA ───
 
-        // Saldo real nas contas HOJE
+        // Saldo atual real
         $currentBalance = (float) BankAccount::byUser($userId)->active()->sum('current_balance');
 
-        // Para somar tudo que é do mês (incluindo o que já foi pago), recuamos o saldo pro início do mês.
+        // Recua saldo p/ início do mês atual (p/ re-somar tudo do mês na tabela)
         $paidIncomeThisMonth = Transaction::byUser($userId)
             ->where('status', TransactionStatus::Paid->value)
             ->whereIn('type', [TransactionType::Income->value, TransactionType::InvestmentOut->value])
@@ -113,16 +110,20 @@ class FinancialProjectionService
             ->whereYear('date', $today->year)
             ->sum('amount');
 
-        // Saldo que você tinha no dia 01/mês
-        $runningBalance = $currentBalance - (float)$paidIncomeThisMonth + (float)$paidExpenseThisMonth;
+        $prevBalance = $currentBalance - (float)$paidIncomeThisMonth + (float)$paidExpenseThisMonth;
 
         foreach ($projection as &$month) {
-            $totalOut         = $month['expense'] + $month['installments'] + $month['credit_card'];
-            $month['net']     = round($month['income'] - $totalOut, 2);
+            // Resultado = Soma de todas as despesas
+            $month['resultado'] = round($month['expense'] + $month['installments'] + $month['credit_card'], 2);
             
-            // O NOVO SALDO é o Saldo Anterior + o que entrou/saiu NESTE mês
-            $runningBalance  += $month['net'];
-            $month['balance'] = round($runningBalance, 2);
+            // Entrada (Visual) = Saldo Anterior + Receita do Mês
+            $month['entrada_total'] = round($prevBalance + $month['income'], 2);
+            
+            // Saldo Projetado = Entrada (Visual) - Resultado
+            $month['balance'] = round($month['entrada_total'] - $month['resultado'], 2);
+
+            // Passa o saldo p/ o próximo mês
+            $prevBalance = $month['balance'];
 
             $month['income']       = round($month['income'], 2);
             $month['expense']      = round($month['expense'], 2);
