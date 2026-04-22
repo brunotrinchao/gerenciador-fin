@@ -52,11 +52,12 @@ class FinancialHealthScoreService
         $score = min(20, max(0, ($rate / 20) * 20));
 
         return [
-            'score' => round($score, 1),
-            'label' => 'Taxa de Poupança',
-            'value' => round($rate, 1),
-            'unit'  => '%',
-            'max'   => 20,
+            'score'       => round($score, 1),
+            'label'       => 'Taxa de Poupança',
+            'description' => 'Percentual da renda que sobra após despesas. Calculado como (Receitas - Despesas) / Receitas.',
+            'value'       => round($rate, 1),
+            'unit'        => '%',
+            'max'         => 20,
         ];
     }
 
@@ -70,11 +71,12 @@ class FinancialHealthScoreService
         $score       = $utilization <= 30 ? 20 : ($utilization <= 70 ? 10 : 0);
 
         return [
-            'score' => (float)$score,
-            'label' => 'Uso do Crédito',
-            'value' => round($utilization, 1),
-            'unit'  => '%',
-            'max'   => 20,
+            'score'       => (float)$score,
+            'label'       => 'Uso do Crédito',
+            'description' => 'Quanto do limite total de cartões está em uso. Calculado como Limite Usado / Limite Total. Ideal < 30%.',
+            'value'       => round($utilization, 1),
+            'unit'        => '%',
+            'max'         => 20,
         ];
     }
 
@@ -93,11 +95,12 @@ class FinancialHealthScoreService
         $score  = min(20, ($months / 6) * 20);
 
         return [
-            'score' => round($score, 1),
-            'label' => 'Reserva de Emergência',
-            'value' => round($months, 1),
-            'unit'  => 'meses',
-            'max'   => 20,
+            'score'       => round($score, 1),
+            'label'       => 'Reserva de Emergência',
+            'description' => 'Meses de despesa que seu saldo atual cobre. Calculado como Saldo em Conta / Despesas Mensais. Ideal é 6 meses.',
+            'value'       => round($months, 1),
+            'unit'        => 'meses',
+            'max'         => 20,
         ];
     }
 
@@ -113,11 +116,12 @@ class FinancialHealthScoreService
 
         if ($budgets->isEmpty()) {
             return [
-                'score' => 10.0,
-                'label' => 'Aderência ao Orçamento',
-                'value' => 0,
-                'unit'  => 'sem orçamento',
-                'max'   => 20,
+                'score'       => 10.0,
+                'label'       => 'Aderência ao Orçamento',
+                'description' => 'Categorias dentro do limite planejado. Sem orçamentos definidos, o score é neutro.',
+                'value'       => 0,
+                'unit'        => 'sem orçamento',
+                'max'         => 20,
             ];
         }
 
@@ -139,11 +143,12 @@ class FinancialHealthScoreService
         $score = ($onTrack / $budgets->count()) * 20;
 
         return [
-            'score' => round($score, 1),
-            'label' => 'Aderência ao Orçamento',
-            'value' => $onTrack,
-            'unit'  => 'de ' . $budgets->count(),
-            'max'   => 20,
+            'score'       => round($score, 1),
+            'label'       => 'Aderência ao Orçamento',
+            'description' => 'Percentual de orçamentos mensais respeitados. Calculado comparando Gasto Real vs Meta por Categoria.',
+            'value'       => $onTrack,
+            'unit'        => 'de ' . $budgets->count(),
+            'max'         => 20,
         ];
     }
 
@@ -159,11 +164,12 @@ class FinancialHealthScoreService
         $score = ($hasInvestments ? 10 : 0) + ($recentInvestment ? 10 : 0);
 
         return [
-            'score' => (float)$score,
-            'label' => 'Hábito de Investimento',
-            'value' => $hasInvestments ? 1 : 0,
-            'unit'  => '',
-            'max'   => 20,
+            'score'       => (float)$score,
+            'label'       => 'Hábito de Investimento',
+            'description' => 'Avalia posse de ativos e aportes recentes (últimos 30 dias). Incentiva a constância de investimentos.',
+            'value'       => $hasInvestments ? 1 : 0,
+            'unit'        => '',
+            'max'         => 20,
         ];
     }
 

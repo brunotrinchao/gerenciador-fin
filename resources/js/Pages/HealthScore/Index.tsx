@@ -5,13 +5,32 @@ import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
 import { healthScoreSteps } from '@/tutorials/steps/health-score';
 import { Progress } from '@/Components/ui/progress';
-import { Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, Info } from 'lucide-react';
 import axios from 'axios';
-import type { HealthScore, HealthScoreComponent } from '@/types/models';
+
+// ─── Local Types ────────────────────────────────────────────────────────────
+
+interface HealthScoreComponent {
+    score: number;
+    max: number;
+    label: string;
+    description: string;
+    value: number | string;
+    unit: string;
+}
+
+interface HealthScore {
+    total: number;
+    grade: string;
+    components: Record<string, HealthScoreComponent>;
+    calculated_at: string;
+}
 
 interface Props {
     score: HealthScore;
 }
+
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export default function HealthScoreIndex({ score }: Props) {
     const [analysis, setAnalysis] = useState<string | null>(null);
@@ -134,19 +153,29 @@ export default function HealthScoreIndex({ score }: Props) {
                 {/* Componentes */}
                 <div data-tutorial="hs-components" className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {Object.entries(score.components).map(([key, comp]) => (
-                        <div key={key} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className="text-sm font-medium text-[var(--md-color-on-surface)]">{comp.label}</span>
-                                <span className="text-sm font-bold text-[var(--md-color-on-surface)]">{comp.score}/{comp.max}</span>
+                        <div key={key} className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 flex flex-col gap-3">
+                            <div className="flex justify-between items-start">
+                                <span className="text-sm font-bold text-[var(--md-color-on-surface)]">{comp.label}</span>
+                                <span className="text-xs font-black text-[var(--md-color-on-surface-variant)]">{comp.score}/{comp.max}</span>
                             </div>
-                            <Progress
-                                value={(comp.score / comp.max) * 100}
-                                className={`h-2 mb-2 ${getBarClass(comp)}`}
-                            />
-                            <div className="text-xs text-[var(--md-color-on-surface-variant)]">
-                                {comp.unit
-                                    ? `${comp.value} ${comp.unit}`
-                                    : (comp.value ? 'Sim' : 'Não')}
+                            
+                            <div className="space-y-1.5">
+                                <Progress
+                                    value={(comp.score / comp.max) * 100}
+                                    className={`h-2 ${getBarClass(comp)}`}
+                                />
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-[var(--md-color-on-surface)] font-semibold">
+                                        {comp.unit ? `${comp.value}${comp.unit}` : (comp.value ? 'Sim' : 'Não')}
+                                    </span>
+                                    <span className="text-[10px] text-[var(--md-color-on-surface-variant)] uppercase font-bold tracking-tighter">Atual</span>
+                                </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-[border-[var(--color-border)]]/50">
+                                <p className="text-[10px] text-[var(--md-color-on-surface-variant)] leading-relaxed italic">
+                                    {comp.description}
+                                </p>
                             </div>
                         </div>
                     ))}
