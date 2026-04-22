@@ -104,16 +104,16 @@ class FinancialProjectionService
         $prevBalance = (float) BankAccount::byUser($userId)->active()->sum('current_balance');
 
         foreach ($projection as &$month) {
-            // Resultado = Soma de saídas previstas
+            // Resultado = Soma de saídas previstas do mês
             $month['resultado'] = round($month['expense'] + $month['installments'] + $month['credit_card'], 2);
             
-            // Entrada Acumulada = Saldo Anterior + Receita do Mês
+            // Entrada Total = Saldo Acumulado + Receitas do Mês
             $month['entrada_total'] = round($prevBalance + $month['income'], 2);
             
-            // Saldo Projetado = Entrada Acumulada - Resultado
+            // Saldo Projetado = Entrada Total - Resultado
             $month['balance'] = round($month['entrada_total'] - $month['resultado'], 2);
 
-            // Passa saldo p/ próximo mês
+            // Passa saldo para o próximo mês
             $prevBalance = $month['balance'];
 
             $month['income']       = round($month['income'], 2);
