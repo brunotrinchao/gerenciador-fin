@@ -216,13 +216,13 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
             </div>
 
             {/* Account */}
-            <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 min-w-[100px]">
+            <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 w-[120px]">
                 <span className="text-gray-400 text-xs truncate max-w-[120px]">{accountLabel()}</span>
                 {statusBadge()}
             </div>
 
             {/* Amount */}
-            <div className="flex-shrink-0 text-right min-w-[90px]">
+            <div className="flex-shrink-0 text-right w-[110px]">
                 <p
                     className={`text-sm font-semibold font-finance ${
                         debit ? 'text-red-400' : 'text-green-400'
@@ -234,7 +234,7 @@ function TransactionRow({ transaction, onEdit, onDelete }: TransactionRowProps) 
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center justify-end gap-1 flex-shrink-0 w-[84px]">
                 {transaction.status === 'pending' && (
                     <button
                         onClick={handlePay}
@@ -325,7 +325,7 @@ function StatementRow({ statement, onClick }: StatementRowProps) {
             </div>
 
             {/* Card + status */}
-            <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 min-w-[100px]">
+            <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 w-[120px]">
                 <span className="text-gray-400 text-xs truncate max-w-[120px]">
                     {statement.credit_card?.name ?? '—'}
                 </span>
@@ -333,14 +333,14 @@ function StatementRow({ statement, onClick }: StatementRowProps) {
             </div>
 
             {/* Amount */}
-            <div className="flex-shrink-0 text-right min-w-[90px]">
+            <div className="flex-shrink-0 text-right w-[110px]">
                 <p className="text-sm font-semibold text-purple-400">
                     - {formatCurrency(statement.total_amount)}
                 </p>
             </div>
 
             {/* Spacer to align with TransactionRow actions */}
-            <div className="flex-shrink-0 w-[72px]" />
+            <div className="flex-shrink-0 w-[84px]" />
         </div>
     );
 }
@@ -423,7 +423,7 @@ function InstallmentRow({ installment, onClick, onEdit, onDelete }: InstallmentR
                     )}
                 </div>
             </div>
-            <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 min-w-[100px]">
+            <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0 w-[120px]">
                 <span className="text-xs truncate max-w-[120px]" style={{ color: 'var(--color-muted)' }}>
                     {installment.group?.creditCard?.name ?? installment.group?.bankAccount?.name ?? '—'}
                 </span>
@@ -443,12 +443,12 @@ function InstallmentRow({ installment, onClick, onEdit, onDelete }: InstallmentR
                     {isPaid ? 'Pago' : installment.status === 'scheduled' ? 'Agendado' : 'Pendente'}
                 </span>
             </div>
-            <div className="flex-shrink-0 text-right min-w-[90px]">
+            <div className="flex-shrink-0 text-right w-[110px]">
                 <p className={`text-sm font-semibold ${isCreditCard ? 'text-purple-400' : 'text-orange-400'}`}>
                     - {formatCurrency(installment.amount)}
                 </p>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center justify-end gap-1 flex-shrink-0 w-[84px]">
                 {!isPaid && (
                     <button
                         onClick={handleMarkPaid}
@@ -1766,6 +1766,32 @@ export default function TransactionsIndex({
 
     const { start: startTutorial } = useTutorial({ key: 'transactions', title: 'Tour das Transações', steps: transactionsSteps });
 
+    // ─────────────────────────────────────────────
+    // Lógica de Totais por Status (Página Atual)
+    // ─────────────────────────────────────────────
+    const totalsByStatus = { paid: 0, pending: 0, scheduled: 0 };
+
+    transactions.data.forEach(t => {
+        const amt = parseFloat(String(t.amount));
+        const val = ['expense', 'credit_card', 'transfer', 'investment_in'].includes(t.type) ? -amt : amt;
+        if (t.status === 'paid') totalsByStatus.paid += val;
+        else if (t.status === 'scheduled') totalsByStatus.scheduled += val;
+        else if (t.status === 'pending') totalsByStatus.pending += val;
+    });
+
+    installments.forEach(i => {
+        const val = -parseFloat(String(i.amount));
+        if (i.status === 'paid') totalsByStatus.paid += val;
+        else if (i.status === 'scheduled') totalsByStatus.scheduled += val;
+        else if (i.status === 'pending') totalsByStatus.pending += val;
+    });
+
+    statements.forEach(s => {
+        const val = -parseFloat(String(s.total_amount));
+        if (s.status === 'paid') totalsByStatus.paid += val;
+        else totalsByStatus.pending += val; // closed ou open = pendente de pgto
+    });
+
     const applyFilter = (newFilters: Record<string, string>) => {
         router.get(
             route('transactions.index'),
@@ -2056,16 +2082,16 @@ export default function TransactionsIndex({
                     ) : (
                         <>
                             {/* Table header (desktop) */}
-                            <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 px-4 py-2.5 border-b border-[border-[var(--color-border)]] bg-[var(--color-input-bg)]">
-                                <div className="w-5" />
-                                <p className="text-gray-500 text-xs font-medium">Descrição</p>
-                                <p className="text-gray-500 text-xs font-medium text-right min-w-[100px]">
+                            <div className="hidden sm:flex items-center gap-3 px-4 py-2.5 border-b border-[border-[var(--color-border)]] bg-[var(--color-input-bg)]">
+                                <div className="w-5 flex-shrink-0" />
+                                <p className="text-gray-500 text-xs font-medium flex-1">Descrição</p>
+                                <p className="text-gray-500 text-xs font-medium text-right w-[120px] flex-shrink-0">
                                     Conta / Status
                                 </p>
-                                <p className="text-gray-500 text-xs font-medium text-right min-w-[90px]">
+                                <p className="text-gray-500 text-xs font-medium text-right w-[110px] flex-shrink-0">
                                     Valor
                                 </p>
-                                <div className="min-w-[80px]" />
+                                <div className="w-[84px] flex-shrink-0" />
                             </div>
 
                             {/* Statement rows */}
@@ -2100,6 +2126,31 @@ export default function TransactionsIndex({
 
                             {/* Pagination */}
                             <Pagination pagination={transactions} filters={filters} />
+
+                            {/* Totais por status da página atual */}
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-[var(--color-input-bg)] border-t border-[border-[var(--color-border)]]">
+                                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Saldo visível (Página)</span>
+                                <div className="flex items-center gap-6">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[10px] text-green-400 font-bold uppercase">Pago</span>
+                                        <span className={`text-sm font-finance ${totalsByStatus.paid >= 0 ? 'text-white' : 'text-red-400'}`}>
+                                            {formatCurrency(totalsByStatus.paid)}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[10px] text-yellow-400 font-bold uppercase">Pendente</span>
+                                        <span className={`text-sm font-finance ${totalsByStatus.pending >= 0 ? 'text-white' : 'text-red-400'}`}>
+                                            {formatCurrency(totalsByStatus.pending)}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[10px] text-orange-500 font-bold uppercase">Agendado</span>
+                                        <span className={`text-sm font-finance ${totalsByStatus.scheduled >= 0 ? 'text-white' : 'text-red-400'}`}>
+                                            {formatCurrency(totalsByStatus.scheduled)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </>
                     )}
                 </div>

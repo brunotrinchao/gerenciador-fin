@@ -76,7 +76,7 @@ class TransactionController extends Controller
                 ->when($status, function ($q) use ($status) {
                     if ($status === 'paid') return $q->where('status', 'paid');
                     if ($status === 'pending') return $q->where('status', '!=', 'paid');
-                    return $q;
+                    return $q->whereRaw('1 = 0');
                 })
                 ->get();
         }
