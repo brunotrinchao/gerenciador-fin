@@ -1,28 +1,13 @@
-import { Head } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
-import { Download } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Download, TrendingUp, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialHelpButton } from '@/Components/TutorialHelpButton';
 import { projectionSteps } from '@/tutorials/steps/projection';
-import { PageHeader, PageHeaderState } from '@/Components/PageHeader';
-import {
-    ComposedChart,
-    Bar,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-} from 'recharts';
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-interface MonthProjection {
+interface ProjectionMonth {
     month_key: string;
     income: number;
     expense: number;
@@ -33,293 +18,154 @@ interface MonthProjection {
 }
 
 interface Props {
-    projection: MonthProjection[];
-    currentBalance: number;
+    projection: ProjectionMonth[];
     totalProjectedIncome: number;
     totalProjectedExpense: number;
     finalBalance: number;
     months: number;
 }
 
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
+import {
+    ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
+    Tooltip, Legend, ResponsiveContainer, ReferenceLine
+} from 'recharts';
 
-const MONTHS_PT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-function monthLabel(monthKey: string): string {
-    const [year, month] = monthKey.split('-');
-    return `${MONTHS_PT[parseInt(month) - 1]}/${year.slice(2)}`;
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const fmt = (v: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v);
-
-const fmtFull = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-function exportCSV(projection: MonthProjection[]) {
-    const headers = ['Mês', 'Entradas', 'Despesas', 'Parcelas', 'Cartão', 'Total Saídas', 'Saldo'];
-    const rows = projection.map((m) => [
-        m.month_key,
-        m.income.toFixed(2),
-        m.expense.toFixed(2),
-        m.installments.toFixed(2),
-        m.credit_card.toFixed(2),
-        (m.expense + m.installments + m.credit_card).toFixed(2),
-        m.balance.toFixed(2),
-    ]);
-    const csv = [headers, ...rows].map((r) => r.join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `projecao-${new Date().toISOString().slice(0, 7)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
+const formatMonth = (key: string) => {
+    const [year, month] = key.split('-');
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return date.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
+};
 
-// ─────────────────────────────────────────────
-// Summary card
-// ─────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────
-// Custom tooltip
-// ─────────────────────────────────────────────
-
-function ChartTooltip({ active, payload, label }: any) {
-    if (!active || !payload?.length) return null;
-
-    const data: Record<string, number> = {};
-    payload.forEach((p: any) => { data[p.dataKey] = p.value; });
-
-    return (
-        <div className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-xl p-3 text-xs min-w-[180px]">
-            <p className="text-gray-300 font-semibold mb-2">{label}</p>
-            {data.income !== undefined && (
-                <div className="flex justify-between gap-4 text-[#22c55e]">
-                    <span>Entradas</span><span>{fmt(data.income)}</span>
-                </div>
-            )}
-            {data.expense !== undefined && (
-                <div className="flex justify-between gap-4 text-red-400">
-                    <span>Despesas</span><span>{fmt(data.expense)}</span>
-                </div>
-            )}
-            {data.installments !== undefined && data.installments > 0 && (
-                <div className="flex justify-between gap-4 text-orange-400">
-                    <span>Parcelas</span><span>{fmt(data.installments)}</span>
-                </div>
-            )}
-            {data.credit_card !== undefined && data.credit_card > 0 && (
-                <div className="flex justify-between gap-4 text-yellow-400">
-                    <span>Cartão</span><span>{fmt(data.credit_card)}</span>
-                </div>
-            )}
-            <div className="border-t border-[border-[var(--color-border)]] mt-2 pt-2">
-                <div className="flex justify-between gap-4 text-blue-400 font-semibold">
-                    <span>Saldo</span><span>{fmt(data.balance)}</span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────
-// Page
-// ─────────────────────────────────────────────
-
-export default function Projection({
-    projection,
-    currentBalance,
-    totalProjectedIncome,
-    totalProjectedExpense,
-    finalBalance,
-    months,
+export default function ProjectionIndex({
+    projection, totalProjectedIncome, totalProjectedExpense, finalBalance, months
 }: Props) {
-    const chartData = projection.map((m) => ({
+    const { start } = useTutorial({ key: 'projection', steps: projectionSteps });
+
+    // Prepara dados p/ o gráfico simplificado (Entradas vs Despesas)
+    const chartData = projection.map(m => ({
         ...m,
-        month: monthLabel(m.month_key),
+        name: formatMonth(m.month_key),
+        total_out: m.expense + m.installments + m.credit_card, // Soma todas as saídas
     }));
-
-    const balanceDiff = finalBalance - currentBalance;
-    const balanceTrend = balanceDiff >= 0 ? 'text-[#22c55e]' : 'text-red-400';
-
-    const { start: startTutorial } = useTutorial({ key: 'projection', title: 'Tour da Projeção', steps: projectionSteps });
 
     return (
         <AppLayout title="Projeção Financeira">
             <Head title="Projeção Financeira" />
 
             <div className="w-full flex flex-col gap-6">
-                <PageHeader
-                    title="Projeção Financeira"
-                    subtitle={`Fluxo de caixa projetado para os próximos ${months} meses`}
-                    onStartTutorial={startTutorial}
-                    actions={
-                        <>
-                            <button
-                                data-tutorial="proj-export"
-                                onClick={() => exportCSV(projection)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-gray-300 hover:text-white hover:border-gray-500 text-sm font-medium transition-colors"
-                            >
-                                <Download size={15} />
-                                CSV
-                            </button>
-                        </>
-                    }
-                    states={
-                        <>
-                            <PageHeaderState
-                                title="Saldo Atual"
-                                value={fmtFull(currentBalance)}
-                                colorClass="text-white"
-                                subtitle="contas ativas"
-                            />
-                            <PageHeaderState
-                                title="Entradas Projetadas"
-                                value={fmtFull(totalProjectedIncome)}
-                                colorClass="text-[#22c55e]"
-                                subtitle="próximos 12 meses"
-                            />
-                            <PageHeaderState
-                                title="Saídas Projetadas"
-                                value={fmtFull(totalProjectedExpense)}
-                                colorClass="text-red-400"
-                                subtitle="próximos 12 meses"
-                            />
-                            <PageHeaderState
-                                title="Saldo em 12 meses"
-                                value={fmtFull(finalBalance)}
-                                colorClass={balanceTrend}
-                                subtitle={`${balanceDiff >= 0 ? '+' : ''}${fmtFull(balanceDiff)} vs hoje`}
-                            />
-                        </>
-                    }
-                    filters={
-                        
-                            <div className="flex items-center gap-2">
-                                <label className="text-gray-400 text-sm">Período:</label>
-                                <select
-                                    value={months}
-                                    onChange={(e) => router.get(route('projection.index'), { months: e.target.value }, { preserveState: false })}
-                                    className="bg-[var(--color-input-bg)] border border-[border-[var(--color-border)]] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#22c55e] transition-colors"
-                                >
-                                    <option value="3">3 meses</option>
-                                    <option value="6">6 meses</option>
-                                    <option value="12">12 meses</option>
-                                    <option value="18">18 meses</option>
-                                    <option value="24">24 meses</option>
-                                </select>
-                            </div>
-                    }
-                />
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold font-display text-white">Fluxo de Caixa Projetado</h1>
+                            <TutorialHelpButton onStart={start} />
+                        </div>
+                        <p className="text-gray-400 text-sm mt-1">Previsão de saldo para os próximos {months} meses</p>
+                    </div>
 
-                {/* Chart */}
-                <div data-tutorial="proj-chart" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
-                    <h2 className="text-sm font-semibold text-gray-300 mb-4">Fluxo de Caixa Mensal</h2>
-                    <ResponsiveContainer width="100%" height={320}>
-                        <ComposedChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                            <XAxis
-                                dataKey="month"
-                                tick={{ fill: '#6b7280', fontSize: 11 }}
-                                axisLine={false}
-                                tickLine={false}
-                            />
-                            <YAxis
-                                tickFormatter={(v) => fmt(v)}
-                                tick={{ fill: '#6b7280', fontSize: 11 }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={80}
-                            />
-                            <Tooltip content={<ChartTooltip />} />
-                            <Legend
-                                formatter={(value) => {
-                                    const map: Record<string, string> = {
-                                        income: 'Entradas',
-                                        expense: 'Despesas',
-                                        installments: 'Parcelas',
-                                        credit_card: 'Cartão',
-                                        balance: 'Saldo',
-                                    };
-                                    return <span style={{ color: '#9ca3af', fontSize: 12 }}>{map[value] ?? value}</span>;
-                                }}
-                            />
-
-                            {/* Barras de saída (empilhadas) */}
-                            <Bar dataKey="expense"      stackId="out" fill="#ef4444" radius={[0, 0, 0, 0]} />
-                            <Bar dataKey="installments" stackId="out" fill="#f97316" radius={[0, 0, 0, 0]} />
-                            <Bar dataKey="credit_card"  stackId="out" fill="#eab308" radius={[4, 4, 0, 0]} />
-
-                            {/* Barra de entrada */}
-                            <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} />
-
-                            {/* Linha de saldo acumulado */}
-                            <Line
-                                type="monotone"
-                                dataKey="balance"
-                                stroke="#60a5fa"
-                                strokeWidth={2}
-                                dot={{ fill: '#60a5fa', r: 3 }}
-                                activeDot={{ r: 5 }}
-                            />
-                        </ComposedChart>
-                    </ResponsiveContainer>
+                    <div className="flex items-center gap-2">
+                        <select
+                            value={months}
+                            onChange={(e) => router.get(route('projection.index'), { months: e.target.value }, { preserveState: true })}
+                            className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-[#22c55e]"
+                        >
+                            <option value="3">Próximos 3 meses</option>
+                            <option value="6">Próximos 6 meses</option>
+                            <option value="12">Próximos 12 meses</option>
+                            <option value="24">Próximos 24 meses</option>
+                        </select>
+                    </div>
                 </div>
 
-                {/* Monthly breakdown table */}
-                <div data-tutorial="proj-table" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden">
-                    <div className="px-5 py-3 border-b border-[border-[var(--color-border)]]">
-                        <h2 className="text-sm font-semibold text-gray-300">Detalhamento Mensal</h2>
+                {/* Summary States */}
+                <div data-tutorial="proj-summary" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 shadow-sm">
+                        <div className="flex items-center gap-3 mb-2">
+                            <ArrowUpCircle className="text-[#22c55e]" size={18} />
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">Entradas Planejadas</p>
+                        </div>
+                        <p className="text-white font-black text-2xl font-finance">{fmt(totalProjectedIncome)}</p>
+                    </div>
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 shadow-sm">
+                        <div className="flex items-center gap-3 mb-2">
+                            <ArrowDownCircle className="text-red-400" size={18} />
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">Saídas Planejadas</p>
+                        </div>
+                        <p className="text-white font-black text-2xl font-finance">{fmt(totalProjectedExpense)}</p>
+                    </div>
+                    <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5 shadow-sm border-l-4 border-l-[#3b82f6]">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Wallet className="text-[#3b82f6]" size={18} />
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">Saldo em {months} meses</p>
+                        </div>
+                        <p className={`font-black text-2xl font-finance ${finalBalance >= 0 ? 'text-[#3b82f6]' : 'text-red-400'}`}>
+                            {fmt(finalBalance)}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Gráfico principal */}
+                <div data-tutorial="proj-chart" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
+                    <div className="h-[350px] w-full mt-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                <XAxis dataKey="name" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
+                                <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} />
+                                <Tooltip
+                                    formatter={(v) => fmt(v as number)}
+                                    contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px' }}
+                                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                <Bar dataKey="income" name="Entradas" fill="#22c55e" radius={[4, 4, 0, 0]} barSize={30} />
+                                <Bar dataKey="total_out" name="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={30} />
+                                <Line type="monotone" dataKey="balance" name="Saldo Acumulado" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} />
+                                <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
+                            </ComposedChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Tabela de Detalhamento */}
+                <div data-tutorial="proj-table" className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl overflow-hidden shadow-sm">
+                    <div className="px-6 py-4 border-b border-[border-[var(--color-border)]] flex items-center justify-between">
+                        <h3 className="text-white font-bold text-sm uppercase tracking-widest">Detalhamento Mensal</h3>
+                        <p className="text-[10px] text-gray-500 italic">Considere que o saldo inicial é o seu saldo bancário atual</p>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-[border-[var(--color-border)]]">
-                                    {[
-                                        { label: 'Mês', title: '' },
-                                        { label: 'Entradas', title: 'Receitas' },
-                                        { label: 'Despesas', title: 'Despesa que não é parcelado' },
-                                        { label: 'Parcelas', title: 'Despesas parceladas do mês/ano' },
-                                        { label: 'Cartão', title: 'Fatura do mês/ano' },
-                                        { label: 'Total Saídas', title: 'Somadas despesas + Parcelas + Cartão' },
-                                        { label: 'Saldo', title: 'Receita - (Total_saida) + total do saldo das contas' },
-                                    ].map((h) => (
-                                        <th 
-                                            key={h.label} 
-                                            title={h.title} 
-                                            className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap cursor-help"
-                                        >
-                                            {h.label}
-                                        </th>
-                                    ))}
+                        <table className="w-full text-sm">
+                            <thead className="bg-white/5">
+                                <tr className="text-gray-400 text-[10px] uppercase font-black tracking-widest">
+                                    <th className="text-left px-6 py-4">Mês</th>
+                                    <th className="text-right px-6 py-4">Entradas</th>
+                                    <th className="text-right px-6 py-4">Despesas (Fixas/Var)</th>
+                                    <th className="text-right px-6 py-4">Parcelas (Boleto)</th>
+                                    <th className="text-right px-6 py-4">Faturas (Cartão)</th>
+                                    <th className="text-right px-6 py-4">Resultado</th>
+                                    <th className="text-right px-6 py-4">Saldo Projetado</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[border-[var(--color-border)]]">
-                                {projection.map((row) => (
-                                    <tr key={row.month_key} className="hover:bg-[var(--color-input-bg)] transition-colors">
-                                        <td className="px-5 py-3 text-sm font-medium text-white whitespace-nowrap">
-                                            {monthLabel(row.month_key)}
+                            <tbody className="divide-y divide-white/5">
+                                {projection.map((m) => (
+                                    <tr key={m.month_key} className="hover:bg-white/5 transition-colors group">
+                                        <td className="px-6 py-4 text-white font-bold">{formatMonth(m.month_key)}</td>
+                                        <td className="px-6 py-4 text-right text-[#22c55e] font-finance">{m.income > 0 ? fmt(m.income) : '-'}</td>
+                                        <td className="px-6 py-4 text-right text-gray-300 font-finance">{m.expense > 0 ? fmt(m.expense) : '-'}</td>
+                                        <td className="px-6 py-4 text-right text-gray-400 font-finance">{m.installments > 0 ? fmt(m.installments) : '-'}</td>
+                                        <td className="px-6 py-4 text-right text-orange-400 font-finance">{m.credit_card > 0 ? fmt(m.credit_card) : '-'}</td>
+                                        <td className={`px-6 py-4 text-right font-bold font-finance ${m.net >= 0 ? 'text-[#22c55e]' : 'text-red-400'}`}>
+                                            {m.net > 0 ? '+' : ''}{fmt(m.net)}
                                         </td>
-                                        <td className="px-5 py-3 text-sm text-[#22c55e] font-mono whitespace-nowrap">
-                                            {fmtFull(row.income)}
-                                        </td>
-                                        <td className="px-5 py-3 text-sm text-red-400 font-mono whitespace-nowrap">
-                                            {row.expense > 0 ? fmtFull(row.expense) : '—'}
-                                        </td>
-                                        <td className="px-5 py-3 text-sm text-orange-400 font-mono whitespace-nowrap">
-                                            {row.installments > 0 ? fmtFull(row.installments) : '—'}
-                                        </td>
-                                        <td className="px-5 py-3 text-sm text-yellow-400 font-mono whitespace-nowrap">
-                                            {row.credit_card > 0 ? fmtFull(row.credit_card) : '—'}
-                                        </td>
-                                        <td className="px-5 py-3 text-sm text-red-400 font-mono font-semibold whitespace-nowrap">
-                                            {fmtFull(row.expense + row.installments + row.credit_card)}
-                                        </td>
-                                        <td className={`px-5 py-3 text-sm font-mono font-bold whitespace-nowrap ${row.balance >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                                            {fmtFull(row.balance)}
+                                        <td className={`px-6 py-4 text-right font-black font-finance ${m.balance >= 0 ? 'text-[#3b82f6]' : 'text-red-400'}`}>
+                                            {fmt(m.balance)}
                                         </td>
                                     </tr>
                                 ))}
