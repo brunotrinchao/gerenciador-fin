@@ -47,10 +47,11 @@ class FinancialProjectionService
             ->where('status', TransactionStatus::Pending)
             ->whereIn('type', [TransactionType::Income->value, TransactionType::Expense->value])
             ->whereNull('installment_group_id')
-            ->where('date', '>=', $today)
             ->where('date', '<', $endDate)
-            ->each(function (Transaction $tx) use (&$projection) {
-                $key = Carbon::parse($tx->date)->format('Y-m');
+            ->each(function (Transaction $tx) use (&$projection, $today) {
+                $txDate = Carbon::parse($tx->date);
+                $key    = $txDate->isBefore($today) ? $today->format('Y-m') : $txDate->format('Y-m');
+
                 if (!array_key_exists($key, $projection)) return;
 
                 if ($tx->type === TransactionType::Income) {
@@ -63,10 +64,11 @@ class FinancialProjectionService
         // 2. Parcelas pendentes — agrupadas pela due_date de cada Installment
         Installment::whereHas('group', fn ($q) => $q->where('user_id', $userId))
             ->where('status', TransactionStatus::Pending)
-            ->where('due_date', '>=', $today)
             ->where('due_date', '<', $endDate)
-            ->each(function (Installment $installment) use (&$projection) {
-                $key = Carbon::parse($installment->due_date)->format('Y-m');
+            ->each(function (Installment $installment) use (&$projection, $today) {
+                $dueDate = Carbon::parse($installment->due_date);
+                $key     = $dueDate->isBefore($today) ? $today->format('Y-m') : $dueDate->format('Y-m');
+
                 if (!array_key_exists($key, $projection)) return;
 
                 $projection[$key]['installments'] += (float) $installment->amount;
@@ -80,7 +82,7 @@ class FinancialProjectionService
             ->whereNull('installment_group_id')
             ->with('creditCard')
             ->get()
-            ->each(function (Transaction $tx) use (&$projection, $endDate) {
+            ->each(function (Transaction $tx) use (&$projection, $endDate, $today) {
                 if ($tx->creditCard) {
                     $dueDate = Carbon::instance(
                         $tx->creditCard->calculateDueDate(new DateTime((string) $tx->date))
@@ -90,7 +92,7 @@ class FinancialProjectionService
                 }
 
                 if ($dueDate->isBefore($endDate)) {
-                    $key = $dueDate->format('Y-m');
+                    $key = $dueDate->isBefore($today) ? $today->format('Y-m') : $dueDate->format('Y-m');
                     if (!array_key_exists($key, $projection)) return;
                     $projection[$key]['credit_card'] += (float) $tx->amount;
                 }

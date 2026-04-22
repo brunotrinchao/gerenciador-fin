@@ -34,17 +34,17 @@ class FinancialHealthScoreService
 
     private function scoreSavingsRate(int $userId): array
     {
-        $income = Transaction::where('user_id', $userId)
+        $income = Transaction::byUser($userId)
+            ->incomes()
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->where('type', TransactionType::Income)
             ->where('status', TransactionStatus::Paid)
             ->sum('amount');
 
-        $expenses = Transaction::where('user_id', $userId)
+        $expenses = Transaction::byUser($userId)
+            ->expenses()
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->whereIn('type', [TransactionType::Expense, TransactionType::CreditCard])
             ->where('status', TransactionStatus::Paid)
             ->sum('amount');
 
@@ -80,12 +80,12 @@ class FinancialHealthScoreService
 
     private function scoreEmergencyFund(int $userId): array
     {
-        $balance = BankAccount::where('user_id', $userId)->sum('current_balance');
+        $balance = BankAccount::byUser($userId)->sum('current_balance');
 
-        $monthlyExpenses = Transaction::where('user_id', $userId)
+        $monthlyExpenses = Transaction::byUser($userId)
+            ->expenses()
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
-            ->whereIn('type', [TransactionType::Expense, TransactionType::CreditCard])
             ->where('status', TransactionStatus::Paid)
             ->sum('amount');
 

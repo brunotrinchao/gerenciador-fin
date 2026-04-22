@@ -24,13 +24,13 @@ class ReportController extends Controller
         for ($i = 11; $i >= 0; $i--) {
             $month   = $now->copy()->subMonths($i);
             $income  = Transaction::byUser($userId)
-                ->where('type', TransactionType::Income->value)
+                ->incomes()
                 ->where('status', TransactionStatus::Paid->value)
                 ->whereYear('date', $month->year)
                 ->whereMonth('date', $month->month)
                 ->sum('amount');
             $expense = Transaction::byUser($userId)
-                ->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])
+                ->expenses()
                 ->where('status', TransactionStatus::Paid->value)
                 ->whereYear('date', $month->year)
                 ->whereMonth('date', $month->month)
@@ -46,7 +46,7 @@ class ReportController extends Controller
 
         // ── 2. Despesas por Categoria — mês atual ──────────────────
         $expensesByCategory = Transaction::byUser($userId)
-            ->whereIn('type', [TransactionType::Expense->value, TransactionType::CreditCard->value])
+            ->expenses()
             ->where('status', TransactionStatus::Paid->value)
             ->whereYear('date', $now->year)
             ->whereMonth('date', $now->month)
@@ -77,7 +77,10 @@ class ReportController extends Controller
         $totalBankBalance = (float) BankAccount::byUser($userId)->active()->sum('current_balance');
         $totalInvested    = (float) Investment::where('user_id', $userId)->where('status', 'active')->sum('current_amount');
         $totalDebt        = (float) Transaction::byUser($userId)
-            ->where('type', TransactionType::CreditCard->value)
+            ->where(function ($query) {
+                $query->where('type', TransactionType::CreditCard->value)
+                    ->orWhereNotNull('installment_group_id');
+            })
             ->where('status', TransactionStatus::Pending->value)
             ->sum('amount');
         $netWorth         = $totalBankBalance + $totalInvested - $totalDebt;
