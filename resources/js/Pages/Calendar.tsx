@@ -343,7 +343,7 @@ export default function CalendarPage({ events, year, month, summary }: Props) {
         <AppLayout title="Calendário">
             <Head title="Calendário" />
 
-            <div className="w-full flex flex-col gap-6 max-w-7xl mx-auto py-2 sm:py-6">
+            <div className="page-transition space-y-6">
                 
                 {/* Header */}
                 <div className="flex items-center justify-between gap-6 flex-wrap">

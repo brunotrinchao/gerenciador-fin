@@ -10,10 +10,10 @@ import axios from 'axios';
 interface Props {
     month: number;
     year: number;
-    hasGemini: boolean;
+    hasAi: boolean;
 }
 
-export default function AIAnalysisIndex({ month: initialMonth, year: initialYear, hasGemini }: Props) {
+export default function AIAnalysisIndex({ month: initialMonth, year: initialYear, hasAi }: Props) {
     const [month, setMonth] = useState(initialMonth);
     const [year, setYear] = useState(initialYear);
     const [analysis, setAnalysis] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
             const response = await axios.post(route('ai-analysis.generate'), { month, year });
             setAnalysis(response.data.analysis);
         } catch {
-            setError('Falha ao gerar análise. Tente novamente.');
+            setError('Falha ao gerar análise com IA. Tente novamente.');
         } finally {
             setLoading(false);
         }
@@ -63,14 +63,14 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
                         <TutorialHelpButton onStart={start} />
                     </div>
                     <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-1">
-                        Análise inteligente dos seus dados financeiros com Google Gemini
+                        Análise inteligente dos seus dados financeiros
                     </p>
                 </div>
 
-                {!hasGemini && (
+                {!hasAi && (
                     <div className="alert-warning p-4 rounded-2xl border flex gap-2">
                         <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
-                        <p>Gemini API não configurado. Adicione GEMINI_API_KEY no .env.</p>
+                        <p>IA não configurada. Verifique as credenciais no .env.</p>
                     </div>
                 )}
 
@@ -114,7 +114,7 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
                         <button
                             data-tutorial="ai-generate-btn"
                             onClick={handleGenerate}
-                            disabled={loading || !hasGemini}
+                            disabled={loading || !hasAi}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-black text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -157,7 +157,7 @@ export default function AIAnalysisIndex({ month: initialMonth, year: initialYear
                                 Selecione um mês e clique em "Gerar Análise"
                             </p>
                             <p className="text-[var(--md-color-on-surface-variant)] text-sm mt-0.5">
-                                O Gemini irá analisar seus dados financeiros do período
+                                A IA irá analisar seus dados financeiros do período
                             </p>
                         </div>
                     </div>

@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Category;
 use App\Models\CreditCardStatement;
-use App\Services\AI\GeminiService;
+use App\Services\AI\CloudflareAiService;
 use App\Services\Import\DuplicateDetector;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,7 +22,7 @@ class ProcessStatementImport implements ShouldQueue
 
     public function __construct(public readonly int $statementId) {}
 
-    public function handle(DuplicateDetector $duplicateDetector, GeminiService $geminiService): void
+    public function handle(DuplicateDetector $duplicateDetector, CloudflareAiService $aiService): void
     {
         $statement = CreditCardStatement::findOrFail($this->statementId);
         $userId    = $statement->user_id;
@@ -46,7 +46,7 @@ class ProcessStatementImport implements ShouldQueue
                 ->toArray();
 
             $descriptions = $newItems->pluck('description')->toArray();
-            $aiMapping    = $geminiService->categorizeBatch($descriptions, $categories);
+            $aiMapping    = $aiService->categorizeBatch($descriptions, $categories);
 
             if (!empty($aiMapping)) {
                 $categoryModels = Category::whereIn('name', array_values($aiMapping))->get()->keyBy('name');

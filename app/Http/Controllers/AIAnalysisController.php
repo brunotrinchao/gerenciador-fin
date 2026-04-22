@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\AI\GeminiService;
+use App\Services\AI\CloudflareAiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,11 +15,11 @@ class AIAnalysisController extends Controller
         return Inertia::render('AIAnalysis/Index', [
             'month'     => $request->integer('month', now()->month),
             'year'      => $request->integer('year', now()->year),
-            'hasGemini' => !empty(config('services.gemini.key')),
+            'hasAi'     => !empty(env('CLOUDFLARE_API_KEY')),
         ]);
     }
 
-    public function generate(Request $request, GeminiService $gemini): JsonResponse
+    public function generate(Request $request, CloudflareAiService $ai): JsonResponse
     {
         $request->validate([
             'month' => 'required|integer|min:1|max:12',
@@ -27,14 +27,14 @@ class AIAnalysisController extends Controller
         ]);
 
         try {
-            $analysis = $gemini->generateMonthlyAnalysis(
+            $analysis = $ai->generateMonthlyAnalysis(
                 auth()->user(),
                 $request->integer('month'),
                 $request->integer('year')
             );
             return response()->json(['analysis' => $analysis]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Falha ao gerar análise. Tente novamente.'], 500);
+            return response()->json(['error' => 'Falha ao gerar análise com Cloudflare AI. Tente novamente.'], 500);
         }
     }
 }
