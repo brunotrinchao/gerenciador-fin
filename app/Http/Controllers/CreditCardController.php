@@ -14,16 +14,28 @@ class CreditCardController extends Controller
 {
     public function index(): Response
     {
-        $cards    = CreditCard::byUser(auth()->id())
+        $cards = CreditCard::byUser(auth()->id())
             ->with('bankAccount')
             ->orderBy('name')
             ->get();
 
         $accounts = BankAccount::byUser(auth()->id())->active()->get();
 
+        $activeCards    = $cards->where('is_active', true);
+        $totalLimit     = (float) $activeCards->sum('credit_limit');
+        $totalAvailable = (float) $activeCards->sum('available_limit');
+        $totalUsed      = max(0, $totalLimit - $totalAvailable);
+
         return Inertia::render('CreditCards/Index', [
             'cards'    => $cards,
             'accounts' => $accounts,
+            'stats'    => [
+                'total_limit'     => round($totalLimit, 2),
+                'total_available' => round($totalAvailable, 2),
+                'total_used'      => round($totalUsed, 2),
+                'usage_percent'   => $totalLimit > 0 ? round(($totalUsed / $totalLimit) * 100, 1) : 0,
+                'active_count'    => $activeCards->count(),
+            ]
         ]);
     }
 

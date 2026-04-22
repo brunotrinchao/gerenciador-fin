@@ -128,19 +128,24 @@ class ReportController extends Controller
 
         // Faturas detalhadas p/ Cards
         $invoicesByCard = $allCards->map(function ($card) {
+            $limit     = (float) $card->credit_limit;
+            $available = (float) $card->available_limit;
+            $used      = max(0, $limit - $available);
+            
             return [
                 'card_name' => $card->name,
                 'bank_name' => $card->bank_name,
                 'color'     => $card->color ?? '#6b7280',
-                'limit'     => round((float) $card->credit_limit, 2),
-                'available' => round((float) $card->available_limit, 2),
-                'used'      => round((float) $card->credit_limit - (float) $card->available_limit, 2),
+                'limit'     => round($limit, 2),
+                'available' => round($available, 2),
+                'used'      => round($used, 2),
+                'usage_percent' => $limit > 0 ? round(($used / $limit) * 100, 1) : 0,
                 'pending'   => round((float) Transaction::byUser(Auth::id())
                     ->where('credit_card_id', $card->id)
                     ->where('status', TransactionStatus::Pending->value)
                     ->sum('amount'), 2),
             ];
-        })->sortByDesc('pending')->values();
+        })->sortByDesc('used')->values();
 
         return Inertia::render('Reports/Index', [
             'cashFlow'           => $cashFlow->values(),

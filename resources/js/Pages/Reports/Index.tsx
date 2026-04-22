@@ -269,9 +269,9 @@ export default function ReportsIndex({
                                     <div className="space-y-1.5">
                                         <div className="flex justify-between text-xs">
                                             <span className="text-gray-400">Limite Utilizado</span>
-                                            <span className="text-white font-medium">{((card.used / card.limit) * 100).toFixed(1)}%</span>
+                                            <span className="text-white font-medium">{card.usage_percent}%</span>
                                         </div>
-                                        <Progress value={(card.used / card.limit) * 100} className="h-1.5 bg-gray-800" indicatorClassName="bg-yellow-500" />
+                                        <Progress value={card.usage_percent} className="h-1.5 bg-gray-800" indicatorClassName="bg-yellow-500" />
                                     </div>
                                 </div>
                             ))}

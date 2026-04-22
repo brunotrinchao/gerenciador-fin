@@ -16,6 +16,13 @@ import { BrandSelector } from '@/Components/BrandSelector';
 
 interface Props {
     cards: CreditCard[];
+    stats: {
+        total_limit: number;
+        total_available: number;
+        total_used: number;
+        usage_percent: number;
+        active_count: number;
+    };
 }
 
 interface FormData {
@@ -490,16 +497,12 @@ function DeleteConfirmModal({ card, onClose }: DeleteConfirmModalProps) {
 // Page
 // ─────────────────────────────────────────────
 
-export default function CreditCardsIndex({ cards }: Props) {
+export default function CreditCardsIndex({ cards, stats }: Props) {
     const { flash } = usePage().props;
 
     const [showFormModal, setShowFormModal] = useState(false);
     const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
     const [deletingCard, setDeletingCard] = useState<CreditCard | null>(null);
-
-    const activeCards = cards.filter((c) => c.is_active);
-    const totalLimit = activeCards.reduce((sum, c) => sum + c.credit_limit, 0);
-    const totalAvailable = activeCards.reduce((sum, c) => sum + c.available_limit, 0);
 
     const { start: startTutorial } = useTutorial({ key: 'credit-cards', title: 'Tour dos Cartões', steps: creditCardsSteps });
 
@@ -560,74 +563,70 @@ export default function CreditCardsIndex({ cards }: Props) {
                 </div>
 
                 {/* Summary cards */}
-                {activeCards.length > 0 && (() => {
-                    const totalUsed = totalLimit - totalAvailable;
-                    const usagePercent = totalLimit > 0 ? Math.min((totalUsed / totalLimit) * 100, 100) : 0;
-                    return (
-                        <div className="flex flex-col gap-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                {/* Limite Total */}
-                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
-                                            <CreditCardIcon size={16} className="text-[var(--md-color-on-surface-variant)]" />
-                                        </div>
-                                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Limite Total</p>
+                {stats && (
+                    <div className="flex flex-col gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {/* Limite Total */}
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-8 h-8 rounded-xl bg-[bg-[var(--color-surface-2)]] flex items-center justify-center">
+                                        <CreditCardIcon size={16} className="text-[var(--md-color-on-surface-variant)]" />
                                     </div>
-                                    <p className="text-[var(--md-color-on-surface)] font-bold text-2xl font-finance">{formatCurrency(totalLimit)}</p>
-                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
-                                        {activeCards.length} cartão{activeCards.length !== 1 ? 'ões' : ''} ativo{activeCards.length !== 1 ? 's' : ''}
-                                    </p>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-sm">Limite Total</p>
                                 </div>
-
-                                {/* Disponível */}
-                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
-                                            <CreditCardIcon size={16} className="text-[#22c55e]" />
-                                        </div>
-                                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Disponível</p>
-                                    </div>
-                                    <p className="text-[#22c55e] font-bold text-2xl font-finance">{formatCurrency(totalAvailable)}</p>
-                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
-                                        {totalLimit > 0 ? `${(100 - usagePercent).toFixed(0)}% livre` : 'Sem limite'}
-                                    </p>
-                                </div>
-
-                                {/* Utilizado */}
-                                <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
-                                            <CreditCardIcon size={16} className="text-[var(--md-color-error)]" />
-                                        </div>
-                                        <p className="text-[var(--md-color-on-surface-variant)] text-sm">Utilizado</p>
-                                    </div>
-                                    <p className="text-[var(--md-color-error)] font-bold text-2xl font-finance">{formatCurrency(totalUsed)}</p>
-                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
-                                        {usagePercent.toFixed(0)}% do limite total
-                                    </p>
-                                </div>
+                                <p className="text-[var(--md-color-on-surface)] font-bold text-2xl font-finance">{formatCurrency(stats.total_limit)}</p>
+                                <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
+                                    {stats.active_count} cartão{stats.active_count !== 1 ? 'ões' : ''} ativo{stats.active_count !== 1 ? 's' : ''}
+                                </p>
                             </div>
 
-                            {/* Barra de uso geral */}
-                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl px-5 py-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs">Uso geral dos cartões</p>
-                                    <p className="text-[var(--md-color-on-surface-variant)] text-xs">{usagePercent.toFixed(1)}% utilizado</p>
+                            {/* Disponível */}
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
+                                        <CreditCardIcon size={16} className="text-[#22c55e]" />
+                                    </div>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-sm">Disponível</p>
                                 </div>
-                                <div className="w-full h-2 bg-[bg-[var(--color-surface-2)]] rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all"
-                                        style={{
-                                            width: `${usagePercent}%`,
-                                            backgroundColor: usagePercent > 80 ? '#ef4444' : usagePercent > 50 ? '#f59e0b' : '#22c55e',
-                                        }}
-                                    />
+                                <p className="text-[#22c55e] font-bold text-2xl font-finance">{formatCurrency(stats.total_available)}</p>
+                                <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
+                                    {stats.total_limit > 0 ? `${(100 - stats.usage_percent).toFixed(0)}% livre` : 'Sem limite'}
+                                </p>
+                            </div>
+
+                            {/* Utilizado */}
+                            <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
+                                        <CreditCardIcon size={16} className="text-[var(--md-color-error)]" />
+                                    </div>
+                                    <p className="text-[var(--md-color-on-surface-variant)] text-sm">Utilizado</p>
                                 </div>
+                                <p className="text-[var(--md-color-error)] font-bold text-2xl font-finance">{formatCurrency(stats.total_used)}</p>
+                                <p className="text-[var(--md-color-on-surface-variant)] text-xs mt-1">
+                                    {stats.usage_percent.toFixed(0)}% do limite total
+                                </p>
                             </div>
                         </div>
-                    );
-                })()}
+
+                        {/* Barra de uso geral */}
+                        <div className="bg-[var(--color-surface)] border border-[border-[var(--color-border)]] rounded-2xl px-5 py-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[var(--md-color-on-surface-variant)] text-xs">Uso geral dos cartões</p>
+                                <p className="text-[var(--md-color-on-surface-variant)] text-xs">{stats.usage_percent.toFixed(1)}% utilizado</p>
+                            </div>
+                            <div className="w-full h-2 bg-[bg-[var(--color-surface-2)]] rounded-full overflow-hidden">
+                                <div
+                                    className="h-full rounded-full transition-all"
+                                    style={{
+                                        width: `${stats.usage_percent}%`,
+                                        backgroundColor: stats.usage_percent > 80 ? '#ef4444' : stats.usage_percent > 50 ? '#f59e0b' : '#22c55e',
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Cards grid */}
                 {cards.length === 0 ? (
