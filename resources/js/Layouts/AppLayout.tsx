@@ -27,6 +27,26 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
         return () => off();
     }, []);
 
+    useEffect(() => {
+        if (!auth?.user?.id) return;
+
+        // Escuta notificações do Laravel
+        const channel = window.Echo.private(`App.Models.User.${auth.user.id}`);
+        
+        channel.notification((notification: any) => {
+            setNotification({ 
+                type: notification.type === 'due_alert' ? 'error' : 'success', 
+                message: notification.description || notification.message 
+            });
+            const t = setTimeout(() => setNotification(null), 8000);
+            return () => clearTimeout(t);
+        });
+
+        return () => {
+            window.Echo.leave(`App.Models.User.${auth.user.id}`);
+        };
+    }, [auth?.user?.id]);
+
     // Exibe flash messages vindas do backend
     useEffect(() => {
         if (flash?.success) {

@@ -17,3 +17,7 @@ Schedule::command(ProcessScheduledTransactionsCommand::class)
     ->appendOutputTo(storage_path('logs/scheduled-transactions.log'));
 
 Schedule::job(new ProcessNotificationsJob())->dailyAt('08:00')->withoutOverlapping();
+
+Schedule::command('app:notify-due-transactions')
+    ->dailyAt('08:30')
+    ->withoutOverlapping();

@@ -7,13 +7,16 @@
         "dev": "concurrently --names \"vite,queue\" --prefix-colors \"cyan,yellow\" \"vite\" \"php artisan queue:listen --timeout=120 --tries=1\""
     },
     "devDependencies": {
+        "@laravel/echo-react": "^2.3.3",
         "@tailwindcss/vite": "^4.2.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "axios": ">=1.11.0 <=1.14.0",
         "concurrently": "^9.0.1",
+        "laravel-echo": "^2.3.4",
         "laravel-vite-plugin": "^3.0.0",
+        "pusher-js": "^8.5.0",
         "tailwindcss": "^4.2.2",
         "typescript": "^6.0.2",
         "vite": "^8.0.0"
