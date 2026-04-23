@@ -15,7 +15,12 @@ class ScheduledTransactionLogController extends Controller
             ->paginate(20);
 
         $allIds = $logs->getCollection()
-            ->flatMap(fn ($log) => $log->processed_transaction_ids ?? [])
+            ->flatMap(function ($log) {
+                return array_merge(
+                    $log->processed_transaction_ids ?? [],
+                    $log->failed_transaction_ids ?? []
+                );
+            })
             ->unique()
             ->values();
 

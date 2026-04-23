@@ -97,6 +97,23 @@ export default function ScheduledLogsIndex({ logs, transactions }: Props) {
                                                 </div>
                                             );
                                         })}
+                                        {(log.failed_transaction_ids ?? []).map((id) => {
+                                            const tx = txMap[id];
+                                            if (!tx) return null;
+                                            return (
+                                                <div key={id} className="py-2 flex items-center justify-between text-sm bg-red-50/50 -mx-4 px-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-red-600 font-medium">⚠️ {tx.description}</span>
+                                                        <Badge variant="destructive" className="text-[10px] h-4">Falha</Badge>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-red-400">
+                                                        <span className="font-medium font-finance">
+                                                            {formatCurrency(Number(tx.amount))}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </CardContent>
                             )}

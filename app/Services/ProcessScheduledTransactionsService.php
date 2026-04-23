@@ -10,7 +10,8 @@ class ProcessScheduledTransactionsService
 {
     public function process(): ScheduledTransactionLog
     {
-        $startTime = now();
+        $startTime = microtime(true);
+        $processedAt = now();
 
         $transactions = Transaction::scheduled()
             ->where('date', '<=', today())
@@ -34,13 +35,15 @@ class ProcessScheduledTransactionsService
             }
         }
 
+        $executionMs = (int) round((microtime(true) - $startTime) * 1000);
+
         return ScheduledTransactionLog::create([
-            'processed_at'              => $startTime,
+            'processed_at'              => $processedAt,
             'transactions_count'        => count($processedIds),
             'failed_count'              => count($failedIds),
             'processed_transaction_ids' => $processedIds,
             'failed_transaction_ids'    => $failedIds,
-            'execution_ms'              => now()->diffInMilliseconds($startTime),
+            'execution_ms'              => max(0, $executionMs),
         ]);
     }
 }

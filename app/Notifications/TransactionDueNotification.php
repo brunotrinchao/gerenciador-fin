@@ -12,11 +12,11 @@ class TransactionDueNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public string $description,
-        public float $amount,
-        public int $daysLeft,
-        public string $itemType, // 'transaction', 'installment', 'invoice'
-        public int $itemId
+        public string $description = '',
+        public float $amount = 0,
+        public int $daysLeft = 0,
+        public string $itemType = 'transaction',
+        public int $itemId = 0
     ) {}
 
     public function via(object $notifiable): array
@@ -26,16 +26,26 @@ class TransactionDueNotification extends Notification implements ShouldQueue
 
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        $term = $this->daysLeft === 1 ? 'vence amanhã' : 'vence em 2 dias';
+        $icons = [
+            'transaction' => '💰',
+            'installment' => '📄',
+            'invoice'     => '💳',
+        ];
+
+        $icon = $icons[$this->itemType] ?? '⚠️';
+        $term = $this->daysLeft === 1 ? 'vence amanhã' : "vence em {$this->daysLeft} dias";
         if ($this->daysLeft < 0) $term = 'está vencida';
 
+        $formattedAmount = 'R$ ' . number_format($this->amount, 2, ',', '.');
+
         return new BroadcastMessage([
-            'item_id' => $this->itemId,
-            'description' => "Atenção: '{$this->description}' {$term}!",
-            'amount' => $this->amount,
-            'days_left' => $this->daysLeft,
-            'item_type' => $this->itemType,
-            'type' => 'due_alert',
+            'item_id'     => $this->itemId,
+            'title'       => "{$icon} Lembrete de Vencimento",
+            'description' => "O item '{$this->description}' {$term}. Valor: {$formattedAmount}",
+            'amount'      => $this->amount,
+            'days_left'   => $this->daysLeft,
+            'item_type'   => $this->itemType,
+            'type'        => 'due_alert',
         ]);
     }
 
