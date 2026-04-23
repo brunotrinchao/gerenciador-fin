@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Models\Transaction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -13,8 +12,11 @@ class TransactionDueNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public Transaction $transaction,
-        public int $daysLeft
+        public string $description,
+        public float $amount,
+        public int $daysLeft,
+        public string $itemType, // 'transaction', 'installment', 'invoice'
+        public int $itemId
     ) {}
 
     public function via(object $notifiable): array
@@ -28,10 +30,11 @@ class TransactionDueNotification extends Notification implements ShouldQueue
         if ($this->daysLeft < 0) $term = 'está vencida';
 
         return new BroadcastMessage([
-            'transaction_id' => $this->transaction->id,
-            'description' => "Atenção: '{$this->transaction->description}' {$term}!",
-            'amount' => (float) $this->transaction->amount,
+            'item_id' => $this->itemId,
+            'description' => "Atenção: '{$this->description}' {$term}!",
+            'amount' => $this->amount,
             'days_left' => $this->daysLeft,
+            'item_type' => $this->itemType,
             'type' => 'due_alert',
         ]);
     }
@@ -39,9 +42,11 @@ class TransactionDueNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'transaction_id' => $this->transaction->id,
-            'description' => $this->transaction->description,
+            'item_id' => $this->itemId,
+            'description' => $this->description,
+            'amount' => $this->amount,
             'days_left' => $this->daysLeft,
+            'item_type' => $this->itemType,
         ];
     }
 }
